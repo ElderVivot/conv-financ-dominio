@@ -17,7 +17,7 @@ echo.
 echo %marcador%Apagando dados da pasta saidas.
 if exist saida\* del /q saida\*
 
-echo %marcador%Filtrando linhas validas de pagamentos.
+echo %marcador%Gerando planilha em excel
 bin\awk95 -f bin\funcoes.awk -f bin\engine.awk
 
 echo.
