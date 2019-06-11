@@ -332,7 +332,7 @@ BEGIN {
 			if( index(banco_arquivo, "BRADESCO") > 0 && index(banco_arquivo, "12578") > 0 )
 				banco_arquivo = "BRADESCO-12578"
 			if( index(banco_arquivo, "TESOURARIA") > 0 )
-				banco_arquivo = "TESOURARIA"
+				banco_arquivo = "DINHEIRO"
 			
 			empresa = ""
 			empresa = Trim(pos_empresa)
@@ -429,6 +429,9 @@ BEGIN {
 				banco = "NAO ENCONTROU NO OFX"
 			else
 				banco = "AVALIAR NAO FOI ENCONTRADO" "-" banco_2
+			
+			if( banco_arquivo == "DINHEIRO" && banco == "NAO ENCONTROU NO OFX" )
+				banco = "DINHEIRO"
 			
 			# CASO A DATA DO PAGTO ESTEJA CORRETA COM O EXTRATO ENTÃO COLOCA A DATA OCORRÊNCIA SENDO A PRÓPRIA DATA DA BAIXA
 			if( baixa_extrato == "" && banco != "NAO ENCONTROU NO OFX" )
