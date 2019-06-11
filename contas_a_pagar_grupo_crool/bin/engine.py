@@ -106,8 +106,11 @@ with open(entrada, 'rt') as csvfile:
             else:
                 _codi_cta = ""
 
-            result = (f"{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
-                      f";{row[11]};{row[12]};{_codi_emp};{_codi_cta};{row[15]};{row[16]};{row[17]};{row[18]}\n")
-            saida.write(result)
+            _empresa = int(row[14])
+
+            if _codi_emp == _empresa:
+                result = (f"{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
+                          f";{row[11]};{row[12]};{row[13]};{_codi_emp};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
+                saida.write(result)
 
 saida.close()

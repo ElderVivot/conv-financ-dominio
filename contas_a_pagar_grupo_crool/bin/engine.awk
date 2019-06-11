@@ -319,10 +319,35 @@ BEGIN {
 			banco_arquivo = subsCharEspecial(banco_arquivo)
 			banco_arquivo = upperCase(banco_arquivo)
 			
+			if( index(banco_arquivo, "BRADESCO") > 0 && index(banco_arquivo, "16037") > 0 )
+				banco_arquivo = "BRADESCO-16037"
+			if( index(banco_arquivo, "BRADESCO") > 0 && index(banco_arquivo, "2621") > 0 )
+				banco_arquivo = "BRADESCO-2621"
+			if( index(banco_arquivo, "BRADESCO") > 0 && index(banco_arquivo, "16040") > 0 )
+				banco_arquivo = "BRADESCO-16040"
+			if( index(banco_arquivo, "BRADESCO") > 0 && index(banco_arquivo, "16637") > 0 )
+				banco_arquivo = "BRADESCO-16637"
+			if( index(banco_arquivo, "BRADESCO") > 0 && index(banco_arquivo, "2598") > 0 )
+				banco_arquivo = "BRADESCO-2598"
+			if( index(banco_arquivo, "BRADESCO") > 0 && index(banco_arquivo, "12578") > 0 )
+				banco_arquivo = "BRADESCO-12578"
+			if( index(banco_arquivo, "TESOURARIA") > 0 )
+				banco_arquivo = "TESOURARIA"
+			
 			empresa = ""
 			empresa = Trim(pos_empresa)
 			empresa = subsCharEspecial(empresa)
 			empresa = upperCase(empresa)
+			
+			codi_emp = 0
+			if( index(empresa, "CEM") > 0 )
+				codi_emp = 608
+			if( index(empresa, "IER") > 0 )
+				codi_emp = 657
+			if( index(empresa, "LAB") > 0 || index(empresa, "CROO") > 0 )
+				codi_emp = 865
+			if( index(empresa, "MEC") > 0 )
+				codi_emp = 412
 			
 			# TEM PAGAMENTOS QUE O CLIENTE LANÇA NA PLANILHA COM DATA ERRADA DA BAIXA, PORTANTO ESTAS LINHAS ABAIXO VAI VERIFICAR ISTO E O LIMITE É 3 DIAS A MAIS OU 3 DIAS A MENOS
 			baixa_extrato = ""
@@ -415,19 +440,19 @@ BEGIN {
 			# PAGOS
 			if( baixa != "NULO" && int(valor_pago) > 0 ){
 				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
-      				  valor_desconto, valor_juros, valor_multa, empresa, "", nota_completo, obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+      				  valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
 			}
 			
 			# RECEBIMENTOS
 			if( baixa != "NULO" && int(valor_recebido) > 0 ){
 				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_recebido, 
-      				  "0,00", "0,00", "0,00", empresa, "", nota_completo, obs, tipo_pagto, categoria >> "saida\\recebtos_agrupados.csv"
+      				  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "saida\\recebtos_agrupados.csv"
 			}
 				
 		} close(file)
 	} close(ArquivosCsv)
 	
-	print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "saida\\movtos_feitos_no_cartao_nao_estao_na_planilha.csv"
+	#print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "saida\\movtos_feitos_no_cartao_nao_estao_na_planilha.csv"
 	
 	# VAI VER NO OFX QUAIS DÉBITOS QUE NÃO ESTÃO NA PLANILHA DO CLIENTE, GERALMENTE SÃO CHEQUES COMPENSADOS EM MESES ANTERIORES OU TARIFAS
 	while ( (getline < "temp\\extrato_cartao.csv") > 0 ) {
@@ -445,7 +470,8 @@ BEGIN {
 		
 		pagou_no_banco = PagouNoBanco[operacao_3, data_mov_2, valor_transacao_2]
 		
-		if( operacao_3 == "-" && pagou_no_banco != 1 )
+		#if( operacao_3 == "-" && pagou_no_banco != 1 )
+		if( pagou_no_banco != 1 )
 			print $0 >> "saida\\movtos_feitos_no_cartao_nao_estao_na_planilha.csv"
 		
 	} close("temp\\extrato_cartao.csv")
