@@ -5,7 +5,7 @@ import datetime
 
 def cnpj_for(codi_emp, nome_for):
     #connection = sqlanydb.connect(host="SRVERP", uid='EXTERNO', pwd='dominio', eng='srvcontabil', dbn='Contabil')
-    connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio')
+    connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio',PORT='2638')
     cursor = connection.cursor()
     cursor.execute(f"SELECT MAX(cgce_for)"
                    f"  FROM bethadba.effornece "
@@ -19,7 +19,7 @@ def cnpj_for(codi_emp, nome_for):
 
 def cnpj_for_nota(codi_emp, nume_nota, emissao_nota_ini, emissao_nota_fim):
     #connection = sqlanydb.connect(host="SRVERP", uid='EXTERNO', pwd='dominio', eng='srvcontabil', dbn='Contabil')
-    connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio')
+    connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio',PORT='2638')
     cursor = connection.cursor()
     cursor.execute(f"SELECT MAX(cgce_for) "
                    f"  FROM bethadba.efentradas AS ent"
@@ -38,7 +38,7 @@ def cnpj_for_nota(codi_emp, nume_nota, emissao_nota_ini, emissao_nota_fim):
 
 def codi_conta(codi_emp, cgce_for_):
     #connection = sqlanydb.connect(host="SRVERP", uid='EXTERNO', pwd='dominio', eng='srvcontabil', dbn='Contabil')
-    connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio')
+    connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio',PORT='2638')
     cursor = connection.cursor()
     cursor.execute(f"SELECT MAX(codi_cta) "
                    f"  FROM bethadba.effornece "
