@@ -7,7 +7,7 @@ def cnpj_for(codi_emp, nome_for):
     #connection = sqlanydb.connect(host="SRVERP", uid='EXTERNO', pwd='dominio', eng='srvcontabil', dbn='Contabil')
     connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio',PORT='2638')
     cursor = connection.cursor()
-    cursor.execute(f"SELECT MAX(cgce_for) "
+    cursor.execute(f"SELECT MAX(cgce_for)"
                    f"  FROM bethadba.effornece "
                    f" WHERE codi_emp = {codi_emp} "
                    f"   AND nome_for LIKE '%{nome_for}%'")
@@ -50,20 +50,27 @@ def codi_conta(codi_emp, cgce_for_):
 
     return data
 
-#entrada = 'Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Contas Pagas\\Avaliando\\100 Limits\\lanc_contabil_contas_a_pagar_100limits\\temp\\pagtos_agrupados.csv'
-#saida = open('Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Contas Pagas\\Avaliando\\100 Limits\\lanc_contabil_contas_a_pagar_100limits\\saida\\pagtos_agrupados.csv', 'w')
+_codi_emp = int(input('Informe o código da empresa Matriz ou Filial na Domínio: '))
+
+#entrada = 'Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Contas Pagas\\Avaliando\\Al Restaurante\\lanc_contabil_contas_a_pagar_al_restaurante\\temp\\pagtos_agrupados.csv'
+#saida = open('Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Contas Pagas\\Avaliando\\Al Restaurante\\lanc_contabil_contas_a_pagar_al_restaurante\\saida\\pagtos_agrupados.csv', 'w')
 entrada = 'temp\\pagtos_agrupados.csv'
 saida = open('saida\\pagtos_agrupados.csv', 'w')
 with open(entrada, 'rt') as csvfile:
     csvreader = csv.reader(csvfile, delimiter=';')
     for row in csvreader:
-        if str(row[9]) == 'Nome Fornecedor':
-            saida.write('Documento;CNPJ Fornecedor;Emissao;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Nome Fornecedor;Titulo;Codigo Empresa Dominio;Codigo Conta Dominio\n')
+        if str(row[0]) == 'Documento':
+            saida.write('Documento;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;'
+                        'Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Nome Fornecedor;'
+                        'Categoria;OBS;Codigo Empresa Dominio;Codigo Conta Dominio\n')
         else:
-            _codi_emp = int(row[11])
-
-            _nome_for = str(row[9]).replace('  ', ' ')
+            _nome_for = str(row[12]).replace('  ', ' ').replace("'", "")
+            _nome_for_ori = _nome_for
             _nome_for = _nome_for[0:14]
+
+            _nome_for_2 = _nome_for_ori.split()
+            if len(_nome_for_2[0]) > 10:
+                _nome_for = _nome_for_ori[0:20]
 
             _nume_nota = int(row[0])
 
@@ -79,11 +86,14 @@ with open(entrada, 'rt') as csvfile:
             _emissao_nota_subt_3 = _emissao_nota_subt_3.strftime('%Y-%m-%d')
 
             # CNPJ pelo nome do fornecedor
-            _cnpj_for = str(cnpj_for(_codi_emp, _nome_for)).replace(' ', '').replace('(', '').replace(')', '')\
-                .replace(',', '').replace('None', "'")
+            _cnpj_for = str(cnpj_for(_codi_emp, _nome_for)).replace(' ', '') \
+                .replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
+            if len(_nome_for_ori) < 10:
+                _cnpj_for = "'"
 
             # CNPJ pela nota fiscal
-            _cnpj_for_2 = str(cnpj_for_nota(_codi_emp, _nume_nota, _emissao_nota_subt_3, _emissao_nota_soma_3)).replace(' ', '')\
+            _cnpj_for_2 = str(cnpj_for_nota(_codi_emp, _nume_nota, _emissao_nota_subt_3, _emissao_nota_soma_3)).replace(
+                ' ', '') \
                 .replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
 
             # Primeiro busca pela nota, se não encontrar busca pelo nome
@@ -95,12 +105,14 @@ with open(entrada, 'rt') as csvfile:
             # busca o código da conta para quando for filial
             _cnpj_filtro = _cnpj_for.replace("'", '')
             if _cnpj_filtro != "":
-                _codi_cta = str(codi_conta(_codi_emp, _cnpj_filtro)).replace(' ', '').replace('(', '').replace(')', '').replace(',', '').replace('None', "")
+                _codi_cta = str(codi_conta(_codi_emp, _cnpj_filtro)).replace(' ', '').replace('(', '').replace(')',
+                                                                                                               '').replace(
+                    ',', '').replace('None', "")
             else:
                 _codi_cta = ""
 
             result = (f"{row[0]};{_cnpj_for};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]}"
-                      f";{row[9]};{str(row[10])};{row[11]};{_codi_cta}\n")
+                      f";{row[9]};{str(row[10])};{row[11]};{row[12]};{row[13]};{row[14]};{_codi_emp};{_codi_cta}\n")
             saida.write(result)
 
 saida.close()
