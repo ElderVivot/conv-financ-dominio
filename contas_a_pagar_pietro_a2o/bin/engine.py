@@ -105,16 +105,16 @@ with open(entrada, 'rt') as csvfile:
 
             _nume_nota = int(row[0])
 
-            _emissao_nota = str(row[3])
-            _emissao_nota = datetime.datetime.strptime(_emissao_nota, "%d/%m/%Y").date()
+            #_emissao_nota = str(row[3])
+            #_emissao_nota = datetime.datetime.strptime(_emissao_nota, "%d/%m/%Y").date()
 
             # emissão + 3 dias
-            _emissao_nota_soma_3 = _emissao_nota + datetime.timedelta(days=3)
-            _emissao_nota_soma_3 = _emissao_nota_soma_3.strftime('%Y-%m-%d')
+            #_emissao_nota_soma_3 = _emissao_nota + datetime.timedelta(days=3)
+            #_emissao_nota_soma_3 = _emissao_nota_soma_3.strftime('%Y-%m-%d')
 
             # emissão - 3 dias
-            _emissao_nota_subt_3 = _emissao_nota + datetime.timedelta(days=-3)
-            _emissao_nota_subt_3 = _emissao_nota_subt_3.strftime('%Y-%m-%d')
+            #_emissao_nota_subt_3 = _emissao_nota + datetime.timedelta(days=-3)
+            #_emissao_nota_subt_3 = _emissao_nota_subt_3.strftime('%Y-%m-%d')
 
             # CNPJ pelo nome do fornecedor
             _cnpj_for = str(cnpj_for(_codi_emp, _nome_for)).replace(' ', '').replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
@@ -122,8 +122,8 @@ with open(entrada, 'rt') as csvfile:
                 _cnpj_for = "'"
 
             # CNPJ pela nota fiscal
-            _cnpj_for_2 = str(cnpj_for_nota(_codi_emp, _nume_nota, _emissao_nota_subt_3, _emissao_nota_soma_3)).replace(' ', '') \
-                .replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
+            _cnpj_for_2 = "'" #str(cnpj_for_nota(_codi_emp, _nume_nota, _emissao_nota_subt_3, _emissao_nota_soma_3)).replace(' ', '') \
+                #.replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
 
             _cnpj_for_3 = str(cnpj_for_nota_2(_codi_emp, _nume_nota, _nome_for)).replace(' ', '') \
                 .replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
@@ -150,7 +150,7 @@ with open(entrada, 'rt') as csvfile:
             else:
                 _codi_cta = ""
 
-            result = (f"{row[0]};{row[1]};{_cnpj_for};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
+            result = (f"{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
                           f";{row[11]};{row[12]};{row[13]};{row[14]};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
             saida.write(result)
 

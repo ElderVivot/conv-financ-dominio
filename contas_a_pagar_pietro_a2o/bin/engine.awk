@@ -172,70 +172,53 @@ BEGIN {
 		
 		while ((getline < file) > 0) {
 			
-			if ( Trim(toupper($6)) == toupper("VENCIMENTO") ){
+			if ( Trim(toupper($1)) == toupper("Dt. Baixa") ){
 				load_columns();
 				continue;
 			}
 			
-			texto_for = "------------"
-			texto_cnpj_for = "------------"
-			texto_nota = "Doc."
-			texto_emissao = "Emissao"
-			texto_venc = "Venc."
-			texto_baixa = "Dt. Baixa"
-			texto_valor_original = "Valor"
-			texto_valor_pago = "Pagos"
+			texto_for = "Razao Social"
+			texto_cnpj_for = "CNPJ/CPF"
+			texto_nota = "Titulo"
+			texto_emissao = "-------------"
+			texto_venc = "-------------"
+			texto_baixa = "Dt. Conciliacao"
+			texto_valor_original = "Valor Original"
+			texto_valor_pago = "Valor Baixa"
 			texto_valor_recebido = "---------"
-			texto_valor_desc = "---------"
-			texto_valor_juros = "---------"
-			texto_valor_multa = "---------"
-			texto_obs = "---------"
+			texto_valor_desc = "R$ Desconto"
+			texto_valor_juros = "R$ Juros"
+			texto_valor_multa = "R$ Multa"
+			texto_obs = "Historico"
 			texto_categoria = "---------"
-			texto_banco_arquivo = "Cofre"
+			texto_banco_arquivo = "Conta / Caixa"
 			texto_empresa = "---------"
 			texto_tipo_pagto = "---------"
 			
-			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 999 )
-			pos_cnpj_for = $IfElse( int(NumColuna(texto_cnpj_for)) > 0, int(NumColuna(texto_cnpj_for)), 999 )
-			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 1 )
-			pos_emissao = $IfElse( int(NumColuna(texto_emissao)) > 0, int(NumColuna(texto_emissao)), 2 )
-			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 3 )
-			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 9 )
-			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 6 )
-			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 8 )
+			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 6 )
+			pos_cnpj_for = $IfElse( int(NumColuna(texto_cnpj_for)) > 0, int(NumColuna(texto_cnpj_for)), 5 )
+			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 4 )
+			pos_emissao = $IfElse( int(NumColuna(texto_emissao)) > 0, int(NumColuna(texto_emissao)), 999 )
+			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 999 )
+			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 2 )
+			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 7 )
+			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 11 )
 			pos_valor_recebido = $IfElse( int(NumColuna(texto_valor_recebido)) > 0, int(NumColuna(texto_valor_recebido)), 999 )
-			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 999 )
-			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 999 )
-			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 999 )
-			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 999 )
+			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 8 )
+			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 9 )
+			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 10 )
+			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 12 )
 			pos_natureza_pagto = $IfElse( int(NumColuna(texto_natureza_pagto)) > 0, int(NumColuna(texto_natureza_pagto)), 999 )
-			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 4 )
-			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), 7 )
+			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 3 )
+			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), 999 )
 			pos_categoria = $IfElse( int(NumColuna(texto_categoria)) > 0, int(NumColuna(texto_categoria)), 999 )
 			pos_empresa = $IfElse( int(NumColuna(texto_empresa)) > 0, int(NumColuna(texto_empresa)), 999 )
 			
 			# CAMPOS ABAIXO VAO SER UTILIZADOS PARA VER SE TRATA DE UMA LINHA DO NOME DO FORNECEDOR OU NÃO
-			campo_1 = ""
-			campo_1 = Trim($1)
-			campo_1 = subsCharEspecial(campo_1)
-			campo_1 = upperCase(campo_1)
-			
-			campo_9 = ""
-			campo_9 = Trim($9)
-			campo_9 = subsCharEspecial(campo_9)
-			campo_9 = upperCase(campo_9)
-			
-			campo_11 = ""
-			campo_11 = Trim($11)
-			campo_11 = subsCharEspecial(campo_11)
-			campo_11 = upperCase(campo_11)
-			
-			if( campo_1 != "" && campo_9 == "" && campo_11 == "" ){
-				forn_cli_temp = ""
-				forn_cli_temp = Trim($1)
-				forn_cli_temp = subsCharEspecial(forn_cli_temp)
-				forn_cli_temp = upperCase(forn_cli_temp)
-			}
+			forn_cli = ""
+			forn_cli = Trim(pos_for)
+			forn_cli = subsCharEspecial(forn_cli)
+			forn_cli = upperCase(forn_cli)
 			
 			nota_completo = ""
 			nota_completo = Trim(pos_nota)
@@ -253,36 +236,11 @@ BEGIN {
 			
 			nota = int(soNumeros(nota))
 			
-			# MUDA O FORNECEDOR PELA DESCRICAO DO TITULO
-			forn_cli_novo = ""
-			if( forn_cli_temp == "IMPOSTOS E TRIBUTOS" && index(nota_completo_orig, "IPTU") > 0 )
-				forn_cli_novo = "IPTU"
-			if( forn_cli_temp == "IMPOSTOS E TRIBUTOS" && index(nota_completo_orig, "FGTS") > 0 )
-				forn_cli_novo = "FGTS"
-			if( forn_cli_temp == "IMPOSTOS E TRIBUTOS" && index(nota_completo_orig, "ISS") > 0 )
-				forn_cli_novo = "ISS"
-			if( forn_cli_temp == "IMPOSTOS E TRIBUTOS" && ( index(nota_completo_orig, "PIS") > 0 || index(nota_completo_orig, "COFINS") > 0 ) )
-				forn_cli_novo = "PIS/COFINS"
-			if( forn_cli_temp == "IMPOSTOS E TRIBUTOS" && index(nota_completo_orig, "DARF") > 0 && index(nota_completo_orig, "IR") > 0 )
-				forn_cli_novo = "DARF IR"
-			if( forn_cli_temp == "IMPOSTOS E TRIBUTOS" && index(nota_completo_orig, "PROTEGE") > 0 )
-				forn_cli_novo = "PROTEGE"
-			if( index(forn_cli_temp, "DETRAN") > 0 && index(nota_completo_orig, "IPVA") > 0 )
-				forn_cli_novo = "IPVA"
-			
-			forn_cli = IfElse(forn_cli_novo != "", forn_cli_novo, forn_cli_temp)
-			
-			# BUSCA A EMPRESA PELA DESCRICAO DO TITULO
-			codi_emp = "444"
-			if( index(nota_completo_orig, "T63") > 0 || index(nota_completo_orig, "T-63") > 0 || index(nota_completo_orig, "T 63") > 0 )
-				codi_emp = "451"
-			if( index(nota_completo_orig, "T7") > 0 || index(nota_completo_orig, "T-7") > 0 || index(nota_completo_orig, "T 7") > 0 || index(nota_completo_orig, "T07") > 0 || index(nota_completo_orig, "T-07") > 0 || index(nota_completo_orig, "T 07") > 0 )
-				codi_emp = "457"
-			
 			vencimento = ""
 			vencimento = Trim(pos_venc)
 			vencimento = FormatDate(vencimento)
 			vencimento = isDate(vencimento)
+			vencimento = IfElse( vencimento == "NULO", "", vencimento )
 			
 			baixa = ""
 			baixa = Trim(pos_baixa)
@@ -293,6 +251,7 @@ BEGIN {
 			emissao = Trim(pos_emissao)
 			emissao = FormatDate(emissao)
 			emissao = isDate(emissao)
+			emissao = IfElse( emissao == "NULO", "", emissao )
 			
 			cnpj_forn_cli = ""
 			cnpj_forn_cli = soNumeros(pos_cnpj_for)
@@ -329,15 +288,15 @@ BEGIN {
 			valor_desconto = Trim(pos_valor_desc)
 			valor_desconto = FormataCampo("double", valor_desconto, 12, 2)
 			
-			if( valor_juros == "0,00" && valor_pago_int > valor_original_int ){
-				valor_juros = valor_pago_int - valor_original_int
-				valor_juros = TransformaPraDecimal(valor_juros)
-			}
+			#if( valor_juros == "0,00" && valor_pago_int > valor_original_int ){
+			#	valor_juros = valor_pago_int - valor_original_int
+			#	valor_juros = TransformaPraDecimal(valor_juros)
+			#}
 			
-			if( valor_desconto == "0,00" && valor_pago_int < valor_original_int ){
-				valor_desconto = valor_original_int - valor_pago_int
-				valor_desconto = TransformaPraDecimal(valor_desconto)
-			}
+			#if( valor_desconto == "0,00" && valor_pago_int < valor_original_int ){
+			#	valor_desconto = valor_original_int - valor_pago_int
+			#	valor_desconto = TransformaPraDecimal(valor_desconto)
+			#}
 			
 			valor_multa = ""
 			valor_multa = Trim(pos_valor_multa)
@@ -347,6 +306,16 @@ BEGIN {
 			obs = Trim(pos_obs)
 			obs = subsCharEspecial(obs)
 			obs = upperCase(obs)
+			
+			if( index(obs, "VIAGEM") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "VIAGEM"
+			}
+			
+			if( index(obs, "ICMS") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "ICMS"
+			}
 			
 			categoria = ""
 			categoria = Trim(pos_categoria)
@@ -363,16 +332,10 @@ BEGIN {
 			banco_arquivo = subsCharEspecial(banco_arquivo)
 			banco_arquivo = upperCase(banco_arquivo)
 			
-			if( index(banco_arquivo, "ITAU") > 0 && index(banco_arquivo, "COMPUSAT") == 0 )
-				banco_arquivo = "ITAU"
-			if( index(banco_arquivo, "ITAU") > 0 && index(banco_arquivo, "COMPUSAT") > 0 )
-				banco_arquivo = "ITAU-COMPUSAT"
-			if( index(banco_arquivo, "SAFRA") > 0 )
-				banco_arquivo = "SAFRA"
-			if( index(banco_arquivo, "BRASIL") > 0 )
-				banco_arquivo = "BB"
-			if( index(banco_arquivo, "CARTEIRA") > 0 )
-				banco_arquivo = "DINHEIRO"
+			# BUSCA A EMPRESA PELA DESCRICAO DO TITULO
+			codi_emp = "343"
+			if( index(banco_arquivo, "BRADESCO") > 0 && index(banco_arquivo, "SP") > 0 )
+				codi_emp = "379"
 			
 			empresa = ""
 			empresa = Trim(pos_empresa)
