@@ -10,6 +10,9 @@ BEGIN {
 	ArquivosCsv = "bin\\listacsv.txt";
 	ArquivosOfx = "bin\\listaofx.txt";
 	
+	_comp_ini = int(substr(_comp_ini, 4) "" substr(_comp_ini, 1, 2))
+	_comp_fim = int(substr(_comp_fim, 4) "" substr(_comp_fim, 1, 2))
+	
 	print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "temp\\extrato_cartao.csv"
 	
 	# LE O ARQUIVO OFX AFIM DE PODER COMPARAR O QUE FOI PAGO NO CARTAO COM A PLANILHA DE BAIXA DO CLIENTE
@@ -68,6 +71,7 @@ BEGIN {
 					data_mov = selecionaTAG( ofx, "<dtposted>", "</dtposted>" )
 					data_mov = substr(data_mov, 1, 8)
 					data_mov = substr(data_mov, 7, 2) "/" substr(data_mov, 5, 2) "/" substr(data_mov, 1, 4)
+					data_mov_int = int(substr(data_mov, 7) "" substr(data_mov, 4, 2))
 				}
 				
 				if( substr(ofx, 1, 8) == "<trnamt>" ){
@@ -97,7 +101,14 @@ BEGIN {
 					BancoPago[operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
 					DataPagto[operacao, data_mov, valor_transacao] = data_mov
 					
-					print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
+					# QUANDO É CHEQUE GUARDA A DATA QUE O CHEQUE COMPENSOU, É ELA QUE TEM QUE SER UTILIZADA COMO DATA DA BAIXA
+					if( historico == "CHEQ COMP" || historico == "CHEQUE SAC" ){
+						DataCompensacaoCheque[num_doc] = data_mov
+						BancoPagoCheque[num_doc] = num_banco "-" conta_corrente
+					}
+					
+					if( _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
+						print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
 				}
 			
 			}
@@ -125,6 +136,7 @@ BEGIN {
 					data_mov = substr( ofx, 11 , length(ofx) - 10 )
 					data_mov = substr(data_mov, 1, 8)
 					data_mov = substr(data_mov, 7, 2) "/" substr(data_mov, 5, 2) "/" substr(data_mov, 1, 4)
+					data_mov_int = int(substr(data_mov, 7) "" substr(data_mov, 4, 2))
 				}
 				
 				if( substr(ofx, 1, 8) == "<trnamt>" ){
@@ -154,7 +166,14 @@ BEGIN {
 					BancoPago[operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
 					DataPagto[operacao, data_mov, valor_transacao] = data_mov
 					
-					print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
+					# QUANDO É CHEQUE GUARDA A DATA QUE O CHEQUE COMPENSOU, É ELA QUE TEM QUE SER UTILIZADA COMO DATA DA BAIXA
+					if( historico == "CHEQ COMP" || historico == "CHEQUE SAC" ){
+						DataCompensacaoCheque[num_doc] = data_mov
+						BancoPagoCheque[num_doc] = num_banco "-" conta_corrente
+					}
+					
+					if( _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
+						print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
 				}
 			}
 			
@@ -165,54 +184,65 @@ BEGIN {
 	OFS = FS;
 	
 	print "Documento;Nome Fornecedor;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\pagtos_agrupados.csv"
-	#print "Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "saida\\recebtos_agrupados.csv"
+	print "Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "saida\\recebtos_agrupados.csv"
 	
 	while ((getline < ArquivosCsv) > 0) {
 		file = "entrada\\" $0
 		
 		while ((getline < file) > 0) {
 			
-			if ( Trim(toupper($1)) == toupper("Dt. Baixa") ){
+			if ( Trim(toupper($1)) == toupper("Lcto") ){
 				load_columns();
 				continue;
 			}
 			
 			texto_for = "Razao Social"
-			texto_cnpj_for = "CNPJ/CPF"
+			texto_cnpj_for = "-------------"
 			texto_nota = "Titulo"
 			texto_emissao = "-------------"
 			texto_venc = "-------------"
-			texto_baixa = "Dt. Conciliacao"
-			texto_valor_original = "Valor Original"
-			texto_valor_pago = "Valor Baixa"
-			texto_valor_recebido = "---------"
-			texto_valor_desc = "R$ Desconto"
-			texto_valor_juros = "R$ Juros"
-			texto_valor_multa = "R$ Multa"
+			texto_baixa = "Data"
+			texto_valor_original = "---------"
+			texto_valor_pago = "Debito"
+			texto_valor_recebido = "Credito"
+			texto_valor_desc = "---------"
+			texto_valor_juros = "---------"
+			texto_valor_multa = "---------"
 			texto_obs = "Historico"
 			texto_categoria = "---------"
-			texto_banco_arquivo = "Conta / Caixa"
+			texto_banco_arquivo = "---------"
 			texto_empresa = "---------"
-			texto_tipo_pagto = "---------"
+			texto_tipo_pagto = "Origem"
 			
-			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 6 )
-			pos_cnpj_for = $IfElse( int(NumColuna(texto_cnpj_for)) > 0, int(NumColuna(texto_cnpj_for)), 5 )
-			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 4 )
+			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 7 )
+			pos_cnpj_for = $IfElse( int(NumColuna(texto_cnpj_for)) > 0, int(NumColuna(texto_cnpj_for)), 999 )
+			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 3 )
 			pos_emissao = $IfElse( int(NumColuna(texto_emissao)) > 0, int(NumColuna(texto_emissao)), 999 )
 			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 999 )
-			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 2 )
-			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 7 )
-			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 11 )
-			pos_valor_recebido = $IfElse( int(NumColuna(texto_valor_recebido)) > 0, int(NumColuna(texto_valor_recebido)), 999 )
-			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 8 )
-			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 9 )
-			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 10 )
-			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 12 )
+			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 5 )
+			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 999 )
+			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 17 )
+			pos_valor_recebido = $IfElse( int(NumColuna(texto_valor_recebido)) > 0, int(NumColuna(texto_valor_recebido)), 16 )
+			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 999 )
+			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 999 )
+			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 999 )
+			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 11 )
 			pos_natureza_pagto = $IfElse( int(NumColuna(texto_natureza_pagto)) > 0, int(NumColuna(texto_natureza_pagto)), 999 )
-			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 3 )
-			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), 999 )
+			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 999 )
+			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), 15 )
 			pos_categoria = $IfElse( int(NumColuna(texto_categoria)) > 0, int(NumColuna(texto_categoria)), 999 )
 			pos_empresa = $IfElse( int(NumColuna(texto_empresa)) > 0, int(NumColuna(texto_empresa)), 999 )
+			
+			campo_1 = ""
+			campo_1 = Trim($2)
+			campo_1 = subsCharEspecial(campo_1)
+			campo_1 = upperCase(campo_1)
+			
+			if( index(campo_1, "BANCO") > 0 ){
+				banco_arquivo = ""
+				banco_arquivo = campo_1
+				banco_arquivo = split(banco_arquivo, ":")
+			}
 			
 			# CAMPOS ABAIXO VAO SER UTILIZADOS PARA VER SE TRATA DE UMA LINHA DO NOME DO FORNECEDOR OU NÃO
 			forn_cli = ""
