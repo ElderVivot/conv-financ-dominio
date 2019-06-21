@@ -81,7 +81,7 @@ def cnpj_emp_atual(codi_emp):
 
     return data
 
-#_codi_emp = int(input('Informe o código da empresa Matriz ou Filial na Domínio: '))
+_codi_emp = int(input('- Informe o código da empresa Matriz ou Filial na Domínio: '))
 
 #entrada = 'Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Contas Pagas\\Avaliando\\Al Restaurante\\lanc_contabil_contas_a_pagar_al_restaurante\\temp\\pagtos_agrupados.csv'
 #saida = open('Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Contas Pagas\\Avaliando\\Al Restaurante\\lanc_contabil_contas_a_pagar_al_restaurante\\saida\\pagtos_agrupados.csv', 'w')
@@ -93,7 +93,7 @@ with open(entrada, 'rt') as csvfile:
         if str(row[0]) == 'Documento':
             saida.write('Documento;Nome Fornecedor;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
         else:
-            _codi_emp = int(row[14])
+            #_codi_emp = int(row[14])
 
             _nome_for = str(row[1]).replace('  ', ' ').replace("'", "")
             _nome_for_ori = _nome_for
@@ -139,6 +139,7 @@ with open(entrada, 'rt') as csvfile:
             _cnpj_emp_atual = str(cnpj_emp_atual(_codi_emp)).replace(' ', '').replace('(', '').replace(')', '')\
                 .replace(',', '').replace('None', "'")
 
+            # o fornecedor é a própria empresa que está pagando
             if _cnpj_emp_atual == _cnpj_for:
                 _cnpj_for = "'"
 
@@ -150,8 +151,23 @@ with open(entrada, 'rt') as csvfile:
             else:
                 _codi_cta = ""
 
+            result = (f"{row[0]};{row[1]};{_cnpj_for};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
+                          f";{row[11]};{row[12]};{row[13]};{_codi_emp};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
+            saida.write(result)
+
+saida.close()
+
+entrada = 'temp\\recebtos_agrupados.csv'
+saida = open('saida\\recebtos_agrupados.csv', 'w')
+
+with open(entrada, 'rt') as csvfile:
+    csvreader = csv.reader(csvfile, delimiter=';')
+    for row in csvreader:
+        if str(row[0]) == 'Documento':
+            saida.write('Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
+        else:
             result = (f"{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
-                          f";{row[11]};{row[12]};{row[13]};{row[14]};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
+                          f";{row[11]};{row[12]};{row[13]};{_codi_emp};{row[15]};{row[16]};{row[17]};{row[18]}\n")
             saida.write(result)
 
 saida.close()

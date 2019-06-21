@@ -184,7 +184,7 @@ BEGIN {
 	OFS = FS;
 	
 	print "Documento;Nome Fornecedor;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\pagtos_agrupados.csv"
-	print "Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "saida\\recebtos_agrupados.csv"
+	print "Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\recebtos_agrupados.csv"
 	
 	while ((getline < ArquivosCsv) > 0) {
 		file = "entrada\\" $0
@@ -238,10 +238,18 @@ BEGIN {
 			campo_1 = subsCharEspecial(campo_1)
 			campo_1 = upperCase(campo_1)
 			
-			if( index(campo_1, "BANCO") > 0 ){
+			if( substr(campo_1, 1, 13) == "CAIXA / BANCO" ){
 				banco_arquivo = ""
 				banco_arquivo = campo_1
-				banco_arquivo = split(banco_arquivo, ":")
+				banco_arquivo = split(banco_arquivo, banco_arquivo_v, ":")
+				banco_arquivo = banco_arquivo_v[2]
+				banco_arquivo = Trim(banco_arquivo)
+				if( index(banco_arquivo, "BRADESCO") > 0 )
+					banco_arquivo = "BRADESCO"
+				if( index(banco_arquivo, "NORDESTE") > 0 )
+					banco_arquivo = "BCO NORDESTE"
+				if( index(banco_arquivo, "SANTANDER") > 0 )
+					banco_arquivo = "SANTANDER"
 			}
 			
 			# CAMPOS ABAIXO VAO SER UTILIZADOS PARA VER SE TRATA DE UMA LINHA DO NOME DO FORNECEDOR OU NÃO
@@ -338,13 +346,28 @@ BEGIN {
 			obs = upperCase(obs)
 			
 			if( index(obs, "VIAGEM") > 0 ){
-				obs = obs " / " forn_cli
+				#obs = obs " / " forn_cli
 				forn_cli = "VIAGEM"
 			}
 			
 			if( index(obs, "ICMS") > 0 ){
 				obs = obs " / " forn_cli
 				forn_cli = "ICMS"
+			}
+			
+			if( index(obs, "SALARIO") > 0 ){
+				#obs = obs " / " forn_cli
+				forn_cli = "SALARIO E ORDENADOS"
+			}
+			
+			if( index(obs, "VALE TRANSPORTE") > 0 ){
+				#obs = obs " / " forn_cli
+				forn_cli = "VALE TRANSPORTE"
+			}
+			
+			if( index(obs, "PRO") > 0 && index(obs, "LABORE") > 0 ){
+				#obs = obs " / " forn_cli
+				forn_cli = "PRO-LABORE"
 			}
 			
 			categoria = ""
@@ -356,16 +379,6 @@ BEGIN {
 			tipo_pagto = Trim(pos_tipo_pagto)
 			tipo_pagto = subsCharEspecial(tipo_pagto)
 			tipo_pagto = upperCase(tipo_pagto)
-			
-			banco_arquivo = ""
-			banco_arquivo = Trim(pos_banco_arquivo)
-			banco_arquivo = subsCharEspecial(banco_arquivo)
-			banco_arquivo = upperCase(banco_arquivo)
-			
-			# BUSCA A EMPRESA PELA DESCRICAO DO TITULO
-			codi_emp = "343"
-			if( index(banco_arquivo, "BRADESCO") > 0 && index(banco_arquivo, "SP") > 0 )
-				codi_emp = "379"
 			
 			empresa = ""
 			empresa = Trim(pos_empresa)
@@ -463,16 +476,22 @@ BEGIN {
 			# ESTAS LINHA SERVE PRA DEIXAR REGISTRADO O QUE TEM NA PLANILHA DO CLIENTE E FOI PAGO. SERÁ UTILIZADO PARA COMPARAÇÃO COM O OFX AFIM DE AVALIAR O QUE ESTÁ NO OFX DE PAGTO E NÃO ESTÁ NESTA PLANILHA
 			PagouNoBanco[operacao_arq, baixa_extrato, valor_considerar] = 1
 			
+			# AS LINHAS ABAIXO SÃO UTILIZADAS PARA IMPRIMIR SOMENTE O QUE FOR DAQUELA COMPETENCIA
+			baixa_temp = ""
+			baixa_temp = baixa_extrato
+			baixa_temp = IfElse(baixa_temp == "", baixa, baixa_temp)
+			baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
+			
 			# PAGOS
-			if( baixa != "NULO" && int(valor_pago) > 0 ){
+			if( baixa != "NULO" && int(valor_pago) > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
 				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
       				  valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
 			}
 			
 			# RECEBIMENTOS
-			if( baixa != "NULO" && int(valor_recebido) > 0 ){
+			if( baixa != "NULO" && int(valor_recebido) > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
 				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_recebido, 
-      				  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "saida\\recebtos_agrupados.csv"
+      				  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
 			}
 				
 		} close(file)
