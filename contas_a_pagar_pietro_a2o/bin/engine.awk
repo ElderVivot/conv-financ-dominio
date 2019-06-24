@@ -165,7 +165,7 @@ BEGIN {
 	OFS = FS;
 	
 	print "Documento;Nome Fornecedor;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\pagtos_agrupados.csv"
-	#print "Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "saida\\recebtos_agrupados.csv"
+	print "Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "saida\\recebtos_agrupados.csv"
 	
 	while ((getline < ArquivosCsv) > 0) {
 		file = "entrada\\" $0
@@ -184,8 +184,8 @@ BEGIN {
 			texto_venc = "-------------"
 			texto_baixa = "Dt. Conciliacao"
 			texto_valor_original = "Valor Original"
-			texto_valor_pago = "Valor Baixa"
-			texto_valor_recebido = "---------"
+			texto_valor_pago = "Pagar"
+			texto_valor_recebido = "Receber"
 			texto_valor_desc = "R$ Desconto"
 			texto_valor_juros = "R$ Juros"
 			texto_valor_multa = "R$ Multa"
@@ -195,21 +195,21 @@ BEGIN {
 			texto_empresa = "---------"
 			texto_tipo_pagto = "---------"
 			
-			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 6 )
-			pos_cnpj_for = $IfElse( int(NumColuna(texto_cnpj_for)) > 0, int(NumColuna(texto_cnpj_for)), 5 )
-			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 4 )
+			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 5 )
+			pos_cnpj_for = $IfElse( int(NumColuna(texto_cnpj_for)) > 0, int(NumColuna(texto_cnpj_for)), 4 )
+			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 3 )
 			pos_emissao = $IfElse( int(NumColuna(texto_emissao)) > 0, int(NumColuna(texto_emissao)), 999 )
 			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 999 )
-			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 2 )
-			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 7 )
-			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 11 )
-			pos_valor_recebido = $IfElse( int(NumColuna(texto_valor_recebido)) > 0, int(NumColuna(texto_valor_recebido)), 999 )
-			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 8 )
-			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 9 )
-			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 10 )
+			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 1 )
+			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 6 )
+			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 10 )
+			pos_valor_recebido = $IfElse( int(NumColuna(texto_valor_recebido)) > 0, int(NumColuna(texto_valor_recebido)), 11 )
+			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 7 )
+			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 8 )
+			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 9 )
 			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 12 )
 			pos_natureza_pagto = $IfElse( int(NumColuna(texto_natureza_pagto)) > 0, int(NumColuna(texto_natureza_pagto)), 999 )
-			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 3 )
+			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 2 )
 			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), 999 )
 			pos_categoria = $IfElse( int(NumColuna(texto_categoria)) > 0, int(NumColuna(texto_categoria)), 999 )
 			pos_empresa = $IfElse( int(NumColuna(texto_empresa)) > 0, int(NumColuna(texto_empresa)), 999 )
@@ -262,7 +262,7 @@ BEGIN {
 			valor_original = FormataCampo("double", valor_original, 12, 2)
 			valor_original_int = int(soNumeros(valor_original))
 			
-			valor_pago = ""
+			valor_pago = ""		
 			valor_pago = Trim(pos_valor_pago)
 			valor_pago = FormataCampo("double", valor_pago, 12, 2)
 			valor_pago_int = int(soNumeros(valor_pago))
@@ -317,6 +317,66 @@ BEGIN {
 				forn_cli = "ICMS"
 			}
 			
+			if( index(obs, "DIARIA") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "DIARIA"
+			}
+			
+			if( index(obs, "APLICACOES") > 0 || index(obs, "APLICACAO") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "APLICACAO FINANCEIRA"
+			}
+			
+			if( index(obs, "POSTO LEANDRO") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "POSTO LEANDRO"
+			}
+			
+			if( index(obs, "RESCISAO") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "RESCISAO"
+			}
+			
+			if( index(obs, "VALE TRANSPORTE") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "VALE TRANSPORTE"
+			}
+			
+			if( index(obs, " ISS ") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "ISS"
+			}
+			
+			if( index(obs, "SALARIO") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "SALARIO E ORDENADOS"
+			}
+			
+			if( index(obs, "DOC/TED") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "DOC/TED"
+			}
+			
+			if( index(obs, "FGTS") > 0 && index(obs, "RESC") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "FGTS RESCISAO"
+			}
+			
+			if( index(obs, "FGTS") > 0 && index(obs, "RESC") == 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "FGTS FOLHA"
+			}
+			
+			if( index(obs, "ADTO") > 0 && index(obs, "SAL") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "ADIANTAMENTO SALARIAL"
+			}
+			
+			if( index(obs, "TARIFA") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "TARIFA BANCARIA"
+			}
+			
 			categoria = ""
 			categoria = Trim(pos_categoria)
 			categoria = subsCharEspecial(categoria)
@@ -336,6 +396,10 @@ BEGIN {
 			codi_emp = "343"
 			if( index(banco_arquivo, "BRADESCO") > 0 && index(banco_arquivo, "SP") > 0 )
 				codi_emp = "379"
+			if( index(banco_arquivo, "BRADESCO") > 0 && index(banco_arquivo, "DF") > 0 )
+				codi_emp = "376"
+			if( index(banco_arquivo, "BRADESCO") > 0 && index(banco_arquivo, "RJ") > 0 )
+				codi_emp = "371"
 			
 			empresa = ""
 			empresa = Trim(pos_empresa)

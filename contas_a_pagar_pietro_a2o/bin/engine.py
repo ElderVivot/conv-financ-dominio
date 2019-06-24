@@ -117,24 +117,26 @@ with open(entrada, 'rt') as csvfile:
             #_emissao_nota_subt_3 = _emissao_nota_subt_3.strftime('%Y-%m-%d')
 
             # CNPJ pelo nome do fornecedor
-            _cnpj_for = str(cnpj_for(_codi_emp, _nome_for)).replace(' ', '').replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
-            if len(_nome_for_ori) < 10:
-                _cnpj_for = "'"
+            #_cnpj_for = str(cnpj_for(_codi_emp, _nome_for)).replace(' ', '').replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
+            #if len(_nome_for_ori) < 10:
+            #    _cnpj_for = "'"
 
             # CNPJ pela nota fiscal
-            _cnpj_for_2 = "'" #str(cnpj_for_nota(_codi_emp, _nume_nota, _emissao_nota_subt_3, _emissao_nota_soma_3)).replace(' ', '') \
+            #_cnpj_for_2 = "'" #str(cnpj_for_nota(_codi_emp, _nume_nota, _emissao_nota_subt_3, _emissao_nota_soma_3)).replace(' ', '') \
                 #.replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
 
-            _cnpj_for_3 = str(cnpj_for_nota_2(_codi_emp, _nume_nota, _nome_for)).replace(' ', '') \
-                .replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
+            #_cnpj_for_3 = str(cnpj_for_nota_2(_codi_emp, _nume_nota, _nome_for)).replace(' ', '') \
+             #   .replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
 
             # Primeiro busca pela nota, se não encontrar busca pelo nome
-            if _cnpj_for_2 != "'" and _cnpj_for_3 == "'":
-                _cnpj_for = _cnpj_for_2
-            elif _cnpj_for_3 != "'":
-                _cnpj_for = _cnpj_for_3
-            else:
-                _cnpj_for = _cnpj_for
+            #if _cnpj_for_2 != "'" and _cnpj_for_3 == "'":
+            #    _cnpj_for = _cnpj_for_2
+            #elif _cnpj_for_3 != "'":
+            #    _cnpj_for = _cnpj_for_3
+            #else:
+            #    _cnpj_for = _cnpj_for
+
+            _cnpj_for = str(row[2]).replace("'", "")
 
             _cnpj_emp_atual = str(cnpj_emp_atual(_codi_emp)).replace(' ', '').replace('(', '').replace(')', '')\
                 .replace(',', '').replace('None', "'")
