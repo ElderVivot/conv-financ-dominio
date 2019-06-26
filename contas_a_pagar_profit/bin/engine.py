@@ -124,17 +124,20 @@ with open(entrada, 'rt') as csvfile:
                 _cnpj_for = "'"
 
             # CNPJ pela nota fiscal
-            _cnpj_for_2 = str(cnpj_for_nota(_codi_emp, _nume_nota, _emissao_nota_subt_3, _emissao_nota_soma_3)).replace(' ', '') \
+            _cnpj_for_nota = str(cnpj_for_nota(_codi_emp, _nume_nota, _emissao_nota_subt_3, _emissao_nota_soma_3)).replace(' ', '') \
                 .replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
 
-            _cnpj_for_3 = str(cnpj_for_nota_2(_codi_emp, _nume_nota, _nome_for)).replace(' ', '') \
+            _cnpj_for_nota_nome_for = str(cnpj_for_nota_2(_codi_emp, _nume_nota, _nome_for)).replace(' ', '') \
                 .replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
+				
+            _cnpj_for_planilha = str(row[2])
 
-            # Primeiro busca pela nota, se não encontrar busca pelo nome
-            if _cnpj_for_2 != "'" and _cnpj_for_3 == "'":
-                _cnpj_for = _cnpj_for_2
-            elif _cnpj_for_3 != "'":
-                _cnpj_for = _cnpj_for_3
+            if _cnpj_for_planilha != "'00000000000000":
+                _cnpj_for = _cnpj_for_planilha
+            elif _cnpj_for_nota != "'" and _cnpj_for_nota_nome_for == "'" and _cnpj_for_planilha == "'00000000000000":
+                _cnpj_for = _cnpj_for_nota
+            elif _cnpj_for_nota_nome_for != "'":
+                _cnpj_for = _cnpj_for_nota_nome_for
             else:
                 _cnpj_for = _cnpj_for
 
@@ -152,7 +155,7 @@ with open(entrada, 'rt') as csvfile:
             else:
                 _codi_cta = ""
 
-            result = (f"{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
+            result = (f"{row[0]};{row[1]};{_cnpj_for};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
                           f";{row[11]};{row[12]};{row[13]};{_codi_emp};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
             saida.write(result)
 

@@ -463,7 +463,8 @@ BEGIN {
 				else if( int(banco) == 104 || int(banco_extrato) == 104 )
 					banco = "CAIXA" "-" banco_2
 				else if( banco == "" )
-					banco = "NAO ENCONTROU NO OFX"
+					banco = "DINHEIRO"
+					#banco = "NAO ENCONTROU NO OFX"
 				else
 					banco = "AVALIAR NAO FOI ENCONTRADO" "-" banco_2
 				
