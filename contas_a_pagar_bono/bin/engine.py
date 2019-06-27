@@ -95,13 +95,14 @@ with open(entrada, 'rt') as csvfile:
         else:
             #_codi_emp = int(row[14])
 
-            _nome_for = str(row[1]).replace('  ', ' ').replace("'", "")
-            _nome_for_ori = _nome_for
-            _nome_for = _nome_for[0:14]
+            _nome_for_ori = str(row[1]).replace('  ', ' ').replace("'", "")
+            _nome_for = _nome_for_ori[0:14]
 
-            _nome_for_2 = _nome_for_ori.split()
-            if len(_nome_for_2[0]) > 10:
+            _nome_for_dividido = _nome_for_ori.split()
+            if len(_nome_for_dividido[0]) > 10:
                 _nome_for = _nome_for_ori[0:20]
+
+            _nome_for_35char = _nome_for_ori[0:31]
 
             _nume_nota = int(row[0])
 
@@ -118,21 +119,27 @@ with open(entrada, 'rt') as csvfile:
 
             # CNPJ pelo nome do fornecedor
             _cnpj_for = str(cnpj_for(_codi_emp, _nome_for)).replace(' ', '').replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
+
+            _cnpj_for_35char = str(cnpj_for(_codi_emp, _nome_for_35char)).replace(' ', '').replace('(', '').replace(')', '').replace(
+                ',', '').replace('None', "'")
+
             if len(_nome_for_ori) < 10:
                 _cnpj_for = "'"
 
             # CNPJ pela nota fiscal
-            _cnpj_for_2 = "'" #str(cnpj_for_nota(_codi_emp, _nume_nota, _emissao_nota_subt_3, _emissao_nota_soma_3)).replace(' ', '') \
+            _cnpj_for_nota = "'" #str(cnpj_for_nota(_codi_emp, _nume_nota, _emissao_nota_subt_3, _emissao_nota_soma_3)).replace(' ', '') \
                 #.replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
 
-            _cnpj_for_3 = str(cnpj_for_nota_2(_codi_emp, _nume_nota, _nome_for)).replace(' ', '') \
+            _cnpj_for_nota_pelo_nome = str(cnpj_for_nota_2(_codi_emp, _nume_nota, _nome_for)).replace(' ', '') \
                 .replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
 
             # Primeiro busca pela nota, se não encontrar busca pelo nome
-            if _cnpj_for_2 != "'" and _cnpj_for_3 == "'":
-                _cnpj_for = _cnpj_for_2
-            elif _cnpj_for_3 != "'":
-                _cnpj_for = _cnpj_for_3
+            if _cnpj_for_nota != "'" and _cnpj_for_nota_pelo_nome == "'":
+                _cnpj_for = _cnpj_for_nota
+            elif _cnpj_for_nota_pelo_nome != "'":
+                _cnpj_for = _cnpj_for_nota_pelo_nome
+            elif _cnpj_for_35char != "'":
+                _cnpj_for = _cnpj_for_35char
             else:
                 _cnpj_for = _cnpj_for
 
