@@ -117,6 +117,7 @@ function subsCharEspecial(tiraEsp){
 	gsub("ç", "c", tiraEsp)
 	gsub("Ç", "C", tiraEsp)
 	gsub("\"", "", tiraEsp)
+	gsub("º", "", tiraEsp)
 	
 	return tiraEsp
 }

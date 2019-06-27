@@ -1,4 +1,4 @@
-import sqlanydb
+#import sqlanydb
 import pyodbc
 import csv
 import datetime
