@@ -25,7 +25,8 @@ echo - Filtrando linhas validas de pagamentos.
 bin\awk95 -f bin\funcoes.awk -f bin\engine.awk -v _comp_ini=%comp_ini% -v _comp_fim=%comp_fim%
 echo.
 
-call bin\engine.py
+REM --> mesmo arquivo do bin\engine.py, mas este não precisa da instalação do python
+bin\dist\engine\engine.exe
 
 echo.
 echo - Processo finalizado. Aperte qualquer tela para sair.
