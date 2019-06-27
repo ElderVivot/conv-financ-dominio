@@ -68,6 +68,20 @@ def codi_conta(codi_emp, cgce_for_):
 
     return data
 
+def codi_conta_cli(codi_emp, cgce_cli_):
+    #connection = sqlanydb.connect(host="SRVERP", uid='EXTERNO', pwd='dominio', eng='srvcontabil', dbn='Contabil')
+    connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio',PORT='2638')
+    cursor = connection.cursor()
+    cursor.execute(f"SELECT MAX(codi_cta) "
+                   f"  FROM bethadba.efclientes "
+                   f" WHERE codi_emp = {codi_emp} "
+                   f"   AND cgce_cli LIKE '%{cgce_cli_}%'")
+    data = cursor.fetchone()
+    cursor.close()
+    connection.close()
+
+    return data
+
 def cnpj_emp_atual(codi_emp):
     #connection = sqlanydb.connect(host="SRVERP", uid='EXTERNO', pwd='dominio', eng='srvcontabil', dbn='Contabil')
     connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio',PORT='2638')
@@ -95,47 +109,6 @@ with open(entrada, 'rt') as csvfile:
         else:
             _codi_emp = int(row[14])
 
-            _nome_for = str(row[1]).replace('  ', ' ').replace("'", "")
-            _nome_for_ori = _nome_for
-            _nome_for = _nome_for[0:14]
-
-            _nome_for_2 = _nome_for_ori.split()
-            if len(_nome_for_2[0]) > 10:
-                _nome_for = _nome_for_ori[0:20]
-
-            _nume_nota = int(row[0])
-
-            #_emissao_nota = str(row[3])
-            #_emissao_nota = datetime.datetime.strptime(_emissao_nota, "%d/%m/%Y").date()
-
-            # emissão + 3 dias
-            #_emissao_nota_soma_3 = _emissao_nota + datetime.timedelta(days=3)
-            #_emissao_nota_soma_3 = _emissao_nota_soma_3.strftime('%Y-%m-%d')
-
-            # emissão - 3 dias
-            #_emissao_nota_subt_3 = _emissao_nota + datetime.timedelta(days=-3)
-            #_emissao_nota_subt_3 = _emissao_nota_subt_3.strftime('%Y-%m-%d')
-
-            # CNPJ pelo nome do fornecedor
-            #_cnpj_for = str(cnpj_for(_codi_emp, _nome_for)).replace(' ', '').replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
-            #if len(_nome_for_ori) < 10:
-            #    _cnpj_for = "'"
-
-            # CNPJ pela nota fiscal
-            #_cnpj_for_2 = "'" #str(cnpj_for_nota(_codi_emp, _nume_nota, _emissao_nota_subt_3, _emissao_nota_soma_3)).replace(' ', '') \
-                #.replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
-
-            #_cnpj_for_3 = str(cnpj_for_nota_2(_codi_emp, _nume_nota, _nome_for)).replace(' ', '') \
-             #   .replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
-
-            # Primeiro busca pela nota, se não encontrar busca pelo nome
-            #if _cnpj_for_2 != "'" and _cnpj_for_3 == "'":
-            #    _cnpj_for = _cnpj_for_2
-            #elif _cnpj_for_3 != "'":
-            #    _cnpj_for = _cnpj_for_3
-            #else:
-            #    _cnpj_for = _cnpj_for
-
             _cnpj_for = str(row[2]).replace("'", "")
 
             _cnpj_emp_atual = str(cnpj_emp_atual(_codi_emp)).replace(' ', '').replace('(', '').replace(')', '')\
@@ -157,3 +130,35 @@ with open(entrada, 'rt') as csvfile:
             saida.write(result)
 
 saida.close()
+
+entrada_recebto = 'temp\\recebtos_agrupados.csv'
+saida_recebto = open('saida\\recebtos_agrupados.csv', 'w')
+with open(entrada_recebto, 'rt') as csvfile:
+    csvreader = csv.reader(csvfile, delimiter=';')
+    for row in csvreader:
+        if str(row[0]) == 'Documento':
+            saida_recebto.write('Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
+        else:
+            _codi_emp = int(row[14])
+
+            _cnpj_cli = str(row[2]).replace("'", "")
+
+            _cnpj_emp_atual = str(cnpj_emp_atual(_codi_emp)).replace(' ', '').replace('(', '').replace(')', '')\
+                .replace(',', '').replace('None', "'")
+
+            if _cnpj_emp_atual == _cnpj_cli:
+                _cnpj_cli = "'"
+
+            # busca o código da conta para quando for filial
+            _cnpj_filtro = _cnpj_cli.replace("'", '')
+            if _cnpj_filtro != "":
+                _codi_cta = str(codi_conta_cli(_codi_emp, _cnpj_filtro)).replace(' ', '').replace('(', '').replace(')','').replace(
+                    ',', '').replace('None', "")
+            else:
+                _codi_cta = ""
+
+            result = (f"{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
+                          f";{row[11]};{row[12]};{row[13]};{row[14]};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
+            saida_recebto.write(result)
+
+saida_recebto.close()
