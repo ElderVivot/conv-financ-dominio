@@ -3,7 +3,7 @@ BEGIN {
 	OFS = ";";
 	
 	system("if exist bin\\*.txt del /q bin\\*.txt")
-	system("dir /b entrada\\*.csv > bin\\listacsv.txt")
+	system("dir /b temp\\*.csv > bin\\listacsv.txt")
 	system("if exist entrada\\*.ofx dir /b entrada\\*.ofx > bin\\listaofx.txt")
 	system("if exist entrada\\*.ofc dir /b entrada\\*.ofc >> bin\\listaofx.txt")
 	
@@ -186,10 +186,10 @@ BEGIN {
 	print "Documento;Nome Fornecedor;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\pagtos_agrupados.csv"
 	print "Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\recebtos_agrupados.csv"
 	
-	while ((getline < ArquivosCsv) > 0) {
-		file = "entrada\\" $0
+	while ((getline < "temp\\baixas.csv") > 0) {
+		#file = "temp\\baixas.csv" #$0
 		
-		while ((getline < file) > 0) {
+		#while ((getline < file) > 0) {
 			
 			if ( Trim(toupper($1)) == toupper("Dt.Movimento") ){
 				load_columns();
@@ -244,7 +244,20 @@ BEGIN {
 			forn_cli = subsCharEspecial(forn_cli)
 			forn_cli = upperCase(forn_cli)
 			forn_cli = split(forn_cli, forn_cli_v, "-")
-			forn_cli = forn_cli_v[2] "" forn_cli_v[3] "" forn_cli_v[4] "" forn_cli_v[5]
+			
+			cnpj_forn_cli = ""
+			
+			# VERIFICA SE É CNPJ O PRIMEIRO "-"
+			if( length(forn_cli_v[1]) >= 7 ){
+				cnpj_forn_cli = soNumeros(forn_cli_v[1] "" forn_cli_v[2])
+				forn_cli = forn_cli_v[4] "" forn_cli_v[5] "" forn_cli_v[6] "" forn_cli_v[7]
+			} else{
+				cnpj_forn_cli = "00000000000000"
+				forn_cli = forn_cli_v[2] "" forn_cli_v[3] "" forn_cli_v[4] "" forn_cli_v[5]
+			}
+			
+			cnpj_forn_cli = IfElse(cnpj_forn_cli == "", "00000000000000", cnpj_forn_cli)
+			
 			forn_cli = Trim(forn_cli)
 			
 			nota_completo = ""
@@ -279,10 +292,6 @@ BEGIN {
 			emissao = FormatDate(emissao)
 			emissao = isDate(emissao)
 			emissao = IfElse( emissao == "NULO", "", emissao )
-			
-			cnpj_forn_cli = ""
-			cnpj_forn_cli = soNumeros(pos_cnpj_for)
-			cnpj_forn_cli = IfElse(cnpj_forn_cli == "", "00000000000000", cnpj_forn_cli)
 			
 			valor_original = ""
 			valor_original = Trim(pos_valor_original)
@@ -588,8 +597,8 @@ BEGIN {
       				  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
 			}
 				
-		} close(file)
-	} close(ArquivosCsv)
+		#} close(file)
+	} close("temp\\baixas.csv")
 	
 	#print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "saida\\movtos_feitos_no_cartao_nao_estao_na_planilha.csv"
 	

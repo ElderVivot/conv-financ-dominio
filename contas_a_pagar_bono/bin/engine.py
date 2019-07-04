@@ -150,6 +150,10 @@ with open(entrada, 'rt') as csvfile:
             if _cnpj_emp_atual == _cnpj_for:
                 _cnpj_for = "'"
 
+            _cnpj_for_arquivo = str(row[2])
+            if str(_cnpj_for_arquivo) != "'00000000000000" and str(_cnpj_for_arquivo) != "'":
+                _cnpj_for = _cnpj_for_arquivo
+
             # busca o código da conta para quando for filial
             _cnpj_filtro = _cnpj_for.replace("'", '')
             if _cnpj_filtro != "":
