@@ -3,11 +3,11 @@ BEGIN {
 	OFS = ";";
 	
 	system("if exist bin\\*.txt del /q bin\\*.txt")
-	system("dir /b entrada\\*.csv > bin\\listacsv.txt")
-	system("dir /b entrada\\*.ofx > bin\\listaofx.txt")
-	system("dir /b entrada\\*.txt > bin\\listatxt.txt")
+	#system("dir /b entrada\\*.csv > bin\\listacsv.txt")
+	system("if exist entrada\\*.ofx dir /b entrada\\*.ofx > bin\\listaofx.txt")
+	system("if exist entrada\\*.txt dir /b entrada\\*.txt > bin\\listatxt.txt")
 	
-	ArquivosCsv = "bin\\listacsv.txt";
+	ArquivosCsv = "temp\\baixas.csv";
 	ArquivosOfx = "bin\\listaofx.txt";
 	ArquivosTxt = "bin\\listatxt.txt";
 	
@@ -225,9 +225,9 @@ BEGIN {
 	print "Nota;CNPJ Cliente;Data Emissao;Data Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Nome Cliente;Num. Titulo;Obs" >> "saida\\recebtos_agrupados.csv"
 		
 	while ((getline < ArquivosCsv) > 0) {
-		file = "entrada\\" $0
+		#file = "entrada\\" $0
 		
-		while ((getline < file) > 0) {
+		#while ((getline < file) > 0) {
 			
 			pos_for = 4
 			pos_cnpj_for = 999
@@ -246,11 +246,11 @@ BEGIN {
 			pos_situacao = 21
 			
 			texto_filtro = ""
-			texto_filtro = Trim($4)
+			texto_filtro = Trim($3)
 			texto_filtro = subsCharEspecial(texto_filtro)
 			texto_filtro = upperCase(texto_filtro)
 			gsub("\"", "", texto_filtro)
-			if( substr( texto_filtro, 1, 8 ) == "RECEBER," ){
+			if( substr( texto_filtro, 1, 8 ) == "FILTROS:" ){
 				for( i = 1; i <= length(texto_filtro); i++ ){
 					if( substr(texto_filtro, i, 5) == "CONTA" ){
 						banco_arq = substr(texto_filtro, i + 5)
@@ -469,7 +469,7 @@ BEGIN {
 				print nota, "'" cnpj_forn_cli, emissao, venc, banco_arq, banco, baixa, baixa_extrato, valor_rec, valor_desconto, valor_juros, forn_cli, num_titulo, obs >> "saida\\recebtos_agrupados.csv"
 			}
 				
-		} close(file)
+		#} close(file)
 	} close(ArquivosCsv)
 	
 	print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "saida\\movimentacao_no_cartao_nao_estao_na_planilha.csv"

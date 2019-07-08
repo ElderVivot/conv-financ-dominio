@@ -14,15 +14,18 @@ echo                                        S I S T E M A S
 echo. 
 
 
-echo %marcador%Apagando dados da pasta saidas.
+echo - Apagando dados da pasta saidas.
 if exist saida\* del /q saida\*
 if exist temp\* del /q temp\*
 
-echo %marcador%Filtrando linhas validas de pagamentos.
+echo - Filtrando linhas validas de pagamentos.
+call bin\leArquivos.py
 bin\awk95 -f bin\funcoes.awk -f bin\engine.awk
+echo.
+
 call bin\engine.py
 
 echo.
-echo %marcador%Processo finalizado. Aperte qualquer tela para sair.
+echo - Processo finalizado. Aperte qualquer tela para sair.
 
 pause > nul

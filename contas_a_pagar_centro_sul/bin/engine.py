@@ -20,7 +20,7 @@ def cnpj_for(codi_emp, nome_for):
 #saida = open('Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Contas Pagas\\Prontas\\Grupo Centro Sul\\lanc_contabil_contas_a_pagar_centro_sul\\saida\\pagtos_agrupados.csv', 'w')
 entrada = 'temp\\pagtos_agrupados.csv'
 saida = open('saida\\pagtos_agrupados.csv', 'w')
-_codi_emp = int(input('Digite o código da empresa na Domínio: '))
+_codi_emp = int(input('- Digite o código da empresa na Domínio: '))
 with open(entrada, 'rt') as csvfile:
     csvreader = csv.reader(csvfile, delimiter=';')
     for row in csvreader:
