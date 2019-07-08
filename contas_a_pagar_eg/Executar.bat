@@ -18,6 +18,8 @@ echo %marcador%Apagando dados da pasta saidas.
 if exist saida\* del /q saida\*
 if exist temp\* del /q temp\*
 
+call bin\leArquivos.py
+
 echo %marcador%Filtrando linhas validas de pagamentos.
 bin\awk95 -f bin\funcoes.awk -f bin\engine.awk
 

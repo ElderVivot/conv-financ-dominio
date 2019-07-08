@@ -106,6 +106,8 @@ with open(entrada, 'rt') as csvfile:
 
             _nume_nota = int(row[0])
 
+            #print(_nome_for_ori)
+
             #_emissao_nota = str(row[3])
             #_emissao_nota = datetime.datetime.strptime(_emissao_nota, "%d/%m/%Y").date()
 

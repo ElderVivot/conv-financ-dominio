@@ -3,7 +3,7 @@ BEGIN {
 	OFS = ";";
 	
 	system("if exist bin\\*.txt del /q bin\\*.txt")
-	system("dir /b temp\\*.csv > bin\\listacsv.txt")
+	#system("dir /b temp\\*.csv > bin\\listacsv.txt")
 	system("if exist entrada\\*.ofx dir /b entrada\\*.ofx > bin\\listaofx.txt")
 	system("if exist entrada\\*.ofc dir /b entrada\\*.ofc >> bin\\listaofx.txt")
 	
@@ -248,7 +248,7 @@ BEGIN {
 			cnpj_forn_cli = ""
 			
 			# VERIFICA SE É CNPJ O PRIMEIRO "-"
-			if( length(forn_cli_v[1]) >= 7 ){
+			if( length(forn_cli_v[1]) >= 7 && index(forn_cli_v[1], ".") > 0 ){
 				cnpj_forn_cli = soNumeros(forn_cli_v[1] "" forn_cli_v[2])
 				forn_cli = forn_cli_v[4] "" forn_cli_v[5] "" forn_cli_v[6] "" forn_cli_v[7]
 			} else{

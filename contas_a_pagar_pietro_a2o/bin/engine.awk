@@ -3,12 +3,14 @@ BEGIN {
 	OFS = ";";
 	
 	system("if exist bin\\*.txt del /q bin\\*.txt")
-	system("dir /b entrada\\*.csv > bin\\listacsv.txt")
+	#system("dir /b entrada\\*.csv > bin\\listacsv.txt")
 	system("if exist entrada\\*.ofx dir /b entrada\\*.ofx > bin\\listaofx.txt")
 	system("if exist entrada\\*.ofc dir /b entrada\\*.ofc >> bin\\listaofx.txt")
 	
-	ArquivosCsv = "bin\\listacsv.txt";
+	#ArquivosCsv = "bin\\listacsv.txt";
 	ArquivosOfx = "bin\\listaofx.txt";
+	
+	ArquivosCsv = "temp\\baixas.csv"
 	
 	print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "temp\\extrato_cartao.csv"
 	
@@ -168,11 +170,11 @@ BEGIN {
 	print "Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\recebtos_agrupados.csv"
 	
 	while ((getline < ArquivosCsv) > 0) {
-		file = "entrada\\" $0
+		#file = "entrada\\" $0
 		
-		while ((getline < file) > 0) {
+		#while ((getline < file) > 0) {
 			
-			if ( Trim(toupper($1)) == toupper("Dt. Baixa") ){
+			if ( Trim(toupper($1)) == toupper("Dt. Conciliacao") ){
 				load_columns();
 				continue;
 			}
@@ -219,6 +221,13 @@ BEGIN {
 			forn_cli = Trim(pos_for)
 			forn_cli = subsCharEspecial(forn_cli)
 			forn_cli = upperCase(forn_cli)
+			
+			if( upperCase(Trim($1)) == "CNPJ:" ){
+				empresa = ""
+				empresa = Trim($2)
+				empresa = subsCharEspecial(empresa)
+				empresa = upperCase(empresa)
+			}
 			
 			nota_completo = ""
 			nota_completo = Trim(pos_nota)
@@ -401,11 +410,6 @@ BEGIN {
 			if( index(banco_arquivo, "BRADESCO") > 0 && index(banco_arquivo, "RJ") > 0 )
 				codi_emp = "371"
 			
-			empresa = ""
-			empresa = Trim(pos_empresa)
-			empresa = subsCharEspecial(empresa)
-			empresa = upperCase(empresa)
-			
 			# TEM PAGAMENTOS QUE O CLIENTE LANÇA NA PLANILHA COM DATA ERRADA DA BAIXA, PORTANTO ESTAS LINHAS ABAIXO VAI VERIFICAR ISTO E O LIMITE É 3 DIAS A MAIS OU 3 DIAS A MENOS
 			baixa_extrato = ""
 			baixa_2 = ""
@@ -500,16 +504,16 @@ BEGIN {
 			# PAGOS
 			if( baixa != "NULO" && int(valor_pago) > 0 ){
 				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
-      				  valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+      				  valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria, empresa >> "temp\\pagtos_agrupados.csv"
 			}
 			
 			# RECEBIMENTOS
 			if( baixa != "NULO" && int(valor_recebido) > 0 ){
 				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_recebido, 
-      				  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
+      				  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria, empresa >> "temp\\recebtos_agrupados.csv"
 			}
 				
-		} close(file)
+		#} close(file)
 	} close(ArquivosCsv)
 	
 	#print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "saida\\movtos_feitos_no_cartao_nao_estao_na_planilha.csv"

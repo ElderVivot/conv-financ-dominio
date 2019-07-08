@@ -1,4 +1,4 @@
-import sqlanydb
+#import sqlanydb
 import pyodbc
 import csv
 import datetime
@@ -95,7 +95,20 @@ def cnpj_emp_atual(codi_emp):
 
     return data
 
-#_codi_emp = int(input('Informe o código da empresa Matriz ou Filial na Domínio: '))
+def codi_emp_atual(cgce_emp):
+    #connection = sqlanydb.connect(host="SRVERP", uid='EXTERNO', pwd='dominio', eng='srvcontabil', dbn='Contabil')
+    connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio',PORT='2638')
+    cursor = connection.cursor()
+    cursor.execute(f"SELECT MAX(codi_emp)"
+                   f"  FROM bethadba.geempre "
+                   f" WHERE cgce_emp = {cgce_emp}")
+    data = cursor.fetchone()
+    cursor.close()
+    connection.close()
+
+    return data
+
+#_codi_emp = int(input('Informe o código da empresa Matriz na Domínio: '))
 
 #entrada = 'Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Contas Pagas\\Avaliando\\Al Restaurante\\lanc_contabil_contas_a_pagar_al_restaurante\\temp\\pagtos_agrupados.csv'
 #saida = open('Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Contas Pagas\\Avaliando\\Al Restaurante\\lanc_contabil_contas_a_pagar_al_restaurante\\saida\\pagtos_agrupados.csv', 'w')
@@ -107,7 +120,19 @@ with open(entrada, 'rt') as csvfile:
         if str(row[0]) == 'Documento':
             saida.write('Documento;Nome Fornecedor;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
         else:
-            _codi_emp = int(row[14])
+            _codi_emp = str(codi_emp_atual(row[19])).replace(' ', '').replace('(', '').replace(')', '')\
+                .replace(',', '').replace('None', "")
+            _codi_emp = int(_codi_emp)
+
+            _banco_arquivo = str(row[5])
+
+            if _codi_emp == 343:
+                if _banco_arquivo.count("BRADESCO") > 0 and _banco_arquivo.count("SP") > 0:
+                   _codi_emp = 379
+                if _banco_arquivo.count("BRADESCO") > 0 and _banco_arquivo.count("DF") > 0:
+                   _codi_emp = 376
+                if _banco_arquivo.count("BRADESCO") > 0 and _banco_arquivo.count("RJ") > 0:
+                   _codi_emp = 371
 
             _cnpj_for = str(row[2]).replace("'", "")
 
@@ -126,7 +151,7 @@ with open(entrada, 'rt') as csvfile:
                 _codi_cta = ""
 
             result = (f"{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
-                          f";{row[11]};{row[12]};{row[13]};{row[14]};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
+                          f";{row[11]};{row[12]};{row[13]};{_codi_emp};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
             saida.write(result)
 
 saida.close()
@@ -139,7 +164,19 @@ with open(entrada_recebto, 'rt') as csvfile:
         if str(row[0]) == 'Documento':
             saida_recebto.write('Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
         else:
-            _codi_emp = int(row[14])
+            _codi_emp = str(codi_emp_atual(row[19])).replace(' ', '').replace('(', '').replace(')', '')\
+                .replace(',', '').replace('None', "")
+            _codi_emp = int(_codi_emp)
+
+            _banco_arquivo = str(row[5])
+
+            if _codi_emp == 343:
+                if _banco_arquivo.count("BRADESCO") > 0 and _banco_arquivo.count("SP") > 0:
+                   _codi_emp = 379
+                if _banco_arquivo.count("BRADESCO") > 0 and _banco_arquivo.count("DF") > 0:
+                   _codi_emp = 376
+                if _banco_arquivo.count("BRADESCO") > 0 and _banco_arquivo.count("RJ") > 0:
+                   _codi_emp = 371
 
             _cnpj_cli = str(row[2]).replace("'", "")
 
