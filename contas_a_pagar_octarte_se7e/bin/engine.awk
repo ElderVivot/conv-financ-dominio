@@ -3,10 +3,10 @@ BEGIN {
 	OFS = ";";
 	
 	system("if exist bin\\*.txt del /q bin\\*.txt")
-	system("dir /b entrada\\*.csv > bin\\listacsv.txt")
+	#system("dir /b entrada\\*.csv > bin\\listacsv.txt")
 	system("dir /b entrada\\*.ofx > bin\\listaofx.txt")
 	
-	ArquivosCsv = "bin\\listacsv.txt";
+	ArquivosCsv = "temp\\baixas.csv";
 	ArquivosOfx = "bin\\listaofx.txt";
 	
 	print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "temp\\extrato_cartao.csv"
@@ -182,9 +182,9 @@ BEGIN {
 	print "Documento;CNPJ Fornecedor;Vencimento;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Nome Fornecedor;Titulo;Obs" >> "temp\\pagtos_agrupados.csv"
 	
 	while ((getline < ArquivosCsv) > 0) {
-		file = "entrada\\" $0
+		#file = "entrada\\" $0
 		
-		while ((getline < file) > 0) {
+		#while ((getline < file) > 0) {
 			
 			campo_1 = ""
 			campo_1 = Trim($1)
@@ -360,7 +360,7 @@ BEGIN {
       				  forn_cli, nota_completo_orig, obs >> "temp\\pagtos_agrupados.csv"
 			}
 				
-		} close(file)
+		#} close(file)
 	} close(ArquivosCsv)
 	
 	print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "saida\\pagtos_feitos_no_cartao_nao_estao_na_planilha.csv"
