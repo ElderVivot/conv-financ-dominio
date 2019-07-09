@@ -48,8 +48,7 @@ BEGIN {
 			if( EstruturaOFX[fileofx] == 1 ){
 				if( substr(ofx, 1, 8) == "<bankid>" ){
 					num_banco = upperCase(selecionaTAG( ofx, "<bankid>", "</bankid>" ) )
-					if( length(num_banco) > 3 )
-						num_banco = int(num_banco)
+					num_banco = int(num_banco)
 				}
 				
 				if( substr(ofx, 1, 8) == "<acctid>" ){
@@ -92,8 +91,8 @@ BEGIN {
 				
 				if( substr(ofx, 1, 10) == "</stmttrn>" ){
 					
-					BancoPago[operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
-					DataPagto[operacao, data_mov, valor_transacao] = data_mov
+					BancoPago[num_banco, operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
+					DataPagto[num_banco, operacao, data_mov, valor_transacao] = data_mov
 					
 					print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
 				}
@@ -104,8 +103,7 @@ BEGIN {
 			else{
 				if( substr(ofx, 1, 8) == "<bankid>" ){
 					num_banco = upperCase( substr( ofx, 9 , length(ofx) - 8 ) )
-					if( length(num_banco) > 3 )
-						num_banco = int(num_banco)
+					num_banco = int(num_banco)
 				}
 				
 				if( substr(ofx, 1, 8) == "<acctid>" ){
@@ -148,9 +146,9 @@ BEGIN {
 				
 				if( substr(ofx, 1, 10) == "</stmttrn>" ){
 					
-					ExisteMov[operacao, data_mov, valor_transacao] = 1
-					BancoPago[operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
-					DataPagto[operacao, data_mov, valor_transacao] = data_mov
+					ExisteMov[num_banco, operacao, data_mov, valor_transacao] = 1
+					BancoPago[num_banco, operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
+					DataPagto[num_banco, operacao, data_mov, valor_transacao] = data_mov
 					
 					print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
 				}
@@ -173,21 +171,21 @@ BEGIN {
 			linha++
 			
 			# CNPJ composto apenas de 12 digitos, não tem os dois últimos
-			CNPJ[linha] = ""
-			CNPJ[linha] = substr($0, 3, 12)
-			CNPJ[linha] = soNumeros(CNPJ[linha])
+			CNPJ[file, linha] = ""
+			CNPJ[file, linha] = substr($0, 3, 12)
+			CNPJ[file, linha] = soNumeros(CNPJ[file, linha])
 			
-			BancoArq[linha] = ""
-			BancoArq[linha] = substr($0, 25, 20)
-			BancoArq[linha] = Trim(BancoArq[linha])
+			BancoArq[file, linha] = ""
+			BancoArq[file, linha] = substr($0, 25, 20)
+			BancoArq[file, linha] = Trim(BancoArq[file, linha])
 			
 			# Guarda valor desconto
 			if( upperCase( substr( $0, 1, 8) ) == "DESCONTO" ){
 				nota_ = ""
 				nota_ = substr($0, 25, 18)
 				
-				ValorDesc[nota_] = ""
-				ValorDesc[nota_] = Trim( substr($0, 119, 13) )
+				ValorDesc[file, nota_] = ""
+				ValorDesc[file, nota_] = Trim( substr($0, 119, 13) )
 			}
 			
 			# Guarda valor juros
@@ -195,8 +193,8 @@ BEGIN {
 				nota_ = ""
 				nota_ = substr($0, 25, 18)
 				
-				ValorJuros[nota_] = ""
-				ValorJuros[nota_] = Trim( substr($0, 119, 13) )
+				ValorJuros[file, nota_] = ""
+				ValorJuros[file, nota_] = Trim( substr($0, 119, 13) )
 			}
 			
 			# Guarda valor multa
@@ -204,8 +202,8 @@ BEGIN {
 				nota_ = ""
 				nota_ = substr($0, 25, 18)
 				
-				ValorMulta[nota_] = ""
-				ValorMulta[nota_] = Trim( substr($0, 119, 13) )
+				ValorMulta[file, nota_] = ""
+				ValorMulta[file, nota_] = Trim( substr($0, 119, 13) )
 			}
 			
 		} close(file)
@@ -228,7 +226,7 @@ BEGIN {
 				forn_cli = ""
 				
 				cnpj_forn_cli = ""
-				cnpj_forn_cli = CNPJ[linha_2+1]
+				cnpj_forn_cli = CNPJ[file, linha_2+1]
 				
 				nota = ""
 				nota = Trim( substr($0, 25, 18) )
@@ -238,7 +236,7 @@ BEGIN {
 				nota = int(nota)
 				
 				banco_arquivo = ""
-				banco_arquivo = BancoArq[linha_2+1]
+				banco_arquivo = BancoArq[file, linha_2+1]
 				banco_arquivo = split(banco_arquivo, banco_arquivo_v, "/")
 				banco_arquivo = banco_arquivo_v[1]
 				banco_arquivo = int(banco_arquivo)
@@ -253,19 +251,19 @@ BEGIN {
 				valor_pago_int = int(soNumeros(valor_pago))
 				
 				valor_juros = ""
-				valor_juros = ValorJuros[nota_original]
+				valor_juros = ValorJuros[file, nota_original]
 				valor_juros = FormataCampo("double", valor_juros, 12, 2)
 				valor_juros = IfElse(valor_juros == "", "0,00", valor_juros)
 				valor_juros_int = int(soNumeros(valor_juros))
 				
 				valor_desconto = ""
-				valor_desconto = ValorDesc[nota_original]
+				valor_desconto = ValorDesc[file, nota_original]
 				valor_desconto = FormataCampo("double", valor_desconto, 12, 2)
 				valor_desconto = IfElse(valor_desconto == "", "0,00", valor_desconto)
 				valor_desconto_int = int(soNumeros(valor_desconto))
 				
 				valor_multa = ""
-				valor_multa = ValorMulta[nota_original]
+				valor_multa = ValorMulta[file, nota_original]
 				valor_multa = FormataCampo("double", valor_multa, 12, 2)
 				valor_multa = IfElse(valor_multa == "", "0,00", valor_multa)
 				valor_multa_int = int(soNumeros(valor_multa))
@@ -308,21 +306,21 @@ BEGIN {
 					baixa_6 = SomaDias(baixa, 3)
 					baixa_7 = SomaDias(baixa, -3)
 					
-					if( DataPagto["-", baixa_2, valor_pago] != "" ){
-						baixa_extrato = DataPagto["-", baixa_2, valor_pago]
-						banco_extrato = BancoPago["-", baixa_2, valor_pago]
+					if( DataPagto[banco_arquivo, "-", baixa_2, valor_pago] != "" ){
+						baixa_extrato = DataPagto[banco_arquivo, "-", baixa_2, valor_pago]
+						banco_extrato = BancoPago[banco_arquivo, "-", baixa_2, valor_pago]
 					} 
-					if( DataPagto["-", baixa_3, valor_pago] != "" ){
-						baixa_extrato = DataPagto["-", baixa_3, valor_pago]
-						banco_extrato = BancoPago["-", baixa_3, valor_pago]
+					if( DataPagto[banco_arquivo, "-", baixa_3, valor_pago] != "" ){
+						baixa_extrato = DataPagto[banco_arquivo, "-", baixa_3, valor_pago]
+						banco_extrato = BancoPago[banco_arquivo, "-", baixa_3, valor_pago]
 					} 
-					if( DataPagto["-", baixa_4, valor_pago] != "" ){
-						baixa_extrato = DataPagto["-", baixa_4, valor_pago]
-						banco_extrato = BancoPago["-", baixa_4, valor_pago]
+					if( DataPagto[banco_arquivo, "-", baixa_4, valor_pago] != "" ){
+						baixa_extrato = DataPagto[banco_arquivo, "-", baixa_4, valor_pago]
+						banco_extrato = BancoPago[banco_arquivo, "-", baixa_4, valor_pago]
 					}
-					if( DataPagto["-", baixa_5, valor_pago] != "" ){
-						baixa_extrato = DataPagto["-", baixa_5, valor_pago]
-						banco_extrato = BancoPago["-", baixa_5, valor_pago]
+					if( DataPagto[banco_arquivo, "-", baixa_5, valor_pago] != "" ){
+						baixa_extrato = DataPagto[banco_arquivo, "-", baixa_5, valor_pago]
+						banco_extrato = BancoPago[banco_arquivo, "-", baixa_5, valor_pago]
 					}
 					#if( DataPagto["-", baixa_6, valor_pago] != "" ){
 					#	baixa_extrato = DataPagto["-", baixa_6, valor_pago]
@@ -340,7 +338,7 @@ BEGIN {
 				banco_extrato_2 = ""
 				banco_extrato_2 = banco_extrato_v[2]
 				
-				banco = BancoPago["-", baixa, valor_pago]
+				banco = BancoPago[banco_arquivo, "-", baixa, valor_pago]
 				banco = split(banco, banco_v, "-")
 				banco = banco_v[1]
 				
@@ -348,7 +346,7 @@ BEGIN {
 				banco_2 = banco_v[2]
 				banco_2 = IfElse(banco_2 == "", banco_extrato_2, banco_2)
 				
-				existe_mov_dia = DataPagto["-", baixa, valor_pago]
+				existe_mov_dia = DataPagto[banco_arquivo, "-", baixa, valor_pago]
 				
 				if( existe_mov_dia != "" ){
 					banco_extrato = banco
@@ -373,7 +371,7 @@ BEGIN {
 					baixa_extrato = baixa
 				
 				# ESTAS LINHA SERVE PRA DEIXAR REGISTRADO O QUE TEM NA PLANILHA DO CLIENTE E FOI PAGO. SERÁ UTILIZADO PARA COMPARAÇÃO COM O OFX AFIM DE AVALIAR O QUE ESTÁ NO OFX DE PAGTO E NÃO ESTÁ NESTA PLANILHA
-				PagouNoBanco["-", baixa_extrato, valor_pago] = 1
+				PagouNoBanco[banco_arquivo, "-", baixa_extrato, valor_pago] = 1
 				
 				# BANCO DO ARQUIVO
 				if( int(banco_arquivo) == 1 )
@@ -414,7 +412,7 @@ BEGIN {
 		num_doc_2 = $7
 		historico_2 = $8
 		
-		pagou_no_banco = PagouNoBanco[operacao_3, data_mov_2, valor_transacao_2]
+		pagou_no_banco = PagouNoBanco[num_banco_2, operacao_3, data_mov_2, valor_transacao_2]
 		
 		if( operacao_3 == "-" && pagou_no_banco != 1 )
 			print $0 >> "saida\\pagtos_feitos_no_cartao_nao_estao_na_planilha.csv"

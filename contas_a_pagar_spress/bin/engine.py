@@ -49,7 +49,7 @@ def codi_conta(codi_emp, cgce_for_):
 entrada = 'temp\\pagtos_agrupados.csv'
 saida = open('saida\\pagtos_agrupados.csv', 'w')
 
-_codi_emp = int(input('Informe o código da empresa Matriz ou Filial na Domínio: '))
+_codi_emp = int(input('- Informe o código da empresa Matriz ou Filial na Domínio: '))
 with open(entrada, 'rt') as csvfile:
     csvreader = csv.reader(csvfile, delimiter=';')
     for row in csvreader:

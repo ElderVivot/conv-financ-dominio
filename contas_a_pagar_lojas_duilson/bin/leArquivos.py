@@ -1,5 +1,7 @@
 import xlrd
 import os
+import unicodedata
+import re
 #import openpyxl
 #import pandas as pd
 import datetime
@@ -13,6 +15,14 @@ def buscaArquivosEmPasta(caminho="entrada", extensao=(".xls", "xlsx")):
             lista_arquivos.append(caminho+"\\"+arquivo)
 
     return lista_arquivos
+
+def removerAcentosECaracteresEspeciais(palavra):
+    # Unicode normalize transforma um caracter em seu equivalente em latin.
+    nfkd = unicodedata.normalize('NFKD', palavra).encode('ASCII', 'ignore').decode('ASCII')
+    palavraTratada = u"".join([c for c in nfkd if not unicodedata.combining(c)])
+
+    # Usa expressão regular para retornar a palavra apenas com valores corretos
+    return re.sub('[^a-zA-Z0-9.!+:=)(/*,\- \\\]', '', palavraTratada)
 
 # Função não sendo utilizada, pois já tem a debaixo que lê XLS também
 """ def leXlsx(arquivos=buscaArquivosEmPasta(),saida="D:\\programming\\conv-dominio-awk\\contas_a_pagar_lojas_duilson\\temp\\baixas.csv"):
@@ -57,7 +67,7 @@ def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv"):
     lista_dados = []
     dados_linha = []
     for arquivo in arquivos:
-        arquivo = xlrd.open_workbook(arquivo)
+        arquivo = xlrd.open_workbook(arquivo, logfile=open(os.devnull, 'w'))
 
         # guarda todas as planilhas que tem dentro do arquivo excel
         planilhas = arquivo.sheet_names()
@@ -87,7 +97,7 @@ def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv"):
 
                     # as linhas abaixo analisa o tipo de dado que está na planilha e retorna no formato correto, sem ".0" para números ou a data no formato numérico
                     tipo_valor = planilha.cell_type(rowx=i, colx=j)
-                    valor_celula = str(planilha.cell_value(rowx=i, colx=j))
+                    valor_celula = removerAcentosECaracteresEspeciais(str(planilha.cell_value(rowx=i, colx=j)))
                     if tipo_valor == 2:
                         valor_casas_decimais = valor_celula.split('.')
                         valor_casas_decimais = valor_casas_decimais[1]
@@ -139,6 +149,6 @@ def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv"):
     print(valor_campo)
     saida.close() """
 
-print(leXls_Xlsx())
+leXls_Xlsx()
 #excelPandas()
 #leXlsx()
