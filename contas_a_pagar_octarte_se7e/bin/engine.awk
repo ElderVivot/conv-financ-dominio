@@ -267,6 +267,16 @@ BEGIN {
 				forn_cli = "PRO-LABORE"
 			}
 			
+			if( index(obs, "AJUDA") > 0 && index(obs, "CUSTO") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "AJUDA DE CUSTO"
+			}
+			
+			if( index(obs, "TARIFA") > 0 && index(obs, "SERVICO") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "TARIFA BANCO"
+			}
+			
 			# TEM PAGAMENTOS QUE O CLIENTE LANÇA NA PLANILHA COM DATA ERRADA DA BAIXA, PORTANTO ESTAS LINHAS ABAIXO VAI VERIFICAR ISTO E O LIMITE É 3 DIAS A MAIS OU 3 DIAS A MENOS
 			baixa_extrato = ""
 			baixa_2 = ""

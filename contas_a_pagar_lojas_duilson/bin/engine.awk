@@ -7,7 +7,7 @@ BEGIN {
 	system("if exist entrada\\*.ofx dir /b entrada\\*.ofx > bin\\listaofx.txt")
 	system("if exist entrada\\*.ofc dir /b entrada\\*.ofc >> bin\\listaofx.txt")
 	
-	ArquivosCsv = "bin\\listacsv.txt";
+	ArquivosCsv = "temp\\baixas.csv";
 	ArquivosOfx = "bin\\listaofx.txt";
 	
 	_comp_ini = int(Trim(substr(_comp_ini, 4)) "" substr(_comp_ini, 1, 2))
@@ -187,51 +187,51 @@ BEGIN {
 	print "Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\recebtos_agrupados.csv"
 	
 	while ((getline < ArquivosCsv) > 0) {
-		file = "entrada\\" $0
+		#file = "entrada\\" $0
 		
-		while ((getline < file) > 0) {
+		#while ((getline < file) > 0) {
 			
-			if ( Trim(toupper($1)) == toupper("Dt.Movimento") ){
+			if ( Trim(toupper($1)) == toupper("Loja") ){
 				load_columns();
 				continue;
 			}
 			
-			texto_for = "Conta Detalhe"
+			texto_for = "Nome Fornecedor"
 			texto_cnpj_for = "-------------"
-			texto_nota = "Nr.Documento"
-			texto_emissao = "-------------"
-			texto_venc = "-------------"
-			texto_baixa = "Dt.Movimento"
+			texto_nota = "Duplicata"
+			texto_emissao = "Emissao"
+			texto_venc = "Vencimento"
+			texto_baixa = "Pagamento"
 			texto_valor_original = "---------"
-			texto_valor_pago = "Vl.Credito"
-			texto_valor_recebido = "Vl.Debito"
+			texto_valor_pago = "Vlr. Duplicata"
+			texto_valor_recebido = "---------"
 			texto_valor_desc = "---------"
 			texto_valor_juros = "---------"
 			texto_valor_multa = "---------"
-			texto_obs = "Historico"
+			texto_obs = "---------"
 			texto_categoria = "---------"
-			texto_banco_arquivo = "Nm. Conta Caixa"
-			texto_empresa = "---------"
-			texto_tipo_pagto = "---------"
+			texto_banco_arquivo = "---------"
+			texto_empresa = "Loja"
+			texto_tipo_pagto = "Descricao F.Pagto"
 			
-			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 6 )
+			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 4 )
 			pos_cnpj_for = $IfElse( int(NumColuna(texto_cnpj_for)) > 0, int(NumColuna(texto_cnpj_for)), 999 )
-			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 4 )
-			pos_emissao = $IfElse( int(NumColuna(texto_emissao)) > 0, int(NumColuna(texto_emissao)), 999 )
-			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 999 )
-			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 1 )
+			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 2 )
+			pos_emissao = $IfElse( int(NumColuna(texto_emissao)) > 0, int(NumColuna(texto_emissao)), 8 )
+			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 9 )
+			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 11 )
 			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 999 )
-			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 9 )
-			pos_valor_recebido = $IfElse( int(NumColuna(texto_valor_recebido)) > 0, int(NumColuna(texto_valor_recebido)), 8 )
+			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 12 )
+			pos_valor_recebido = $IfElse( int(NumColuna(texto_valor_recebido)) > 0, int(NumColuna(texto_valor_recebido)), 999 )
 			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 999 )
 			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 999 )
 			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 999 )
-			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 7 )
+			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 999 )
 			pos_natureza_pagto = $IfElse( int(NumColuna(texto_natureza_pagto)) > 0, int(NumColuna(texto_natureza_pagto)), 999 )
-			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 5 )
-			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), 999 )
+			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 999 )
+			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), 7 )
 			pos_categoria = $IfElse( int(NumColuna(texto_categoria)) > 0, int(NumColuna(texto_categoria)), 999 )
-			pos_empresa = $IfElse( int(NumColuna(texto_empresa)) > 0, int(NumColuna(texto_empresa)), 999 )
+			pos_empresa = $IfElse( int(NumColuna(texto_empresa)) > 0, int(NumColuna(texto_empresa)), 1 )
 			
 			banco_arquivo = ""
 			banco_arquivo = Trim(pos_banco_arquivo)
@@ -243,9 +243,6 @@ BEGIN {
 			forn_cli = Trim(pos_for)
 			forn_cli = subsCharEspecial(forn_cli)
 			forn_cli = upperCase(forn_cli)
-			forn_cli = split(forn_cli, forn_cli_v, "-")
-			forn_cli = forn_cli_v[2] "" forn_cli_v[3] "" forn_cli_v[4] "" forn_cli_v[5]
-			forn_cli = Trim(forn_cli)
 			
 			nota_completo = ""
 			nota_completo = Trim(pos_nota)
@@ -454,16 +451,6 @@ BEGIN {
 				forn_cli = "FGTS RESCISAO"
 			}
 			
-			if( index(obs, "FGTS") == 0 && index(obs, "RESCISAO") > 0 ){
-				obs = obs " / " forn_cli
-				forn_cli = "RESCISAO"
-			}
-			
-			if( index(obs, "FGTS") > 0 && index(obs, "RESCISAO") == 0 ){
-				#obs = obs " / " forn_cli
-				forn_cli = "RESCISAO"
-			}
-			
 			categoria = ""
 			categoria = Trim(pos_categoria)
 			categoria = subsCharEspecial(categoria)
@@ -478,6 +465,22 @@ BEGIN {
 			empresa = Trim(pos_empresa)
 			empresa = subsCharEspecial(empresa)
 			empresa = upperCase(empresa)
+			
+			codi_emp = ""
+			if( int(empresa) == 1 )
+				codi_emp = 1605
+			else if( int(empresa) == 2 )
+				codi_emp = 1607
+			else if( int(empresa) == 3 )
+				codi_emp = 1608
+			else if( int(empresa) == 4 )
+				codi_emp = 1609
+			else if( int(empresa) == 5 )
+				codi_emp = 1610
+			else if( int(empresa) == 6 )
+				codi_emp = 1606
+			else
+				codi_emp = empresa
 			
 			# TEM PAGAMENTOS QUE O CLIENTE LANÇA NA PLANILHA COM DATA ERRADA DA BAIXA, PORTANTO ESTAS LINHAS ABAIXO VAI VERIFICAR ISTO E O LIMITE É 3 DIAS A MAIS OU 3 DIAS A MENOS
 			baixa_extrato = ""
@@ -588,7 +591,7 @@ BEGIN {
       				  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
 			}
 				
-		} close(file)
+		#} close(file)
 	} close(ArquivosCsv)
 	
 	#print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "saida\\movtos_feitos_no_cartao_nao_estao_na_planilha.csv"
