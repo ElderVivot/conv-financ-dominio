@@ -18,14 +18,20 @@ BEGIN {
 				continue;
 			}
 			
+			nome = ""
+			nome = $int(NumColuna("Nome Fornecedor"))
+			nome = Trim(nome)
+			
 			cnpj = ""
 			cnpj = $int(NumColuna("CNPJ Fornecedor"))
 			cnpj = soNumeros(cnpj)
 			if( length(cnpj) > 11 && int(cnpj) > 0 )
-				print $0 > saida
+				print "", nome, cnpj > saida
 			
 		}close(file)
 		close(saida)
 		
 	}close(ArquivosCsv)
+	
+	system("if exist bin\\*.txt del /q bin\\*.txt")
 }
