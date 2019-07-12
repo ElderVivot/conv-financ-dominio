@@ -55,6 +55,7 @@ BEGIN {
 			
 			if( substr(ofx, 1, 10) == "<checknum>" ){
 				num_doc = substr( ofx, 11 , length(ofx) - 10 )
+				num_doc = soNumeros(num_doc)
 				num_doc = int(num_doc)
 			}
 			
@@ -83,7 +84,7 @@ BEGIN {
 			
 			num_doc_3 = ""
 			num_doc_3 = soNumeros( $5 )
-			num_doc_3 = substr( num_doc_3, length(num_doc_3) - 8 )
+			#num_doc_3 = substr( num_doc_3, length(num_doc_3) - 8 )
 			num_doc_3 = int(num_doc_3)
 			
 			conciliacao = ""

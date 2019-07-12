@@ -107,6 +107,7 @@ def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv"):
                                 valor_celula = valor_celula[0]
                         except ValueError:
                             valor_celula = valor_celula
+                            #print(valor_celula)
                         #finally:
                         #    ""
                     elif tipo_valor == 3:
