@@ -3,10 +3,10 @@ BEGIN {
 	OFS = ";";
 	
 	system("if exist bin\\*.txt del /q bin\\*.txt")
-	system("dir /b entrada\\*.csv > bin\\listacsv.txt")
+	#system("dir /b entrada\\*.csv > bin\\listacsv.txt")
 	system("dir /b entrada\\*.ofx > bin\\listaofx.txt")
 	
-	ArquivosCsv = "bin\\listacsv.txt";
+	ArquivosCsv = "temp\\baixas.csv";
 	ArquivosOfx = "bin\\listaofx.txt";
 	
 	print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "temp\\extrato_cartao.csv"
@@ -74,9 +74,9 @@ BEGIN {
 	OFS = FS;
 	
 	while ((getline < ArquivosCsv) > 0) {
-		file = "entrada\\" $0
+		#file = "entrada\\" $0
 		
-		while ((getline < file) > 0) {
+		#while ((getline < file) > 0) {
 			
 			conta_corrente_2 = ""
 			conta_corrente_2 = int( soNumeros( $4 ) )
@@ -149,7 +149,7 @@ BEGIN {
 					print $0 >> "saida\\baixa_notas_contas_a_receber.csv"
 			}
 			
-		} close(file)
+		#} close(file)
 	} close(ArquivosCsv)
 	
 	print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "saida\\pagtos_feitos_no_cartao_nao_estao_na_planilha.csv"

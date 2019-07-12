@@ -617,11 +617,12 @@ function FormataCampo(FcTipo, FcCampo, FcTamanho, FcDecimais) {
 	}
 	#Se o formato for do tipo numerico (float)
 	if ((FcTipo == "numeric")||(FcTipo == "double")) {
-		gsub("[.]", "", FcCampo)
+		if ( match(FcCampo ,"[,]" ) > 0 && match(FcCampo ,"[.]" ) > 0 )
+			gsub("[.]", "", FcCampo)
 		if ( match(FcCampo ,"[,]" ) > 0)
 			gsub("[,]", ".", FcCampo)
 		gsub(/[^0-9.]/, "", FcCampo)
-		if ((int(FcCampo) == 0)||(FcCampo == ""))
+		if ((int(soNumeros(FcCampo)) == 0)||(FcCampo == ""))
 			FcRetorno = 0
 		else
 			FcRetorno = FcCampo
