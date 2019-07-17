@@ -51,6 +51,21 @@ def codi_conta(codi_emp, cgce_for_):
 
     return data
 
+def empregado_empresa(nome_fun):
+    #connection = sqlanydb.connect(host="SRVERP", uid='EXTERNO', pwd='dominio', eng='srvcontabil', dbn='Contabil')
+    connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio',PORT='2638')
+    cursor = connection.cursor()
+    cursor.execute(f"SELECT MAX(codi_emp) "
+                   f"  FROM bethadba.foempregados "
+                   f" WHERE codi_emp IN (557,726,1163,1031)"
+                   f"   AND nome LIKE '%{nome_fun}%'"
+                   f"   --AND i_afastamentos <> 8")
+    data = cursor.fetchone()
+    cursor.close()
+    connection.close()
+
+    return data
+
 _codi_emp = int(input('- Informe o código da Empresa Matriz ou Filial na Domínio: '))
 
 #entrada = 'Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Contas Pagas\\Avaliando\\Octarte\\lanc_contabil_contas_a_pagar_se7e\\temp\\pagtos_agrupados.csv'
@@ -63,8 +78,8 @@ with open(entrada, 'rt') as csvfile:
         if str(row[9]) == 'Nome Fornecedor':
             saida.write('Documento;CNPJ Fornecedor;Vencimento;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Nome Fornecedor;Titulo;Obs;Codigo Conta Dominio\n')
         else:
-            _nome_for = str(row[9]).replace('  ', ' ')
-            _nome_for = _nome_for[0:14]
+            _nome_for_ori = str(row[9]).replace('  ', ' ')
+            _nome_for = _nome_for_ori[0:14]
 
             _nome_for_2 = _nome_for[0:5]
 
@@ -95,8 +110,22 @@ with open(entrada, 'rt') as csvfile:
             else:
                 _codi_cta = ""
 
+            # valida se o empregado é funcionario daquela empresa
+            obs = str(row[11])
+
+            if obs.count("SALARIO") > 0 or obs.count("SAL.") > 0 or obs.count("LABORE") > 0:
+                codi_emp_fun = str(empregado_empresa(_nome_for)).replace(' ', '').replace('(', '').replace(')', '').replace(',', '').replace('None', "")
+                if codi_emp_fun == "726": # filial
+                    codi_emp_fun = "557"
+                if codi_emp_fun == str(_codi_emp):
+                    obs = obs + " - " + _nome_for_ori
+                    _nome_for_ori = "SALARIO E ORDENADOS"
+                else:
+                    obs = obs + " - " + _nome_for_ori
+                    _nome_for_ori = "SALARIO E ORDENADOS - " + codi_emp_fun
+
             result = (f"{row[0]};{_cnpj_for};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]}"
-                      f";{row[9]};{str(row[10])};{row[11]};{_codi_cta}\n")
+                      f";{_nome_for_ori};{str(row[10])};{obs};{_codi_cta}\n")
             saida.write(result)
 
 saida.close()

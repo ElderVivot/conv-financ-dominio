@@ -257,15 +257,15 @@ BEGIN {
 			obs = subsCharEspecial(obs)
 			obs = upperCase(obs)
 			
-			if( index(obs, "SALARIO") > 0 ){
-				obs = obs " / " forn_cli
-				forn_cli = "SALARIO E ORDENADOS"
-			}
+			#if( index(obs, "SALARIO") > 0 ){
+			#	obs = obs " / " forn_cli
+			#	forn_cli = "SALARIO E ORDENADOS"
+			#}
 			
-			if( index(obs, "LABORE") > 0 ){
-				obs = obs " / " forn_cli
-				forn_cli = "PRO-LABORE"
-			}
+			#if( index(obs, "LABORE") > 0 ){
+			#	obs = obs " / " forn_cli
+			#	forn_cli = "PRO-LABORE"
+			#}
 			
 			if( index(obs, "AJUDA") > 0 && index(obs, "CUSTO") > 0 ){
 				obs = obs " / " forn_cli
