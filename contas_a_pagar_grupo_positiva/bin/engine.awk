@@ -481,7 +481,7 @@ BEGIN {
 		
 		if( ( operacao_3 == "-" || operacao_3 == "Operacao") && pagou_no_banco != 1 )
 		#if( pagou_no_banco != 1 )
-			print $0 >> "saida\\movtos_feitos_no_cartao_nao_estao_na_planilha.csv"
+			print $0 >> "saida\\pagtos_feitos_no_cartao_nao_estao_na_planilha.csv"
 		
 	} close("temp\\extrato_cartao.csv")
 	

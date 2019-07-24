@@ -115,10 +115,10 @@ def apenas_valor_campo_dominio(campo):
 
 _codi_emp = int(input('- Informe o código da empresa Matriz ou Filial na Domínio: '))
 
-entrada = 'Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\\contas_a_pagar_grupo_positiva\\temp\\pagtos_agrupados.csv'
-saida = open('Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\\contas_a_pagar_grupo_positiva\\saida\\pagtos_agrupados.csv', 'w')
-#entrada = 'temp\\pagtos_agrupados.csv'
-#saida = open('saida\\pagtos_agrupados.csv', 'w')
+#entrada = 'Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\\contas_a_pagar_grupo_positiva\\temp\\pagtos_agrupados.csv'
+#saida = open('Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\\contas_a_pagar_grupo_positiva\\saida\\pagtos_agrupados.csv', 'w')
+entrada = 'temp\\pagtos_agrupados.csv'
+saida = open('saida\\pagtos_agrupados.csv', 'w')
 with open(entrada, 'rt') as csvfile:
         csvreader = csv.reader(csvfile, delimiter=';')
         for row in csvreader:
