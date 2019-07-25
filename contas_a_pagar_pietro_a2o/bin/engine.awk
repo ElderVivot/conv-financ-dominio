@@ -222,9 +222,10 @@ BEGIN {
 			forn_cli = subsCharEspecial(forn_cli)
 			forn_cli = upperCase(forn_cli)
 			
-			if( upperCase(Trim($1)) == "CNPJ:" ){
+			if( upperCase(Trim(substr($1, 1, 5))) == "CNPJ:" ){
 				empresa = ""
-				empresa = Trim($2)
+				empresa = split($1, empresa_v, ":")
+				empresa = Trim(empresa_v[2]) "" Trim($2)
 				empresa = subsCharEspecial(empresa)
 				empresa = upperCase(empresa)
 			}
@@ -402,13 +403,7 @@ BEGIN {
 			banco_arquivo = upperCase(banco_arquivo)
 			
 			# BUSCA A EMPRESA PELA DESCRICAO DO TITULO
-			codi_emp = "343"
-			if( index(banco_arquivo, "BRADESCO") > 0 && index(banco_arquivo, "SP") > 0 )
-				codi_emp = "379"
-			if( index(banco_arquivo, "BRADESCO") > 0 && index(banco_arquivo, "DF") > 0 )
-				codi_emp = "376"
-			if( index(banco_arquivo, "BRADESCO") > 0 && index(banco_arquivo, "RJ") > 0 )
-				codi_emp = "371"
+			#codi_emp = "343"
 			
 			# TEM PAGAMENTOS QUE O CLIENTE LANÇA NA PLANILHA COM DATA ERRADA DA BAIXA, PORTANTO ESTAS LINHAS ABAIXO VAI VERIFICAR ISTO E O LIMITE É 3 DIAS A MAIS OU 3 DIAS A MENOS
 			baixa_extrato = ""
