@@ -3,12 +3,15 @@ BEGIN {
 	OFS = ";";
 	
 	system("if exist bin\\*.txt del /q bin\\*.txt")
-	system("dir /b entrada\\*.csv > bin\\listacsv.txt")
+	#system("dir /b entrada\\*.csv > bin\\listacsv.txt")
 	system("if exist entrada\\*.ofx dir /b entrada\\*.ofx > bin\\listaofx.txt")
 	system("if exist entrada\\*.ofc dir /b entrada\\*.ofc >> bin\\listaofx.txt")
 	
 	ArquivosCsv = "temp\\baixas.csv";
 	ArquivosOfx = "bin\\listaofx.txt";
+	
+	_comp_ini = int(Trim(substr(_comp_ini, 4)) "" substr(_comp_ini, 1, 2))
+	_comp_fim = int(Trim(substr(_comp_fim, 4)) "" substr(_comp_fim, 1, 2))
 	
 	print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "temp\\extrato_cartao.csv"
 	
@@ -49,8 +52,7 @@ BEGIN {
 			if( EstruturaOFX[fileofx] == 1 ){
 				if( substr(ofx, 1, 8) == "<bankid>" ){
 					num_banco = upperCase(selecionaTAG( ofx, "<bankid>", "</bankid>" ) )
-					if( length(num_banco) > 3 )
-						num_banco = int(num_banco)
+					num_banco = int(num_banco)
 				}
 				
 				if( substr(ofx, 1, 8) == "<acctid>" ){
@@ -68,6 +70,7 @@ BEGIN {
 					data_mov = selecionaTAG( ofx, "<dtposted>", "</dtposted>" )
 					data_mov = substr(data_mov, 1, 8)
 					data_mov = substr(data_mov, 7, 2) "/" substr(data_mov, 5, 2) "/" substr(data_mov, 1, 4)
+					data_mov_int = int(substr(data_mov, 7) "" substr(data_mov, 4, 2))
 				}
 				
 				if( substr(ofx, 1, 8) == "<trnamt>" ){
@@ -97,7 +100,18 @@ BEGIN {
 					BancoPago[operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
 					DataPagto[operacao, data_mov, valor_transacao] = data_mov
 					
-					print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
+					ExisteMovBanco[num_banco, operacao, data_mov, valor_transacao] = 1
+					BancoPagoBanco[num_banco, operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
+					DataPagtoBanco[num_banco, operacao, data_mov, valor_transacao] = data_mov
+					
+					# QUANDO É CHEQUE GUARDA A DATA QUE O CHEQUE COMPENSOU, É ELA QUE TEM QUE SER UTILIZADA COMO DATA DA BAIXA
+					if( historico == "CHEQ COMP" || historico == "CHEQUE SAC" ){
+						DataCompensacaoCheque[num_doc] = data_mov
+						BancoPagoCheque[num_doc] = num_banco "-" conta_corrente
+					}
+					
+					if( _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
+						print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
 				}
 			
 			}
@@ -106,8 +120,7 @@ BEGIN {
 			else{
 				if( substr(ofx, 1, 8) == "<bankid>" ){
 					num_banco = upperCase( substr( ofx, 9 , length(ofx) - 8 ) )
-					if( length(num_banco) > 3 )
-						num_banco = int(num_banco)
+					num_banco = int(num_banco)
 				}
 				
 				if( substr(ofx, 1, 8) == "<acctid>" ){
@@ -125,6 +138,7 @@ BEGIN {
 					data_mov = substr( ofx, 11 , length(ofx) - 10 )
 					data_mov = substr(data_mov, 1, 8)
 					data_mov = substr(data_mov, 7, 2) "/" substr(data_mov, 5, 2) "/" substr(data_mov, 1, 4)
+					data_mov_int = int(substr(data_mov, 7) "" substr(data_mov, 4, 2))
 				}
 				
 				if( substr(ofx, 1, 8) == "<trnamt>" ){
@@ -154,7 +168,18 @@ BEGIN {
 					BancoPago[operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
 					DataPagto[operacao, data_mov, valor_transacao] = data_mov
 					
-					print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
+					ExisteMovBanco[num_banco, operacao, data_mov, valor_transacao] = 1
+					BancoPagoBanco[num_banco, operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
+					DataPagtoBanco[num_banco, operacao, data_mov, valor_transacao] = data_mov
+					
+					# QUANDO É CHEQUE GUARDA A DATA QUE O CHEQUE COMPENSOU, É ELA QUE TEM QUE SER UTILIZADA COMO DATA DA BAIXA
+					if( historico == "CHEQ COMP" || historico == "CHEQUE SAC" ){
+						DataCompensacaoCheque[num_doc] = data_mov
+						BancoPagoCheque[num_doc] = num_banco "-" conta_corrente
+					}
+					
+					if( _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
+						print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
 				}
 			}
 			
@@ -372,7 +397,13 @@ BEGIN {
 			# ESTAS LINHA SERVE PRA DEIXAR REGISTRADO O QUE TEM NA PLANILHA DO CLIENTE E FOI PAGO. SERÁ UTILIZADO PARA COMPARAÇÃO COM O OFX AFIM DE AVALIAR O QUE ESTÁ NO OFX DE PAGTO E NÃO ESTÁ NESTA PLANILHA
 			PagouNoBanco["-", baixa_extrato, valor_pago] = 1
 			
-			if( baixa != "NULO" && int(valor_pago) > 0 ){
+			# AS LINHAS ABAIXO SÃO UTILIZADAS PARA IMPRIMIR SOMENTE O QUE FOR DAQUELA COMPETENCIA
+			baixa_temp = ""
+			baixa_temp = baixa_extrato
+			baixa_temp = IfElse(baixa_temp == "", baixa, baixa_temp)
+			baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
+			
+			if( baixa != "NULO" && int(valor_pago) > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
 				print nota, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
       				  valor_desconto, valor_juros, valor_multa, forn_cli, tipo_pagto, centro_custo, obs >> "temp\\pagtos_agrupados.csv"
 			}

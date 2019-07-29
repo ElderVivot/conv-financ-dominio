@@ -50,7 +50,7 @@ def codi_conta(codi_emp, cgce_for_):
 
     return data
 
-_codi_emp = int(input('Informe o código da empresa Matriz ou Filial na Domínio: '))
+_codi_emp = int(input('- Informe o código da empresa Matriz ou Filial na Domínio: '))
 
 #entrada = 'Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Contas Pagas\\Avaliando\\100 Limits\\lanc_contabil_contas_a_pagar_100limits\\temp\\pagtos_agrupados.csv'
 #saida = open('Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Contas Pagas\\Avaliando\\100 Limits\\lanc_contabil_contas_a_pagar_100limits\\saida\\pagtos_agrupados.csv', 'w')
