@@ -7,7 +7,7 @@ BEGIN {
 	system("if exist entrada\\*.ofx dir /b entrada\\*.ofx > bin\\listaofx.txt")
 	system("if exist entrada\\*.ofc dir /b entrada\\*.ofc >> bin\\listaofx.txt")
 	
-	ArquivosCsv = "bin\\listacsv.txt";
+	ArquivosCsv = "temp\\baixas.csv";
 	ArquivosOfx = "bin\\listaofx.txt";
 	
 	print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "temp\\extrato_cartao.csv"
@@ -183,9 +183,9 @@ BEGIN {
 	print "Documento;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Nome Fornecedor;Tipo Pagto;Centro de Custo;OBS" >> "temp\\pagtos_agrupados.csv"
 	
 	while ((getline < ArquivosCsv) > 0) {
-		file = "entrada\\" $0
+		#file = "entrada\\" $0
 		
-		while ((getline < file) > 0) {
+		#while ((getline < file) > 0) {
 			
 			if ( $1 == "Documento" ){
 				load_columns();
@@ -377,7 +377,7 @@ BEGIN {
       				  valor_desconto, valor_juros, valor_multa, forn_cli, tipo_pagto, centro_custo, obs >> "temp\\pagtos_agrupados.csv"
 			}
 				
-		} close(file)
+		#} close(file)
 	} close(ArquivosCsv)
 	
 	print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "saida\\pagtos_feitos_no_cartao_nao_estao_na_planilha.csv"
