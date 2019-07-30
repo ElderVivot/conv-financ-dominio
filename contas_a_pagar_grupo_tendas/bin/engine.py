@@ -96,7 +96,7 @@ def organizaDados():
     listaDados = sorted(listaDados, key=itemgetter('dataLancamento'))
     return listaDados
 
-def exportaDados(saida="Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\contas_a_pagar_grupo_tendas\\saida\\lancamentos.csv"):
+def exportaDados(saida="saida\\lancamentos.csv"):
     saida = open(saida, "w", encoding='utf-8')
     dados = organizaDados()
     tamanhoListaDados = len(dados)
