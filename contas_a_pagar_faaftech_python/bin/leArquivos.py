@@ -6,7 +6,7 @@ import re
 #import pandas as pd
 import datetime
 
-def buscaArquivosEmPasta(caminho="entrada", extensao=(".xls", "xlsx")):
+def buscaArquivosEmPasta(caminho="D:\\programming\\conv-dominio-awk\\contas_a_pagar_faaftech_python\\entrada", extensao=(".xls", "xlsx")):
     arquivos = os.listdir(caminho)
     lista_arquivos = []
 
@@ -24,7 +24,7 @@ def removerAcentosECaracteresEspeciais(palavra):
     # Usa expressão regular para retornar a palavra apenas com valores corretos
     return re.sub('[^a-zA-Z0-9.!+:=)(/*,\-_ \\\]', '', palavraTratada)
 
-def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\lancamentos.csv"):
+def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="D:\\programming\\conv-dominio-awk\\contas_a_pagar_faaftech_python\\temp\\lancamentos.csv"):
     saida = open(saida, "w", encoding='utf-8')
     lista_dados = []
     dados_linha = []

@@ -10,7 +10,8 @@ def trataCampoData(valor):
     except:
         return datetime.datetime.strptime("01/01/1900", "%d/%m/%Y").date()
 
-def buscaValorCampo(campoCabecalho, nomeCampo='', posicaoCampo=0):
+def buscaPosicaoCampo(campoCabecalho, nomeCampo='', posicaoCampo=0):
+    nomeCampo = str(leArquivos.removerAcentosECaracteresEspeciais(nomeCampo)).upper()
     try:
         numPosicaoCampo = campoCabecalho[nomeCampo]
     except KeyError:
@@ -32,77 +33,19 @@ def organizaDados():
                 nomeCampo = str(nomeCampo).upper()
                 posicoesCampos[nomeCampo] = numPosicaoCampo
         else:
-            try:
-                posicaoDebito = posicoesCampos['DEBITO']
-            except KeyError:
-                posicaoDebito = 1
+            posicaoNomeFornecedor = buscaPosicaoCampo(posicoesCampos, "Nome Parceiro", 3)
 
-            try:
-                posicaoCredito = posicoesCampos['CREDITO']
-            except KeyError:
-                posicaoCredito = 2
-
-            try:
-                posicaoDataLancamento = posicoesCampos['DATA LCTO']
-            except KeyError:
-                posicaoDataLancamento = 3
-
-            try:
-                posicaoValorLancamento = posicoesCampos['VALOR']
-            except KeyError:
-                posicaoValorLancamento = 4
-
-            try:
-                posicaoCodigoHistorico = posicoesCampos['COD HISTORICO']
-            except KeyError:
-                posicaoCodigoHistorico = 5
-
-            try:
-                posicaoHistorico = posicoesCampos['HIST LANC']
-            except KeyError:
-                posicaoHistorico = 6
-
-            try:
-                posicaoNumDocumento = posicoesCampos['NRDOCUMENTO']
-            except KeyError:
-                posicaoNumDocumento = 9
-
-            contaDebito = dado[posicaoDebito]
-
-            contaCredito = dado[posicaoCredito]
-
-            if contaDebito == '' and contaCredito == '':
-                continue
-
-            dataLancamento = dado[posicaoDataLancamento]
-            if dataLancamento == "":
-                continue
-            else:
-                dataLancamento = trataCampoData(dataLancamento)
-
-            valorLancamento = dado[posicaoValorLancamento]
-
-            codigoHistorico = dado[posicaoCodigoHistorico]
-
-            historico = dado[posicaoHistorico]
-
-            numDocumento = dado[posicaoNumDocumento]
+            nomeFornecedor = dado[posicaoNomeFornecedor]
 
             listaDaLinha.clear()
 
-            listaDaLinha['contaDebito'] = contaDebito
-            listaDaLinha['contaCredito'] = contaCredito
-            listaDaLinha['dataLancamento'] = dataLancamento
-            listaDaLinha['valorLancamento'] = valorLancamento
-            listaDaLinha['codigoHistorico'] = codigoHistorico
-            listaDaLinha['historico'] = historico
-            listaDaLinha['numDocumento'] = numDocumento
+            listaDaLinha['nomeFornecedor'] = nomeFornecedor
 
             listaDados.append(listaDaLinha.copy())
 
             #print(listaDados)
 
-    listaDados = sorted(listaDados, key=itemgetter('dataLancamento'))
+    listaDados = sorted(listaDados, key=itemgetter('nomeFornecedor'))
     return listaDados
 
 def exportaDados(saida="saida\\lancamentos.csv"):
@@ -111,34 +54,10 @@ def exportaDados(saida="saida\\lancamentos.csv"):
     tamanhoListaDados = len(dados)
 
     for i in range(0,tamanhoListaDados):
-        dataLancamento = dados[i]['dataLancamento'].strftime('%d/%m/%Y')
-        valorLancamento = (f"{float(dados[i]['valorLancamento']):.2f}").replace('.', ',')
-        if i > 0:
-            if dados[i-1]['dataLancamento'] == dados[i]['dataLancamento']:
-                dadosExportar = (f"L;{valorLancamento};{dados[i]['contaDebito']};"
-                                 f"{dados[i]['contaCredito']};;{dados[i]['historico']}\n")
-                saida.write(dadosExportar)
-            else:
-                # CABEÇALHO DO ARQUIVO
-                dadosExportar = (f"I;{dataLancamento};V\n")
-                saida.write(dadosExportar)
-
-                # LANÇAMENTOS NORMAIS
-                dadosExportar = (f"L;{valorLancamento};{dados[i]['contaDebito']};"
-                                 f"{dados[i]['contaCredito']};;{dados[i]['historico']}\n")
-                saida.write(dadosExportar)
-        else:
-            # CABEÇALHO DO ARQUIVO
-            dadosExportar = (f"I;{dataLancamento};V\n")
-            saida.write(dadosExportar)
-
-            # LANÇAMENTOS NORMAIS
-            dadosExportar = (f"L;{dados[i]['valorLancamento']};{dados[i]['contaDebito']};"
-                             f"{dados[i]['contaCredito']};;{dados[i]['historico']}\n")
-            saida.write(dadosExportar)
+        print("teset")
 
     saida.close()
 
-#print(organizaDados())
-exportaDados()
+print(organizaDados())
+#exportaDados()
 
