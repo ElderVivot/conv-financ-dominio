@@ -220,24 +220,25 @@ BEGIN {
 			texto_banco_arquivo = "Descricao (Banco)"
 			texto_empresa = ""
 			texto_tipo_pagto = "Descricao (Tipo de Titulo)"
+			texto_natureza_pagto = "-------------"
 						
-			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 2 )
-			pos_cnpj_for = $IfElse( int(NumColuna(texto_cnpj_for)) > 0, int(NumColuna(texto_cnpj_for)), 999 )
-			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 13 )
-			pos_emissao = $IfElse( int(NumColuna(texto_emissao)) > 0, int(NumColuna(texto_emissao)), 3 )
-			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 1 )
-			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 9 )
-			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 8 )
-			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 11 )
+			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 4 )
+			pos_cnpj_for = $IfElse( int(NumColuna(texto_cnpj_for)) > 0, int(NumColuna(texto_cnpj_for)), 16 )
+			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 3 )
+			pos_emissao = $IfElse( int(NumColuna(texto_emissao)) > 0, int(NumColuna(texto_emissao)), 59 )
+			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 5 )
+			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 11 )
+			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 999 )
+			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 19 )
 			pos_valor_recebido = $IfElse( int(NumColuna(texto_valor_recebido)) > 0, int(NumColuna(texto_valor_recebido)), 999 )
-			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 6 )
-			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 10 )
-			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 999 )
-			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 16 )
+			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 41 )
+			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 44 )
+			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 45 )
+			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 27 )
 			pos_natureza_pagto = $IfElse( int(NumColuna(texto_natureza_pagto)) > 0, int(NumColuna(texto_natureza_pagto)), 999 )
-			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 14 )
+			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 9 )
 			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), 5 )
-			pos_categoria = $IfElse( int(NumColuna(texto_categoria)) > 0, int(NumColuna(texto_categoria)), 15 )
+			pos_categoria = $IfElse( int(NumColuna(texto_categoria)) > 0, int(NumColuna(texto_categoria)), 7 )
 			pos_empresa = $IfElse( int(NumColuna(texto_empresa)) > 0, int(NumColuna(texto_empresa)), 999 )
 			
 			# CAMPOS ABAIXO VAO SER UTILIZADOS PARA VER SE TRATA DE UMA LINHA DO NOME DO FORNECEDOR OU NÃO
@@ -355,22 +356,36 @@ BEGIN {
 			banco_arquivo = subsCharEspecial(banco_arquivo)
 			banco_arquivo = upperCase(banco_arquivo)
 			
-			if( index(banco_arquivo, "SANTANDER") > 0 )
+			if( index(banco_arquivo, "SANTANDER") > 0 ){
 				num_banco_arq = 33
-			else if( index(banco_arquivo, "ITAU") > 0 )
+				banco_arquivo = "SANTANDER"
+			}else if( index(banco_arquivo, "ITAU") > 0 ){
 				num_banco_arq = 341
-			else if( index(banco_arquivo, "BRADESCO") > 0 )
+				banco_arquivo = "ITAU"
+			}else if( index(banco_arquivo, "BRADESCO") > 0 ){
 				num_banco_arq = 237
-			else if( index(banco_arquivo, "SICOOB") > 0 )
+				banco_arquivo = "BRADESCO"
+			}else if( index(banco_arquivo, "SICOOB") > 0 ){
 				num_banco_arq = 756
-			else if( index(banco_arquivo, "SAFRA") > 0 )
+				banco_arquivo = "SICOOB"
+			}else if( index(banco_arquivo, "SAFRA") > 0 ){
 				num_banco_arq = 422
-			else if( index(banco_arquivo, "CAIXA") > 0 )
-				num_banco_arq = 104
-			else if( index(banco_arquivo, "BRASIL") > 0 || index(banco_arquivo, "BB") > 0 )
+				banco_arquivo = "SAFRA"
+			}else if( index(banco_arquivo, "CAIXA") > 0 ){
+				if( index(tipo_pagto, "DIN") > 0 ){
+					num_banco_arq = 999
+					banco_arquivo = "DINHEIRO"
+				} else {
+					num_banco_arq = 104
+					banco_arquivo = "CAIXA"
+				}
+			}else if( index(banco_arquivo, "BRASIL") > 0 || index(banco_arquivo, "BB") > 0 ){
 				num_banco_arq = 1
-			else
+				banco_arquivo = "BCO BRASIL"
+			}else{
 				num_banco_arq = 0
+				banco_arquivo = banco_arquivo
+			}
 						
 			# TEM PAGAMENTOS QUE O CLIENTE LANÇA NA PLANILHA COM DATA ERRADA DA BAIXA, PORTANTO ESTAS LINHAS ABAIXO VAI VERIFICAR ISTO E O LIMITE É 3 DIAS A MAIS OU 3 DIAS A MENOS
 			baixa_extrato = ""
