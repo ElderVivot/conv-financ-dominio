@@ -53,10 +53,10 @@ BEGIN {
 				}
 				
 				if( substr(ofx, 1, 8) == "<acctid>" ){
-					conta_corrente = upperCase( selecionaTAG( ofx, "<acctid>", "</acctid>" ) )
+					conta_corrente = "'" upperCase( selecionaTAG( ofx, "<acctid>", "</acctid>" ) )
 					conta_corrente_int = int( soNumeros(conta_corrente) )
 					if( int(num_banco) == 341 ){
-						conta_corrente = substr(conta_corrente, 5, length(conta_corrente) - 4) "-" substr(conta_corrente, length(conta_corrente), 1)
+						conta_corrente = "'" substr(conta_corrente, 5, length(conta_corrente) - 4) "-" substr(conta_corrente, length(conta_corrente), 1)
 					}
 				}
 				
@@ -110,10 +110,10 @@ BEGIN {
 				}
 				
 				if( substr(ofx, 1, 8) == "<acctid>" ){
-					conta_corrente = upperCase( substr( ofx, 9 , length(ofx) - 8 ) )
+					conta_corrente = "'" upperCase( substr( ofx, 9 , length(ofx) - 8 ) )
 					conta_corrente_int = int( soNumeros(conta_corrente) )
 					if( int(num_banco) == 341 ){
-						conta_corrente = substr(conta_corrente, 5, length(conta_corrente) - 4) "-" substr(conta_corrente, length(conta_corrente), 1)
+						conta_corrente = "'" substr(conta_corrente, 5, length(conta_corrente) - 4) "-" substr(conta_corrente, length(conta_corrente), 1)
 					}
 				}
 				
@@ -333,6 +333,7 @@ BEGIN {
 			banco_2 = ""
 			banco_2 = banco_v[2]
 			banco_2 = IfElse(banco_2 == "", banco_extrato_2, banco_2)
+			gsub("'", "", banco_2)
 			
 			existe_mov_dia = DataPagto["-", baixa, valor_pago]
 			
@@ -380,7 +381,6 @@ BEGIN {
 		num_banco_2 = $1
 		
 		conta_corrente_3 = $2
-		conta_corrente_3_int = int( soNumeros(conta_corrente_3) )
 		
 		tipo_mov_2 = $3
 		data_mov_2 = $4

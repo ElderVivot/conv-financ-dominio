@@ -13,20 +13,24 @@ echo    ßßßßßßß   ßßßßßß  ßß      ßß ßß ßß   ßßß ßß  ßßßßßß
 echo                                        S I S T E M A S
 echo. 
 
-
-echo %marcador%Apagando dados da pasta saidas.
-if exist saida\* del /q saida\*
-
-if exist bin\lista del /q bin\lista
-
-dir /b entrada > bin\lista
-
-echo %marcador%Filtrando linhas validas de pagamentos.
-bin\awk95 -f bin\funcoes.awk -f bin\engine.awk
-
-if exist bin\lista del /q bin\lista
+set /P comp_ini=- Competencia Inicial (MM/AAAA): 
+set /P comp_fim=- Competencia Final (MM/AAAA): 
 
 echo.
-echo %marcador%Processo finalizado. Aperte qualquer tela para sair.
+echo - Apagando dados da pasta saidas.
+if exist saida\* del /q saida\*
+if exist temp\* del /q temp\*
+
+echo - Filtrando linhas validas de pagamentos.
+call bin\leArquivos.py
+bin\awk95 -f bin\funcoes.awk -f bin\engine.awk -v _comp_ini=%comp_ini% -v _comp_fim=%comp_fim%
+echo.
+
+REM --> mesmo arquivo do bin\engine.py, mas este não precisa da instalação do python
+REM bin\dist\engine\engine.exe
+call bin\engine.py
+
+echo.
+echo - Processo finalizado. Aperte qualquer tela para sair.
 
 pause > nul

@@ -25,18 +25,37 @@ BEGIN{
 # campo = split("Elder e Amanda", amor, "e")
 # print campo, amor[1], amor[2]. Então o resultado será 2, Elder, Amanda 
 
-# RETORNA COLUNA
-function Campo(Col) {
-	
-	CampoColuna = ""
-	CampoColuna = $Coluna[Col]
-	
-	if ( CampoColuna == "(null)" || CampoColuna == "" )
-		CampoColuna = "NULO"
-	else
-		CampoColuna = CampoColuna
-	
-	return CampoColuna
+function load_columns() {
+	delete COLUMN_INDEX;
+	split($0,COLUMN_NAME,FS);
+	for (i in COLUMN_NAME){
+		nome_col = COLUMN_NAME[i]
+		nome_col = Trim(nome_col)
+		nome_col = subsCharEspecial(nome_col)
+		nome_col = upperCase(nome_col)
+		COLUMN_INDEX[nome_col] = i;
+	}
+}
+
+function Campo(name) {
+	name = toupper(name);
+	if (COLUMN_INDEX[name] != "") {
+		value = $(COLUMN_INDEX[name]);
+		if ( value == "(null)" || value == "" || value == "<null>" ) 
+			return "";
+		else
+			return value;
+	}
+	return "NULO";
+}
+
+function NumColuna(name) {
+	name = toupper(name);
+	if (COLUMN_INDEX[name] != "") {
+		value = COLUMN_INDEX[name];
+		return value;
+	}
+	return 0;
 }
 
 # AUMENTA A CAIXA DOS CARACTERES
@@ -86,8 +105,10 @@ function subsCharEspecial(tiraEsp){
 	gsub("ó", "o", tiraEsp)
 	gsub("ô", "o", tiraEsp)
 	gsub("ò", "o", tiraEsp)
+	gsub("õ", "o", tiraEsp)
 	gsub("Ó", "O", tiraEsp)
 	gsub("Ô", "O", tiraEsp)
+	gsub("Õ", "o", tiraEsp)
 	gsub("Ò", "O", tiraEsp)
 	gsub("ú", "u", tiraEsp)
 	gsub("û", "u", tiraEsp)
@@ -95,6 +116,8 @@ function subsCharEspecial(tiraEsp){
 	gsub("Û", "U", tiraEsp)
 	gsub("ç", "c", tiraEsp)
 	gsub("Ç", "C", tiraEsp)
+	gsub("\"", "", tiraEsp)
+	gsub("º", "", tiraEsp)
 	
 	return tiraEsp
 }
@@ -617,11 +640,12 @@ function FormataCampo(FcTipo, FcCampo, FcTamanho, FcDecimais) {
 	}
 	#Se o formato for do tipo numerico (float)
 	if ((FcTipo == "numeric")||(FcTipo == "double")) {
-		gsub("[.]", "", FcCampo)
+		if ( match(FcCampo ,"[,]" ) > 0 && match(FcCampo ,"[.]" ) > 0 )
+			gsub("[.]", "", FcCampo)
 		if ( match(FcCampo ,"[,]" ) > 0)
 			gsub("[,]", ".", FcCampo)
 		gsub(/[^0-9.]/, "", FcCampo)
-		if ((int(FcCampo) == 0)||(FcCampo == ""))
+		if ((int(soNumeros(FcCampo)) == 0)||(FcCampo == ""))
 			FcRetorno = 0
 		else
 			FcRetorno = FcCampo
@@ -639,9 +663,20 @@ function FormataCampo(FcTipo, FcCampo, FcTamanho, FcDecimais) {
 	if (FcDecimais > 0) {
 		FcFormDec = "%." FcDecimais "f"
 		FcRetorno = sprintf(FcFormDec, FcRetorno)
+		gsub("[.]", ",", FcRetorno)
 	}
 	
 	return FcRetorno
+}
+
+function TransformaPraDecimal( argValorInt ){
+	
+	valor_dec = ""
+	valor_dec = argValorInt
+	valor_dec = IfElse( int(valor_dec) == 0, "000", valor_dec )
+	valor_dec = substr( valor_dec, 1, length( valor_dec ) - 2 ) "," substr( valor_dec, length( valor_dec ) - 1, 2 )
+	
+	return valor_dec
 }
 
 # RETORNA DATA INFORMADA DE ACORDO O PADRÃO DESEJADO
