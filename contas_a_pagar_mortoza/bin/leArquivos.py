@@ -2,6 +2,7 @@ import xlrd
 import os
 import unicodedata
 import re
+import csv
 #import openpyxl
 #import pandas as pd
 import datetime
@@ -97,7 +98,7 @@ def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv"):
     # retorna uma lista dos dados
     return lista_dados
 
-def leCsv(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv",separadorCampos=';'):
+def leCsv(arquivos=buscaArquivosEmPasta(extensao=(".csv")),saida="temp\\baixas.csv",separadorCampos=';'):
     saida = open(saida, "w", encoding='utf-8')
     lista_dados = []
     dados_linha = []
@@ -134,4 +135,5 @@ def leCsv(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv",separadorCamp
     # retorna uma lista dos dados
     return lista_dados
 
-leXls_Xlsx()
+#leXls_Xlsx()
+leCsv()
