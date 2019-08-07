@@ -125,7 +125,7 @@ def lista_filiais(codi_emp):
 def apenas_valor_campo_dominio(campo):
     return campo.replace(' ', '').replace('(', '').replace(')', '').replace(',', '').replace('None', "'")
 
-#_codi_emp = int(input('- Informe o código da empresa Matriz ou Filial na Domínio: '))
+_codi_emp = int(input('- Informe o código da empresa Matriz ou Filial na Domínio: '))
 
 #entrada = 'Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\\contas_a_pagar_grupo_positiva\\temp\\pagtos_agrupados.csv'
 #saida = open('Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\\contas_a_pagar_grupo_positiva\\saida\\pagtos_agrupados.csv', 'w')
@@ -139,10 +139,8 @@ with open(entrada, 'rt') as csvfile:
                             'Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;'
                             'Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
             else:
-                num_linha += 1
-                
-                _codi_emp = str(row[14])
-                _codi_emp = apenas_valor_campo_dominio(str(codi_emp_por_cnpj(_codi_emp)))
+                #_codi_emp = str(row[14])
+                #_codi_emp = apenas_valor_campo_dominio(str(codi_emp_por_cnpj(_codi_emp)))
 
                 _lista_filiais = str(lista_filiais(_codi_emp))
 
@@ -190,9 +188,6 @@ with open(entrada, 'rt') as csvfile:
                 _nome_for_30porcento = _nome_for_ori[0 : int(len(_nome_for_ori)*0.3)]
                 _cnpj_for_nota_pelo_nome = apenas_valor_campo_dominio(str(cnpj_for_nota_2(_codi_emp_v, _nume_nota, _nome_for_30porcento)))
 
-                print(f"{num_linha} - 2_palavra_menos {_cnpj_for_nome_2palavras_a_menos} - 75_por_nome {_cnpj_for_nome_75porcento} - CNPJ_nota {_cnpj_for_nota}"
-                      f" - CNPJ_nota_nome {_cnpj_for_nota_pelo_nome} - CNPJ_nome {_cnpj_for}")
-
                 _cnpj_for = ""
                 # Primeiro busca pela nota, se não encontrar busca pelo nome
                 if _cnpj_for_nota != "'" and _cnpj_for_nota_pelo_nome == "'":
@@ -213,7 +208,7 @@ with open(entrada, 'rt') as csvfile:
                     _codi_cta_e_codi_emp = apenas_valor_campo_dominio(str(codi_conta(_codi_emp_v, _cnpj_filtro)))
                     _codi_cta_e_codi_emp = _codi_cta_e_codi_emp.split("'-'")
 
-                    _codi_cta = _codi_cta_e_codi_emp[0]
+                    _codi_cta = _codi_cta_e_codi_emp[0].replace("'", "")
                     codi_emp = _codi_cta_e_codi_emp[1]
                 else:
                     _codi_cta = ""
@@ -234,8 +229,8 @@ with open(entrada, 'rt') as csvfile:
         if str(row[0]) == 'Documento':
             saida.write('Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
         else:
-            _codi_emp = str(row[14])
-            _codi_emp = apenas_valor_campo_dominio(str(codi_emp_por_cnpj(_codi_emp)))
+            #_codi_emp = str(row[14])
+            #_codi_emp = apenas_valor_campo_dominio(str(codi_emp_por_cnpj(_codi_emp)))
 
             result = (f"{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
                           f";{row[11]};{row[12]};{row[13]};{_codi_emp};{row[15]};{row[16]};{row[17]};{row[18]}\n")
