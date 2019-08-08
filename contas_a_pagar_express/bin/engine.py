@@ -167,6 +167,10 @@ with open(entrada, 'rt') as csvfile:
                     _nome_for_2palavras_a_menos = ' '.join(_nome_for_2palavras_a_menos_vetor)
 
                     _cnpj_for_nome_2palavras_a_menos = apenas_valor_campo_dominio(str(cnpj_for(_codi_emp_v, _nome_for_2palavras_a_menos)))
+
+                    # se for nome muito curto pra evitar que retorne errado
+                    if len(_nome_for_2palavras_a_menos.split()) == 1 and len(_nome_for_2palavras_a_menos) < 7:
+                        _cnpj_for_nome_2palavras_a_menos = ""
                 else:
                      _nome_for_2palavras_a_menos_vetor = []
                      _nome_for_2palavras_a_menos = ''

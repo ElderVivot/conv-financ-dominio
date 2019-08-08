@@ -35,7 +35,10 @@ def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv"):
     lista_dados = []
     dados_linha = []
     for arquivo in arquivos:
-        arquivo = xlrd.open_workbook(arquivo, logfile=open(os.devnull, 'w'))
+        try:
+            arquivo = xlrd.open_workbook(arquivo, logfile=open(os.devnull, 'w'))
+        except Exception:
+            arquivo = xlrd.open_workbook(arquivo, logfile=open(os.devnull, 'w'), encoding_override='Windows-1252')
 
         # guarda todas as planilhas que tem dentro do arquivo excel
         planilhas = arquivo.sheet_names()
