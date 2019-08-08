@@ -279,7 +279,7 @@ BEGIN {
 				emissao_3 = isDate(emissao_3)
 				
 				baixa_banco = ""
-				baixa_banco = Trim($5)
+				baixa_banco = Trim($6)
 				baixa_banco = FormatDate(baixa_banco)
 				baixa_banco = isDate(baixa_banco)
 				
