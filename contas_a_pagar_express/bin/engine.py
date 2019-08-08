@@ -127,6 +127,8 @@ def apenas_valor_campo_dominio(campo):
 
 #_codi_emp = int(input('- Informe o código da empresa Matriz ou Filial na Domínio: '))
 
+num_linha = 0
+
 #entrada = 'Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\\contas_a_pagar_grupo_positiva\\temp\\pagtos_agrupados.csv'
 #saida = open('Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\\contas_a_pagar_grupo_positiva\\saida\\pagtos_agrupados.csv', 'w')
 entrada = 'temp\\pagtos_agrupados.csv'
@@ -161,12 +163,14 @@ with open(entrada, 'rt') as csvfile:
                 _nome_for_dividido = _nome_for_ori.split()
                 if len(_nome_for_dividido) > 2:
                     _nome_for_2palavras_a_menos_vetor = _nome_for_dividido[0 : len(_nome_for_dividido) - 2]
+
+                    _nome_for_2palavras_a_menos = ' '.join(_nome_for_2palavras_a_menos_vetor)
+
+                    _cnpj_for_nome_2palavras_a_menos = apenas_valor_campo_dominio(str(cnpj_for(_codi_emp_v, _nome_for_2palavras_a_menos)))
                 else:
-                    _nome_for_2palavras_a_menos_vetor = []
-
-                _nome_for_2palavras_a_menos = ' '.join(_nome_for_2palavras_a_menos_vetor)
-
-                _cnpj_for_nome_2palavras_a_menos = apenas_valor_campo_dominio(str(cnpj_for(_codi_emp_v, _nome_for_2palavras_a_menos)))
+                     _nome_for_2palavras_a_menos_vetor = []
+                     _nome_for_2palavras_a_menos = ''
+                     _cnpj_for_nome_2palavras_a_menos = ''
 
                 try:
                     _nume_nota = int(row[0])
@@ -189,9 +193,6 @@ with open(entrada, 'rt') as csvfile:
 
                 _nome_for_30porcento = _nome_for_ori[0 : int(len(_nome_for_ori)*0.3)]
                 _cnpj_for_nota_pelo_nome = apenas_valor_campo_dominio(str(cnpj_for_nota_2(_codi_emp_v, _nume_nota, _nome_for_30porcento)))
-
-                print(f"{num_linha} - 2_palavra_menos {_cnpj_for_nome_2palavras_a_menos} - 75_por_nome {_cnpj_for_nome_75porcento} - CNPJ_nota {_cnpj_for_nota}"
-                      f" - CNPJ_nota_nome {_cnpj_for_nota_pelo_nome} - CNPJ_nome {_cnpj_for}")
 
                 _cnpj_for = ""
                 # Primeiro busca pela nota, se não encontrar busca pelo nome
@@ -220,7 +221,8 @@ with open(entrada, 'rt') as csvfile:
                     codi_emp = _codi_emp
 
                 result = (f"{row[0]};{row[1]};{_cnpj_for};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
-                            f";{row[11]};{row[12]};{row[13]};{codi_emp};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
+                            f";{row[11]};{row[12]};{row[13]};{codi_emp};{_codi_cta};{row[16]};{row[17]};{row[18]}"
+                            f";{_nome_for_2palavras_a_menos_vetor};{_cnpj_for_nome_2palavras_a_menos};{_nome_for_75porcento};{_cnpj_for_nome_75porcento};{_nume_nota};{_cnpj_for_nota};{_nome_for_30porcento};{_cnpj_for_nota_pelo_nome};{str(row[2])}\n")
                 saida.write(result)
 
 saida.close()

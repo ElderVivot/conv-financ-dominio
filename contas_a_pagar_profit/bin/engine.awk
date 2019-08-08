@@ -3,7 +3,7 @@ BEGIN {
 	OFS = ";";
 	
 	system("if exist bin\\*.txt del /q bin\\*.txt")
-	system("dir /b entrada\\*.csv > bin\\listacsv.txt")
+	system("dir /b temp\\*.csv > bin\\listacsv.txt")
 	system("dir /b entrada\\*.ofx > bin\\listaofx.txt")
 	
 	ArquivosCsv = "bin\\listacsv.txt";
@@ -185,7 +185,7 @@ BEGIN {
 	print "Documento;Nome Fornecedor;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\pagtos_agrupados.csv"
 		
 	while ((getline < ArquivosCsv) > 0) {
-		file = "entrada\\" $0
+		file = "temp\\" $0
 		
 		# PRIMEIRO WHILE QUE VAI LER TODOS OS ARQUIVOS E VER QUAL É A ESTRUTURA QUE ELE ESTÁ
 		while ((getline < file) > 0) {
@@ -269,6 +269,8 @@ BEGIN {
 						banco_arq_banco = "CAIXA"
 					if( index(banco_arq_banco, "ITAU") > 0 )
 						banco_arq_banco = "ITAU"
+					if( index(banco_arq_banco, "CARTEIRA") > 0 )
+						banco_arq_banco = "DINHEIRO"
 				}
 				
 				emissao_3 = ""
@@ -463,13 +465,12 @@ BEGIN {
 				else if( int(banco) == 104 || int(banco_extrato) == 104 )
 					banco = "CAIXA" "-" banco_2
 				else if( banco == "" )
-					banco = "DINHEIRO"
-					#banco = "NAO ENCONTROU NO OFX"
+					banco = "NAO ENCONTROU NO OFX"
 				else
 					banco = "AVALIAR NAO FOI ENCONTRADO" "-" banco_2
 				
 				banco_arquivo = BancoArquivo[num_titulo, baixa]
-				if( banco_arquivo == "DINHEIRO" && banco == "NAO ENCONTROU NO OFX" )
+				if( ( banco_arquivo == "DINHEIRO" || banco_arquivo == "" ) && banco == "NAO ENCONTROU NO OFX"  )
 					banco = "DINHEIRO"
 				
 				# PRA QUANDO FOR PAGTO COM CHEQUE, VAI ENCONTRAR QUAL É A DATA QUE O CHEQUE COMPENSOU
