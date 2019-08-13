@@ -234,7 +234,7 @@ BEGIN {
 				emissao_2 = isDate(emissao_2)
 				
 				baixa_doc = ""
-				baixa_doc = Trim($5)
+				baixa_doc = Trim($6)
 				baixa_doc = FormatDate(baixa_doc)
 				baixa_doc = isDate(baixa_doc)
 				
