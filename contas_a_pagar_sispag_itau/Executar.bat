@@ -13,8 +13,8 @@ echo    ßßßßßßß   ßßßßßß  ßß      ßß ßß ßß   ßßß ßß  ßßßßßß
 echo                                        S I S T E M A S
 echo. 
 
-REM set /P comp_ini=- Competencia Inicial (MM/AAAA): 
-REM set /P comp_fim=- Competencia Final (MM/AAAA): 
+set /P comp_ini=- Competencia Inicial (MM/AAAA): 
+set /P comp_fim=- Competencia Final (MM/AAAA): 
 
 echo.
 echo - Apagando dados da pasta saidas.
@@ -23,8 +23,8 @@ if exist temp\* del /q temp\*
 
 echo - Filtrando linhas validas de pagamentos.
 call bin\leArquivos.py
-REM bin\awk95 -f bin\funcoes.awk -f bin\engine.awk -v _comp_ini=%comp_ini% -v _comp_fim=%comp_fim%
-REM echo.
+bin\awk95 -f bin\funcoes.awk -f bin\engine.awk -v _comp_ini=%comp_ini% -v _comp_fim=%comp_fim%
+echo.
 
 REM --> mesmo arquivo do bin\engine.py, mas este não precisa da instalação do python
 REM bin\dist\engine\engine.exe
