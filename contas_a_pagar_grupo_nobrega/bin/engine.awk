@@ -3,12 +3,15 @@ BEGIN {
 	OFS = ";";
 	
 	system("if exist bin\\*.txt del /q bin\\*.txt")
-	system("dir /b entrada\\*.csv > bin\\listacsv.txt")
+	system("dir /b temp\\*.csv > bin\\listacsv.txt")
 	system("if exist entrada\\*.ofx dir /b entrada\\*.ofx > bin\\listaofx.txt")
 	system("if exist entrada\\*.ofc dir /b entrada\\*.ofc >> bin\\listaofx.txt")
 	
 	ArquivosCsv = "bin\\listacsv.txt";
 	ArquivosOfx = "bin\\listaofx.txt";
+	
+	_comp_ini = int(Trim(substr(_comp_ini, 4)) "" substr(_comp_ini, 1, 2))
+	_comp_fim = int(Trim(substr(_comp_fim, 4)) "" substr(_comp_fim, 1, 2))
 	
 	print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "temp\\extrato_cartao.csv"
 	
@@ -49,8 +52,7 @@ BEGIN {
 			if( EstruturaOFX[fileofx] == 1 ){
 				if( substr(ofx, 1, 8) == "<bankid>" ){
 					num_banco = upperCase(selecionaTAG( ofx, "<bankid>", "</bankid>" ) )
-					if( length(num_banco) > 3 )
-						num_banco = int(num_banco)
+					num_banco = int(num_banco)
 				}
 				
 				if( substr(ofx, 1, 8) == "<acctid>" ){
@@ -68,6 +70,7 @@ BEGIN {
 					data_mov = selecionaTAG( ofx, "<dtposted>", "</dtposted>" )
 					data_mov = substr(data_mov, 1, 8)
 					data_mov = substr(data_mov, 7, 2) "/" substr(data_mov, 5, 2) "/" substr(data_mov, 1, 4)
+					data_mov_int = int(substr(data_mov, 7) "" substr(data_mov, 4, 2))
 				}
 				
 				if( substr(ofx, 1, 8) == "<trnamt>" ){
@@ -97,7 +100,18 @@ BEGIN {
 					BancoPago[operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
 					DataPagto[operacao, data_mov, valor_transacao] = data_mov
 					
-					print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
+					ExisteMovBanco[num_banco, operacao, data_mov, valor_transacao] = 1
+					BancoPagoBanco[num_banco, operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
+					DataPagtoBanco[num_banco, operacao, data_mov, valor_transacao] = data_mov
+					
+					# QUANDO É CHEQUE GUARDA A DATA QUE O CHEQUE COMPENSOU, É ELA QUE TEM QUE SER UTILIZADA COMO DATA DA BAIXA
+					if( historico == "CHEQ COMP" || historico == "CHEQUE SAC" ){
+						DataCompensacaoCheque[num_doc] = data_mov
+						BancoPagoCheque[num_doc] = num_banco "-" conta_corrente
+					}
+					
+					if( _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
+						print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
 				}
 			
 			}
@@ -106,8 +120,7 @@ BEGIN {
 			else{
 				if( substr(ofx, 1, 8) == "<bankid>" ){
 					num_banco = upperCase( substr( ofx, 9 , length(ofx) - 8 ) )
-					if( length(num_banco) > 3 )
-						num_banco = int(num_banco)
+					num_banco = int(num_banco)
 				}
 				
 				if( substr(ofx, 1, 8) == "<acctid>" ){
@@ -125,6 +138,7 @@ BEGIN {
 					data_mov = substr( ofx, 11 , length(ofx) - 10 )
 					data_mov = substr(data_mov, 1, 8)
 					data_mov = substr(data_mov, 7, 2) "/" substr(data_mov, 5, 2) "/" substr(data_mov, 1, 4)
+					data_mov_int = int(substr(data_mov, 7) "" substr(data_mov, 4, 2))
 				}
 				
 				if( substr(ofx, 1, 8) == "<trnamt>" ){
@@ -138,6 +152,9 @@ BEGIN {
 					
 					gsub("-", "", valor_transacao)
 					gsub("[.]", ",", valor_transacao)
+					
+					if( index(valor_transacao, ",") == 0 )
+						valor_transacao = substr(valor_transacao, 1, length(valor_transacao)-2) "," substr(valor_transacao, length(valor_transacao)-1)
 				}
 				
 				if( substr(ofx, 1, 10) == "<checknum>" ){
@@ -154,7 +171,18 @@ BEGIN {
 					BancoPago[operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
 					DataPagto[operacao, data_mov, valor_transacao] = data_mov
 					
-					print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
+					ExisteMovBanco[num_banco, operacao, data_mov, valor_transacao] = 1
+					BancoPagoBanco[num_banco, operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
+					DataPagtoBanco[num_banco, operacao, data_mov, valor_transacao] = data_mov
+					
+					# QUANDO É CHEQUE GUARDA A DATA QUE O CHEQUE COMPENSOU, É ELA QUE TEM QUE SER UTILIZADA COMO DATA DA BAIXA
+					if( historico == "CHEQ COMP" || historico == "CHEQUE SAC" ){
+						DataCompensacaoCheque[num_doc] = data_mov
+						BancoPagoCheque[num_doc] = num_banco "-" conta_corrente
+					}
+					
+					if( _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
+						print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
 				}
 			}
 			
@@ -168,7 +196,7 @@ BEGIN {
 	#print "Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "saida\\recebtos_agrupados.csv"
 	
 	while ((getline < ArquivosCsv) > 0) {
-		file = "entrada\\" $0
+		file = "temp\\" $0
 		
 		while ((getline < file) > 0) {
 			
@@ -363,16 +391,46 @@ BEGIN {
 			banco_arquivo = subsCharEspecial(banco_arquivo)
 			banco_arquivo = upperCase(banco_arquivo)
 			
-			if( index(banco_arquivo, "ITAU") > 0 && index(banco_arquivo, "COMPUSAT") == 0 )
+			if( index(banco_arquivo, "SANTANDER") > 0 ){
+				num_banco_arq = 33
+				banco_arquivo = "SANTANDER"
+			}else if( index(banco_arquivo, "ITAU") > 0 && index(banco_arquivo, "COMPUSAT") == 0 ){
+				num_banco_arq = 341
 				banco_arquivo = "ITAU"
-			if( index(banco_arquivo, "ITAU") > 0 && index(banco_arquivo, "COMPUSAT") > 0 )
+			}else if( index(banco_arquivo, "ITAU") > 0 && index(banco_arquivo, "COMPUSAT") > 0 ){
+				num_banco_arq = 341
 				banco_arquivo = "ITAU-COMPUSAT"
-			if( index(banco_arquivo, "SAFRA") > 0 )
+			}else if( index(banco_arquivo, "BRADESCO") > 0 ){
+				num_banco_arq = 237
+				banco_arquivo = "BRADESCO"
+			}else if( index(banco_arquivo, "SICOOB") > 0 ){
+				num_banco_arq = 756
+				banco_arquivo = "SICOOB"
+			}else if( index(banco_arquivo, "SAFRA") > 0 ){
+				num_banco_arq = 422
 				banco_arquivo = "SAFRA"
-			if( index(banco_arquivo, "BRASIL") > 0 )
-				banco_arquivo = "BB"
-			if( index(banco_arquivo, "CARTEIRA") > 0 )
+			}else if( index(banco_arquivo, "CAIXA") > 0 ){
+				if( index(tipo_pagto, "DIN") > 0 ){
+					num_banco_arq = 999
+					banco_arquivo = "DINHEIRO"
+				} else {
+					num_banco_arq = 104
+					banco_arquivo = "CAIXA"
+				}
+			}else if( index(banco_arquivo, "BRASIL") > 0 || index(banco_arquivo, "BB") > 0 ){
+				num_banco_arq = 1
+				banco_arquivo = "BCO BRASIL"
+			}else if( index(banco_arquivo, "TRI") > 0 && index(banco_arquivo, "BANCO") > 0 ){
+				num_banco_arq = 634
+				banco_arquivo = "TRI BANCO"
+			
+			}else if( index(banco_arquivo, "CARTEIRA") > 0 ){
+				num_banco_arq = 999
 				banco_arquivo = "DINHEIRO"
+			}else{
+				num_banco_arq = 0
+				banco_arquivo = banco_arquivo
+			}
 			
 			empresa = ""
 			empresa = Trim(pos_empresa)
@@ -381,44 +439,80 @@ BEGIN {
 			
 			# TEM PAGAMENTOS QUE O CLIENTE LANÇA NA PLANILHA COM DATA ERRADA DA BAIXA, PORTANTO ESTAS LINHAS ABAIXO VAI VERIFICAR ISTO E O LIMITE É 3 DIAS A MAIS OU 3 DIAS A MENOS
 			baixa_extrato = ""
-			baixa_2 = ""
-			baixa_3 = ""
-			baixa_4 = ""
-			baixa_5 = ""
-			baixa_6 = ""
-			baixa_7 = ""
+			baixa_mais1 = ""
+			baixa_mais2 = ""
+			baixa_menos1 = ""
+			baixa_menos2 = ""
+			baixa_mais3 = ""
+			baixa_menos3 = ""
 			banco_extrato = ""
 			if( baixa != "NULO" ){
-				baixa_2 = SomaDias(baixa, 1)
-				baixa_3 = SomaDias(baixa, 2)
-				baixa_4 = SomaDias(baixa, -1)
-				baixa_5 = SomaDias(baixa, -2)
-				#baixa_6 = SomaDias(baixa, 3)
-				#baixa_7 = SomaDias(baixa, -3)
+				baixa_mais1 = SomaDias(baixa, 1)
+				baixa_mais2 = SomaDias(baixa, 2)
+				baixa_menos1 = SomaDias(baixa, -1)
+				baixa_menos2 = SomaDias(baixa, -2)
+				baixa_mais3 = SomaDias(baixa, 3)
+				baixa_menos3 = SomaDias(baixa, -3)
 				
-				if( DataPagto[operacao_arq, baixa_2, valor_considerar] != "" ){
-					baixa_extrato = DataPagto[operacao_arq, baixa_2, valor_considerar]
-					banco_extrato = BancoPago[operacao_arq, baixa_2, valor_considerar]
+				# COMEÇA PELOS MAIORES DIAS E VAI PRO MENOR, POIS SE SOBRESCREVER, SOBRESCRE COM DADOS MAIS RECENTES
+				# - 3 DIAS
+				if( DataPagto[operacao_arq, baixa_menos3, valor_considerar] != "" ){
+					baixa_extrato = DataPagto[operacao_arq, baixa_menos3, valor_considerar]
+					banco_extrato = BancoPago[operacao_arq, baixa_menos3, valor_considerar]
+				}
+				if( DataPagtoBanco[num_banco_arq, operacao_arq, baixa_menos3, valor_considerar] != "" ){
+					baixa_extrato = DataPagtoBanco[num_banco_arq, operacao_arq, baixa_menos3, valor_considerar]
+					banco_extrato = BancoPagoBanco[num_banco_arq, operacao_arq, baixa_menos3, valor_considerar]
+				}
+				
+				# + 3 DIAS
+				if( DataPagto[operacao_arq, baixa_mais3, valor_considerar] != "" ){
+					baixa_extrato = DataPagto[operacao_arq, baixa_mais3, valor_considerar]
+					banco_extrato = BancoPago[operacao_arq, baixa_mais3, valor_considerar]
+				}
+				if( DataPagtoBanco[num_banco_arq, operacao_arq, baixa_mais3, valor_considerar] != "" ){
+					baixa_extrato = DataPagtoBanco[num_banco_arq, operacao_arq, baixa_mais3, valor_considerar]
+					banco_extrato = BancoPagoBanco[num_banco_arq, operacao_arq, baixa_mais3, valor_considerar]
+				}
+				
+				# - 2 DIAS
+				if( DataPagto[operacao_arq, baixa_menos2, valor_considerar] != "" ){
+					baixa_extrato = DataPagto[operacao_arq, baixa_menos2, valor_considerar]
+					banco_extrato = BancoPago[operacao_arq, baixa_menos2, valor_considerar]
+				}
+				if( DataPagtoBanco[num_banco_arq, operacao_arq, baixa_menos2, valor_considerar] != "" ){
+					baixa_extrato = DataPagtoBanco[num_banco_arq, operacao_arq, baixa_menos2, valor_considerar]
+					banco_extrato = BancoPagoBanco[num_banco_arq, operacao_arq, baixa_menos2, valor_considerar]
+				}
+				
+				# + 2 DIAS
+				if( DataPagto[operacao_arq, baixa_mais2, valor_considerar] != "" ){
+					baixa_extrato = DataPagto[operacao_arq, baixa_mais2, valor_considerar]
+					banco_extrato = BancoPago[operacao_arq, baixa_mais2, valor_considerar]
 				} 
-				if( DataPagto[operacao_arq, baixa_3, valor_considerar] != "" ){
-					baixa_extrato = DataPagto[operacao_arq, baixa_3, valor_considerar]
-					banco_extrato = BancoPago[operacao_arq, baixa_3, valor_considerar]
-				} 
-				if( DataPagto[operacao_arq, baixa_4, valor_considerar] != "" ){
-					baixa_extrato = DataPagto[operacao_arq, baixa_4, valor_considerar]
-					banco_extrato = BancoPago[operacao_arq, baixa_4, valor_considerar]
+				if( DataPagtoBanco[num_banco_arq, operacao_arq, baixa_mais2, valor_considerar] != "" ){
+					baixa_extrato = DataPagtoBanco[num_banco_arq, operacao_arq, baixa_mais2, valor_considerar]
+					banco_extrato = BancoPagoBanco[num_banco_arq, operacao_arq, baixa_mais2, valor_considerar]
 				}
-				if( DataPagto[operacao_arq, baixa_5, valor_considerar] != "" ){
-					baixa_extrato = DataPagto[operacao_arq, baixa_5, valor_considerar]
-					banco_extrato = BancoPago[operacao_arq, baixa_5, valor_considerar]
+				
+				# + 1 DIA --> ESTE O MAIS VEM PRIMEIRO POIS É MAIS FÁCIL O CARA COLOCAR QUE PAGOU NO DIA POSTERIOR QUANDO NA VERDADE FOI NO DIA ANTERIOR
+				if( DataPagto[operacao_arq, baixa_mais1, valor_considerar] != "" ){
+					baixa_extrato = DataPagto[operacao_arq, baixa_mais1, valor_considerar]
+					banco_extrato = BancoPago[operacao_arq, baixa_mais1, valor_considerar]
 				}
-				if( DataPagto[operacao_arq, baixa_6, valor_considerar] != "" ){
-					baixa_extrato = DataPagto[operacao_arq, baixa_6, valor_considerar]
-					banco_extrato = BancoPago[operacao_arq, baixa_6, valor_considerar]
+				if( DataPagtoBanco[num_banco_arq, operacao_arq, baixa_mais1, valor_considerar] != "" ){
+					baixa_extrato = DataPagtoBanco[num_banco_arq, operacao_arq, baixa_mais1, valor_considerar]
+					banco_extrato = BancoPagoBanco[num_banco_arq, operacao_arq, baixa_mais1, valor_considerar]
 				}
-				if( DataPagto[operacao_arq, baixa_7, valor_considerar] != "" ){
-					baixa_extrato = DataPagto[operacao_arq, baixa_7, valor_considerar]
-					banco_extrato = BancoPago[operacao_arq, baixa_7, valor_considerar]
+				
+				# - 1 DIA
+				if( DataPagto[operacao_arq, baixa_menos1, valor_considerar] != "" ){
+					baixa_extrato = DataPagto[operacao_arq, baixa_menos1, valor_considerar]
+					banco_extrato = BancoPago[operacao_arq, baixa_menos1, valor_considerar]
+				}
+				if( DataPagtoBanco[num_banco_arq, operacao_arq, baixa_menos1, valor_considerar] != "" ){
+					baixa_extrato = DataPagtoBanco[num_banco_arq, operacao_arq, baixa_menos1, valor_considerar]
+					banco_extrato = BancoPagoBanco[num_banco_arq, operacao_arq, baixa_menos1, valor_considerar]
 				}
 			}
 			
@@ -429,6 +523,9 @@ BEGIN {
 			banco_extrato_2 = banco_extrato_v[2]
 			
 			banco = BancoPago[operacao_arq, baixa, valor_considerar]
+			if( BancoPagoBanco[num_banco_arq, operacao_arq, baixa, valor_considerar] != "")
+				banco = BancoPagoBanco[num_banco_arq, operacao_arq, baixa, valor_considerar]
+			
 			banco = split(banco, banco_v, "-")
 			banco = banco_v[1]
 			
@@ -437,6 +534,8 @@ BEGIN {
 			banco_2 = IfElse(banco_2 == "", banco_extrato_2, banco_2)
 			
 			existe_mov_dia = DataPagto[operacao_arq, baixa, valor_considerar]
+			if( DataPagtoBanco[num_banco_arq, operacao_arq, baixa, valor_considerar] != "")
+				existe_mov_dia = DataPagtoBanco[num_banco_arq, operacao_arq, baixa, valor_considerar]
 			
 			if( existe_mov_dia != "" ){
 				banco_extrato = banco
@@ -455,6 +554,10 @@ BEGIN {
 				banco = "SAFRA" "-" banco_2
 			else if( int(banco) == 104 || int(banco_extrato) == 104 )
 				banco = "CAIXA" "-" banco_2
+			else if( int(banco) == 33 || int(banco_extrato) == 33 )
+				banco = "SANTANDER" "-" banco_2
+			else if( int(banco) == 634 || int(banco_extrato) == 634 )
+				banco = "TRI BANCO" "-" banco_2
 			else if( banco == "" )
 				banco = "NAO ENCONTROU NO OFX"
 			else
@@ -470,14 +573,20 @@ BEGIN {
 			# ESTAS LINHA SERVE PRA DEIXAR REGISTRADO O QUE TEM NA PLANILHA DO CLIENTE E FOI PAGO. SERÁ UTILIZADO PARA COMPARAÇÃO COM O OFX AFIM DE AVALIAR O QUE ESTÁ NO OFX DE PAGTO E NÃO ESTÁ NESTA PLANILHA
 			PagouNoBanco[operacao_arq, baixa_extrato, valor_considerar] = 1
 			
+			# AS LINHAS ABAIXO SÃO UTILIZADAS PARA IMPRIMIR SOMENTE O QUE FOR DAQUELA COMPETENCIA
+			baixa_temp = ""
+			baixa_temp = baixa_extrato
+			baixa_temp = IfElse(baixa_temp == "", baixa, baixa_temp)
+			baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
+			
 			# PAGOS
-			if( baixa != "NULO" && int(valor_pago) > 0 ){
+			if( baixa != "NULO" && int(valor_pago) > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
 				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
       				  valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
 			}
 			
 			# RECEBIMENTOS
-			if( baixa != "NULO" && int(valor_recebido) > 0 ){
+			if( baixa != "NULO" && int(valor_recebido) > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
 				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_recebido, 
       				  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "saida\\recebtos_agrupados.csv"
 			}
