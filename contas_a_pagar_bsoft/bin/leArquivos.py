@@ -2,6 +2,9 @@ import xlrd
 import os
 import unicodedata
 import re
+import csv
+import time
+import sys
 #import openpyxl
 #import pandas as pd
 import datetime
@@ -16,6 +19,9 @@ def buscaArquivosEmPasta(caminho="entrada", extensao=(".xls", "xlsx")):
 
     return lista_arquivos
 
+def FileExists(filepath):
+    return os.path.isfile(filepath)
+
 def removerAcentosECaracteresEspeciais(palavra):
     # Unicode normalize transforma um caracter em seu equivalente em latin.
     nfkd = unicodedata.normalize('NFKD', palavra).encode('ASCII', 'ignore').decode('ASCII')
@@ -24,50 +30,15 @@ def removerAcentosECaracteresEspeciais(palavra):
     # Usa expressão regular para retornar a palavra apenas com valores corretos
     return re.sub('[^a-zA-Z0-9.!+:=)(/*,\-_ \\\]', '', palavraTratada)
 
-# Função não sendo utilizada, pois já tem a debaixo que lê XLS também
-""" def leXlsx(arquivos=buscaArquivosEmPasta(),saida="D:\\programming\\conv-dominio-awk\\contas_a_pagar_lojas_duilson\\temp\\baixas.csv"):
-    saida = open(saida, "w")
-    lista_dados = []
-
-    for arquivo in arquivos:
-
-        arquivo = openpyxl.load_workbook(arquivo)
-        # guarda todas as planilhas que tem dentro do arquivo excel
-        planilhas = arquivo.get_sheet_names()
-
-        # lê cada planilha
-        for p in planilhas:
-
-            # pega o nome da planilha
-            planilha = arquivo.get_sheet_by_name(p)
-
-            # pega a quantidade de linha que a planilha tem
-            max_row = planilha.max_row
-            # pega a quantidade de colunca que a planilha tem
-            max_column = planilha.max_column
-
-            # lê cada linha e coluna da planilha e imprime
-            for i in range(1, max_row + 1):
-                # lê as colunas
-                for j in range(1, max_column + 1):
-                    # pega o valor da célula
-                    cell_obj = planilha.cell(row=i, column=j)
-                    # gera o resultado num arquivo
-                    resultado = str(cell_obj.value).strip().rstrip().replace('\n', '') + ';'
-                    resultado = resultado.replace('None', '')
-                    saida.write(resultado)
-
-                # faz uma quebra de linha para passar pra nova coluna
-                saida.write('\n')
-    # fecha o arquivo
-    saida.close() """
-
 def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv"):
     saida = open(saida, "w", encoding='utf-8')
     lista_dados = []
     dados_linha = []
     for arquivo in arquivos:
-        arquivo = xlrd.open_workbook(arquivo, logfile=open(os.devnull, 'w'))
+        try:
+            arquivo = xlrd.open_workbook(arquivo, logfile=open(os.devnull, 'w'))
+        except Exception:
+            arquivo = xlrd.open_workbook(arquivo, logfile=open(os.devnull, 'w'), encoding_override='Windows-1252')
 
         # guarda todas as planilhas que tem dentro do arquivo excel
         planilhas = arquivo.sheet_names()
@@ -135,20 +106,43 @@ def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv"):
     # retorna uma lista dos dados
     return lista_dados
 
-# Função não sendo utilizada, pois já tem a que lê Excel e retira o \n do meio da célula
-""" def excelPandas(arquivos=buscaArquivosEmPasta(), saida = "D:\\programming\\conv-dominio-awk\\contas_a_pagar_lojas_duilson\\temp\\baixas.csv"):
-    saida = open(saida, "w")
+def leCsv(arquivos=buscaArquivosEmPasta(extensao=(".csv")),saida="temp\\baixas.csv",separadorCampos=';'):
+    saida = open(saida, "w", encoding='utf-8')
+    lista_dados = []
+    dados_linha = []
     for arquivo in arquivos:
-        data = pd.read_excel(arquivo, sheet_name=None)
+        with open(arquivo, 'rt') as csvfile:
+            csvreader = csv.reader(csvfile, delimiter=separadorCampos)
+            for row in csvreader:
+                for campo in row:
+                    valor_celula = removerAcentosECaracteresEspeciais(str(campo))
+                    
+                    # retira espaços e quebra de linha da célula
+                    valor_celula = str(valor_celula).strip().replace('\n', '')
 
-        for valores_planilha in data.values():
-            for valor_campo in valores_planilha:
-                valor_campo = str(valor_campo).strip()
-            valores_planilha.to_csv(saida, sep=";", encoding='utf-8', index=None, float_format='%g', decimal='.')
-            #print(valores_planilha)
-    print(valor_campo)
-    saida.close() """
+                    # gera o resultado num arquivo
+                    resultado = valor_celula + ';'
+                    resultado = resultado.replace('None', '')
+                    saida.write(resultado)
+
+                    # adiciona o valor da célula na lista de dados_linha
+                    dados_linha.append(valor_celula)
+
+                # faz uma quebra de linha para passar pra nova linha
+                saida.write('\n')
+
+                # copia os dados da linha para o vetor de lista_dados
+                lista_dados.append(dados_linha[:])
+
+                # limpa os dados da linha para ler a próxima
+                dados_linha.clear()
+
+    # fecha o arquivo
+    saida.close()
+
+    # retorna uma lista dos dados
+    return lista_dados
 
 leXls_Xlsx()
-#excelPandas()
-#leXlsx()
+#leCsv()
+#PDFtoText()

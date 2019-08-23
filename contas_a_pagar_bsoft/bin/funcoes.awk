@@ -49,6 +49,15 @@ function Campo(name) {
 	return "NULO";
 }
 
+function NumColuna(name) {
+	name = toupper(name);
+	if (COLUMN_INDEX[name] != "") {
+		value = COLUMN_INDEX[name];
+		return value;
+	}
+	return 0;
+}
+
 # AUMENTA A CAIXA DOS CARACTERES
 function upperCase(upCampo) {
 	# AUMENTA A CAIXA DOS CARACTERES NORMAIS USANDO toupper()
@@ -108,6 +117,7 @@ function subsCharEspecial(tiraEsp){
 	gsub("ç", "c", tiraEsp)
 	gsub("Ç", "C", tiraEsp)
 	gsub("\"", "", tiraEsp)
+	gsub("º", "", tiraEsp)
 	
 	return tiraEsp
 }
