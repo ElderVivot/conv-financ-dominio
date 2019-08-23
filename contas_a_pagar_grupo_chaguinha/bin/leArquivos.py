@@ -9,7 +9,7 @@ import sys
 #import pandas as pd
 import datetime
 
-def buscaArquivosEmPasta(caminho="entrada", extensao=(".XLS", ".XLSX")):
+def buscaArquivosEmPasta(caminho="entrada", extensao=(".xls", "xlsx")):
     arquivos = os.listdir(caminho)
     lista_arquivos = []
 
@@ -144,6 +144,6 @@ def leCsv(arquivos=buscaArquivosEmPasta(extensao=(".TXT")),saida="temp\\baixas.c
     # retorna uma lista dos dados
     return lista_dados
 
-leXls_Xlsx()
-#leCsv()
+#leXls_Xlsx()
+leCsv()
 #PDFtoText()
