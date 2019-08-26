@@ -1,5 +1,5 @@
 @echo off
-set marcador=   ¯ 
+set marcador=   ï¿½ 
 
 title Ajusta Arquivo
 
@@ -26,7 +26,7 @@ call bin\leArquivos.py
 bin\awk95 -f bin\funcoes.awk -f bin\engine.awk -v _comp_ini=%comp_ini% -v _comp_fim=%comp_fim%
 echo.
 
-REM --> mesmo arquivo do bin\engine.py, mas este não precisa da instalação do python
+REM --> mesmo arquivo do bin\engine.py, mas este nï¿½o precisa da instalaï¿½ï¿½o do python
 REM bin\dist\engine\engine.exe
 call bin\engine.py
 

@@ -8,8 +8,9 @@ import sys
 #import openpyxl
 #import pandas as pd
 import datetime
+import funcoesUteis
 
-def buscaArquivosEmPasta(caminho="entrada", extensao=(".XLS", "XLSX")):
+def buscaArquivosEmPasta(caminho="", extensao=(".XLS", "XLSX")):
     arquivos = os.listdir(caminho)
     lista_arquivos = []
 
@@ -28,19 +29,7 @@ def removerAcentosECaracteresEspeciais(palavra):
     # Usa expressão regular para retornar a palavra apenas com valores corretos
     return re.sub('[^a-zA-Z0-9.!+:=)$(/*,\-_ \\\]', '', palavraTratada)
 
-# Minimaliza, ou seja, transforma todas as instancias repetidas de espaços em espaços simples.
-#   Exemplo, o texto "  cnpj:      09.582.876/0001-68    Espécie Documento          Aceite" viraria
-#   "cnpj: 09.582.876/0001-68 Espécie Documento Aceite"
-#
-# Nota: Ele faz um trim do texto também
-def minimalizeSpaces(text):
-    _result = text
-    while ("  " in _result):
-        result = result.replace("  ", " ")
-    result = result.strip()
-    return _result
-
-def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv"):
+def leXls_Xlsx(arquivos=buscaArquivosEmPasta(caminho="entrada"),saida="temp\\baixas.csv"):
     saida = open(saida, "w", encoding='utf-8')
     lista_dados = []
     dados_linha = []
@@ -78,7 +67,7 @@ def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv"):
 
                     # as linhas abaixo analisa o tipo de dado que está na planilha e retorna no formato correto, sem ".0" para números ou a data no formato numérico
                     tipo_valor = planilha.cell_type(rowx=i, colx=j)
-                    valor_celula = removerAcentosECaracteresEspeciais(str(planilha.cell_value(rowx=i, colx=j)))
+                    valor_celula = funcoesUteis.removerAcentosECaracteresEspeciais(str(planilha.cell_value(rowx=i, colx=j)))
                     if tipo_valor == 2:
                         valor_casas_decimais = valor_celula.split('.')
                         valor_casas_decimais = valor_casas_decimais[1]
@@ -116,7 +105,7 @@ def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv"):
     # retorna uma lista dos dados
     return lista_dados
 
-def leCsv(arquivos=buscaArquivosEmPasta(extensao=(".csv")),saida="temp\\baixas.csv",separadorCampos=';'):
+def leCsv(arquivos=buscaArquivosEmPasta(caminho="entrada",extensao=(".csv")),saida="temp\\baixas.csv",separadorCampos=';'):
     saida = open(saida, "w", encoding='utf-8')
     lista_dados = []
     dados_linha = []
@@ -125,7 +114,7 @@ def leCsv(arquivos=buscaArquivosEmPasta(extensao=(".csv")),saida="temp\\baixas.c
             csvreader = csv.reader(csvfile, delimiter=separadorCampos)
             for row in csvreader:
                 for campo in row:
-                    valor_celula = removerAcentosECaracteresEspeciais(str(campo))
+                    valor_celula = funcoesUteis.removerAcentosECaracteresEspeciais(str(campo))
                     
                     # retira espaços e quebra de linha da célula
                     valor_celula = str(valor_celula).strip().replace('\n', '')
@@ -153,27 +142,131 @@ def leCsv(arquivos=buscaArquivosEmPasta(extensao=(".csv")),saida="temp\\baixas.c
     # retorna uma lista dos dados
     return lista_dados
 
-def PDFToText(arquivos=buscaArquivosEmPasta(extensao=(".PDF")), mode = "simple"):
+def PDFToText(arquivos=buscaArquivosEmPasta(caminho="entrada",extensao=(".PDF")), mode = "simple"):
     for arquivo in arquivos:
         nome_arquivo = os.path.basename(arquivo)
         saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".txt"
         try:
-            #comando = "{}\\pdftotext.exe -{} \"{}\" \"{}\"".format(os.path.abspath(os.path.dirname(__file__)), mode, arquivo, saida)
             comando = f"bin\\pdftotext.exe -{mode} \"{arquivo}\" \"{saida}\""
-            resultado = os.system(comando)
+            os.system(comando)
         except Exception as ex:
             print(f"Nao foi possivel transformar o arquivo \"{saida}\". O erro é: {str(ex)}")
 
-def organizaExtrato(arquivos=buscaArquivosEmPasta(caminho="temp", extensao=(".TXT")),separadorCampos=''):
-    print(caminho)
-    for arquivo in arquivos:
-        with open(arquivo, 'rt') as csvfile:
-            csvreader = csv.reader(csvfile, delimiter=separadorCampos)
-            for row in csvreader:
-                print(row)
-
-
-#leXls_Xlsx()
-#leCsv()
 PDFToText()
+
+def organizaExtrato(arquivos=buscaArquivosEmPasta(caminho="temp", extensao=(".TXT")),saida="temp\\baixas.csv"):
+    saida = open(saida, "w", encoding='utf-8')
+    lista_arquivos = {}
+    lista_linha = []
+    for arquivo in arquivos:
+        lista_arquivos[arquivo] = lista_linha[:]
+        
+        # le o arquivo e grava num vetor
+        with open(arquivo, 'rt') as txtfile:
+            for linha in txtfile:
+                linha = str(linha).replace("\n", "")
+                lista_linha.append(linha)
+            lista_arquivos[arquivo] = lista_linha[:]
+            lista_linha.clear()
+        txtfile.close()
+
+        for linhas in lista_arquivos.values():
+
+            posicao_data = 0
+            posicao_documento = 0
+            posicao_historico = 0
+            posicao_valor = 0
+
+            data = datetime.datetime.strptime("01/01/1900", "%d/%m/%Y").date()
+            data = data.strftime("%d/%m/%Y")
+            documento = ""
+            historico = ""
+            valor = 0
+            operador = ""
+            fornecedor_cliente = ""
+
+            for num_row, row in enumerate(linhas):
+                
+                # pega as posições onde estão os dados
+                posicao_data_temp = row.upper().find("DATA")
+                if posicao_data_temp > 0:
+                    posicao_data = posicao_data_temp
+
+                posicao_documento_temp = row.upper().find("DOCUMENTO")
+                if posicao_documento_temp > 0:
+                    posicao_documento = posicao_documento_temp
+
+                posicao_historico_temp = row.upper().find("HISTÓRICO")
+                if posicao_historico_temp > 0:
+                    posicao_historico = posicao_historico_temp
+
+                posicao_valor_temp = row.upper().find("VALOR")
+                if posicao_valor_temp > 0:
+                    posicao_valor = posicao_valor_temp-10 # pega 10 posições atrás da palavra valor
+               
+                data_temp = row[posicao_data:posicao_data+10]
+                data_temp = funcoesUteis.retornaCampoComoData(data_temp)
+                if data_temp is not None:
+                    data = funcoesUteis.transformaCampoDataParaFormatoBrasileiro(data_temp)
+                if data == "01/01/1900":
+                    continue
+
+                documento_temp = funcoesUteis.removerAcentosECaracteresEspeciais(row[posicao_documento:posicao_documento+12])
+                if documento_temp != "":
+                    documento = documento_temp
+
+                historico_temp = funcoesUteis.removerAcentosECaracteresEspeciais(row[posicao_historico:posicao_historico+56])
+                if data_temp is not None and historico_temp != "":
+                    historico = historico_temp
+                if historico_temp.count("SALDO") > 0:
+                    continue
+
+                valor_temp = funcoesUteis.removerAcentosECaracteresEspeciais(row[posicao_valor:posicao_valor+20])
+                #try:
+                #    operador_temp = valor_temp[-1]
+                #except Exception:
+                #    operador_temp = ""
+                operador_temp = ""
+                valor_temp = funcoesUteis.trataCampoDecimal(valor_temp)
+                if valor_temp > 0:
+                    valor = valor_temp
+                    operador = operador_temp
+                    if operador == "D":
+                        operador = "-"
+                    else:
+                        operador = "+"
+
+                # lê a próxima linha pra saber se é uma linha com complementação dos dados da atual ou não
+                try:
+                    proxima_linha = linhas[num_row+1]
+                except Exception:
+                    proxima_linha = ""
+
+                data_temp_proxima_linha = proxima_linha[posicao_data:posicao_data+10]
+                data_temp_proxima_linha = funcoesUteis.retornaCampoComoData(data_temp_proxima_linha)
+
+                valor_temp_proxima_linha = funcoesUteis.removerAcentosECaracteresEspeciais(proxima_linha[posicao_valor:posicao_valor+20])
+                valor_temp_proxima_linha = funcoesUteis.trataCampoDecimal(valor_temp_proxima_linha)
+                
+                # primeira geração dos dados quando todas as informações estão em uma linha apenas
+                if data_temp is not None and data_temp_proxima_linha is not None:
+                    saida.write(f"{data};{documento};{historico};;{valor_temp:.2f};{operador}")
+                    saida.write("\n")
+
+                # limpa dados do fornecedor_cliente
+                if data_temp is not None:
+                    fornecedor_cliente = ""
+
+                if data_temp is None and valor_temp == 0 and historico_temp != "" and data_temp_proxima_linha is None and valor_temp_proxima_linha == 0:
+                    fornecedor_cliente = fornecedor_cliente + " " + historico_temp
+                
+                if data_temp is None and valor_temp == 0 and historico_temp != "" and ( data_temp_proxima_linha is not None or valor_temp_proxima_linha > 0 ):
+                    fornecedor_cliente = fornecedor_cliente + " " + historico_temp
+                    fornecedor_cliente = fornecedor_cliente.strip()
+
+                    saida.write(f"{data};{documento};{historico};{fornecedor_cliente};{valor:.2f};{operador}")
+                    saida.write("\n")
+                
+    saida.close()
+
 organizaExtrato()
