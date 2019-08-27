@@ -19,6 +19,22 @@ def cnpj_for(codi_emp, nome_for):
 
     return data
 
+def cnpj_for_verifica_a_esquerda(codi_emp, nome_for):
+    connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio',PORT='2638')
+    cursor = connection.cursor()
+    for emp in codi_emp:
+        cursor.execute(f"SELECT MAX(cgce_for)"
+                       f"  FROM bethadba.effornece "
+                       f" WHERE codi_emp IN ({emp}) "
+                       f"   AND nome_for LIKE '{nome_for}%'")
+        data = cursor.fetchone()
+        if data != '(None, )':
+            break
+    cursor.close()
+    connection.close()
+
+    return data
+
 def cnpj_for_nota(codi_emp, nume_nota, emissao_nota_ini, emissao_nota_fim):
     #connection = sqlanydb.connect(host="SRVERP", uid='EXTERNO', pwd='dominio', eng='srvcontabil', dbn='Contabil')
     connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio',PORT='2638')
@@ -155,7 +171,10 @@ with open(entrada, 'rt') as csvfile:
 
                 _nome_for_75porcento = _nome_for_ori[0 : int(len(_nome_for_ori)*0.75)]
 
-                _cnpj_for_nome_75porcento = apenas_valor_campo_dominio(str(cnpj_for(_codi_emp_v, _nome_for_75porcento)))
+                if len(_nome_for_ori) < 10:
+                    _cnpj_for_nome_75porcento_ou_menor_que_10_letras = apenas_valor_campo_dominio(str(cnpj_for_verifica_a_esquerda(_codi_emp_v, _nome_for_ori)))
+                else:
+                    _cnpj_for_nome_75porcento_ou_menor_que_10_letras = apenas_valor_campo_dominio(str(cnpj_for(_codi_emp_v, _nome_for_75porcento)))
 
                 _nome_for_dividido = _nome_for_ori.split()
                 if len(_nome_for_dividido) > 2:
@@ -204,7 +223,7 @@ with open(entrada, 'rt') as csvfile:
                 elif len(_nome_for_2palavras_a_menos) >= 3:
                     _cnpj_for = _cnpj_for_nome_2palavras_a_menos
                 else:
-                    _cnpj_for = _cnpj_for_nome_75porcento
+                    _cnpj_for = _cnpj_for_nome_75porcento_ou_menor_que_10_letras
 
                 if _cnpj_for == "'" and str(row[2]) != "'00000000000000":
                     _cnpj_for = row[2]

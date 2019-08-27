@@ -35,7 +35,7 @@ def trataCampoNumero(valorCampo):
 def trataCampoDecimal(valorCampo, qtdCasaDecimais=2):
     valorCampo = str(valorCampo)
     valorCampo = re.sub('[^0-9.,]', '', valorCampo)
-    if ',.' in valorCampo:
+    if valorCampo.count(',') > 0 and valorCampo.count('.') > 0:
         valorCampo = valorCampo.replace('.','')
 
     if ',' in valorCampo:
@@ -43,7 +43,7 @@ def trataCampoDecimal(valorCampo, qtdCasaDecimais=2):
     
     try:
         valorCampo = float(valorCampo)
-    except Exception:
+    except Exception as e:
         valorCampo = float(0)
 
     return valorCampo

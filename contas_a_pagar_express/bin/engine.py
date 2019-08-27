@@ -225,8 +225,7 @@ with open(entrada, 'rt') as csvfile:
                     codi_emp = _codi_emp
 
                 result = (f"{row[0]};{row[1]};{_cnpj_for};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
-                            f";{row[11]};{row[12]};{row[13]};{codi_emp};{_codi_cta};{row[16]};{row[17]};{row[18]}"
-                            f";{_nome_for_2palavras_a_menos_vetor};{_cnpj_for_nome_2palavras_a_menos};{_nome_for_75porcento};{_cnpj_for_nome_75porcento};{_nume_nota};{_cnpj_for_nota};{_nome_for_30porcento};{_cnpj_for_nota_pelo_nome};{str(row[2])}\n")
+                            f";{row[11]};{row[12]};{row[13]};{codi_emp};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
                 saida.write(result)
 
 saida.close()
