@@ -10,6 +10,14 @@ def removerAcentosECaracteresEspeciais(palavra):
     # Usa expressão regular para retornar a palavra apenas com valores corretos
     return re.sub('[^a-zA-Z0-9.!+:=)?$(/*,\-_ \\\]', '', palavraTratada)
 
+def trocaCaracteresTextoPraLetraX(palavra):
+    # Unicode normalize transforma um caracter em seu equivalente em latin.
+    nfkd = unicodedata.normalize('NFKD', palavra).encode('ASCII', 'ignore').decode('ASCII')
+    palavraTratada = u"".join([c for c in nfkd if not unicodedata.combining(c)])
+
+    # Usa expressão regular para retornar a palavra apenas com valores corretos
+    return re.sub('[^0-9\\-/]', 'X', palavraTratada)
+
 # Minimaliza, ou seja, transforma todas as instancias repetidas de espaços em espaços simples.
 #   Exemplo, o texto "  cnpj:      09.582.876/0001-68    Espécie Documento          Aceite" viraria
 #   "cnpj: 09.582.876/0001-68 Espécie Documento Aceite"
@@ -30,7 +38,7 @@ def trataCampoTexto(valorCampo):
         return ""
 
 def trataCampoNumero(valorCampo):
-    return re.sub('[^0-9\\\]', '', valorCampo)
+    return re.sub('[^0-9]', '', valorCampo)
 
 def trataCampoDecimal(valorCampo, qtdCasaDecimais=2):
     valorCampo = str(valorCampo)

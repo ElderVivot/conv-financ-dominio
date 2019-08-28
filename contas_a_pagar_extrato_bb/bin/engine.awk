@@ -197,7 +197,7 @@ BEGIN {
 	
 	while ((getline < ArquivosCsv) > 0) {
 			
-			if ( Trim(toupper($4)) == toupper("Nome do favorecido") ){
+			if ( Trim(toupper($1)) == toupper("Data") ){
 				load_columns();
 				continue;
 			}
@@ -218,11 +218,10 @@ BEGIN {
 			texto_categoria = "---------"
 			texto_banco_arquivo = "---------"
 			texto_empresa = "---------"
-			texto_tipo_pagto = "---------"
+			texto_tipo_pagto = "Historico"
 			texto_natureza_pagto = "-------------"
 			texto_tipo_rec_ou_pag = "---------"
 			texto_tarifas = "---------"
-			texto_historico_complementar = "Historico"
 			texto_operacao = "Operacao"
 			texto_autorizacao = "---------"
 						
@@ -241,13 +240,12 @@ BEGIN {
 			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 999 )
 			pos_natureza_pagto = $IfElse( int(NumColuna(texto_natureza_pagto)) > 0, int(NumColuna(texto_natureza_pagto)), 999 )
 			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 999)
-			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), 999 )
+			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), 4 )
 			pos_categoria = $IfElse( int(NumColuna(texto_categoria)) > 0, int(NumColuna(texto_categoria)), 999 )
 			pos_empresa = $IfElse( int(NumColuna(texto_empresa)) > 0, int(NumColuna(texto_empresa)), 999 )
 			pos_tipo_rec_ou_pag = $IfElse( int(NumColuna(texto_tipo_rec_ou_pag)) > 0, int(NumColuna(texto_tipo_rec_ou_pag)), 999 )
 			pos_valor_tarifas = $IfElse( int(NumColuna(texto_tarifas)) > 0, int(NumColuna(texto_tarifas)), 999 )
 			pos_autorizacao = $IfElse( int(NumColuna(texto_autorizacao)) > 0, int(NumColuna(texto_autorizacao)), 9 )
-			pos_historico_complementar = $IfElse( int(NumColuna(texto_historico_complementar)) > 0, int(NumColuna(texto_historico_complementar)), 3 )
 			pos_operacao = $IfElse( int(NumColuna(texto_operacao)) > 0, int(NumColuna(texto_operacao)), 6 )
 						
 			campo_1 = ""
@@ -260,12 +258,12 @@ BEGIN {
 			forn_cli = subsCharEspecial(forn_cli)
 			forn_cli = upperCase(forn_cli)
 
-			forn_cli_2 = ""
-			forn_cli_2 = Trim(pos_historico_complementar)
-			forn_cli_2 = subsCharEspecial(forn_cli_2)
-			forn_cli_2 = upperCase(forn_cli_2)
+			tipo_pagto = ""
+			tipo_pagto = Trim(pos_tipo_pagto)
+			tipo_pagto = subsCharEspecial(tipo_pagto)
+			tipo_pagto = upperCase(tipo_pagto)
 
-			forn_cli = IfElse(forn_cli == "", forn_cli_2, forn_cli)
+			forn_cli = IfElse(forn_cli == "", tipo_pagto, forn_cli)
 			
 			nota_completo = ""
 			nota_completo = Trim(pos_nota)
@@ -330,10 +328,13 @@ BEGIN {
 			operacao_arq = upperCase(operacao_arq)
 
 			valor_considerar = 0
-			if( operacao_arq == "-" )
+			if( operacao_arq == "-" ){
 				valor_considerar = valor_pago
-			else
+				valor_recebido = 0
+			}else{
 				valor_considerar = valor_recebido
+				valor_pago = 0
+			}
 			
 			valor_juros = ""
 			valor_juros = Trim(pos_valor_juros)
@@ -366,11 +367,6 @@ BEGIN {
 			categoria = Trim(pos_categoria)
 			categoria = subsCharEspecial(categoria)
 			categoria = upperCase(categoria)
-			
-			tipo_pagto = ""
-			tipo_pagto = Trim(pos_tipo_pagto)
-			tipo_pagto = subsCharEspecial(tipo_pagto)
-			tipo_pagto = upperCase(tipo_pagto)
 			
 			empresa = ""
 			empresa = Trim(pos_empresa)
@@ -554,7 +550,7 @@ BEGIN {
 			# ESTAS LINHA SERVE PRA DEIXAR REGISTRADO O QUE TEM NA PLANILHA DO CLIENTE E FOI PAGO. SERÁ UTILIZADO PARA COMPARAÇÃO COM O OFX AFIM DE AVALIAR O QUE ESTÁ NO OFX DE PAGTO E NÃO ESTÁ NESTA PLANILHA
 			PagouNoBanco[operacao_arq, baixa_extrato, valor_considerar] = 1
 
-			banco_arquivo = "SICOOB"
+			banco_arquivo = "BCO BRASIL"
 			banco = banco_arquivo
 			baixa_extrato = baixa
 			
@@ -570,13 +566,13 @@ BEGIN {
 			situacao_pagto = upperCase(situacao_pagto)
 			
 			# PAGOS
-			if( baixa != "NULO" && int(soNumeros(valor_considerar)) > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+			if( baixa != "NULO" && int(soNumeros(valor_pago)) > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
 				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
       				  valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
 			}
 			
 			# RECEBIMENTOS
-			if( baixa != "NULO" && int(soNumeros(valor_considerar)) > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+			if( baixa != "NULO" && int(soNumeros(valor_recebido)) > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
 				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_recebido, 
       				  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
 			}

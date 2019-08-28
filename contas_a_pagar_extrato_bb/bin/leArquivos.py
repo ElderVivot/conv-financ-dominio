@@ -29,20 +29,20 @@ def removerAcentosECaracteresEspeciais(palavra):
     # Usa expressão regular para retornar a palavra apenas com valores corretos
     return re.sub('[^a-zA-Z0-9.!+:=)$(/*,\-_ \\\]', '', palavraTratada)
 
-# def PDFToText(arquivos=buscaArquivosEmPasta(caminho="entrada",extensao=(".PDF")), mode = "simple"):
-#     for arquivo in arquivos:
-#         nome_arquivo = os.path.basename(arquivo)
-#         saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".txt"
-#         try:
-#             comando = f"bin\\pdftotext.exe -{mode} \"{arquivo}\" \"{saida}\""
-#             os.system(comando)
-#         except Exception as ex:
-#             print(f"Nao foi possivel transformar o arquivo \"{saida}\". O erro é: {str(ex)}")
+def PDFToText(arquivos=buscaArquivosEmPasta(caminho="entrada",extensao=(".PDF")), mode = "simple"):
+    for arquivo in arquivos:
+        nome_arquivo = os.path.basename(arquivo)
+        saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".txt"
+        try:
+            comando = f"bin\\pdftotext.exe -{mode} \"{arquivo}\" \"{saida}\""
+            os.system(comando)
+        except Exception as ex:
+            print(f"Nao foi possivel transformar o arquivo \"{saida}\". O erro é: {str(ex)}")
 
 # chama a geração da transformação pra PDF
-#PDFToText()
+PDFToText()
 
-def leLinhasExtrato(arquivos=buscaArquivosEmPasta(caminho="Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\\contas_a_pagar_extrato_bb\\temp", extensao=(".TXT"))):
+def leLinhasExtrato(arquivos=buscaArquivosEmPasta(caminho="temp", extensao=(".TXT"))):
     lista_arquivos = {}
     lista_linha = []
     
@@ -69,102 +69,156 @@ def organizaExtrato(saida="Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\
     
     for linhas in lista_arquivos.values():
 
-        posicao_data = 0
-        posicao_documento = 0
         posicao_historico = 0
-        posicao_valor = 0
+        posicao_data = 0
 
         data = datetime.datetime.strptime("01/01/1900", "%d/%m/%Y").date()
         data = data.strftime("%d/%m/%Y")
         documento = ""
-        historico = ""
         valor = 0
         operador = ""
         fornecedor_cliente = ""
+        historico = ""
 
         for num_row, row in enumerate(linhas):
 
-            print(row)
-            
+            posicao_data_temp = row.upper().find("DT.")
+            if posicao_data_temp > 0:
+                if posicao_data_temp > 5:
+                    posicao_data = posicao_data_temp-5
+                else:
+                    posicao_data = 0
+
+            # lê a próxima linha pra saber se é uma linha com complementação dos dados da atual ou não
+            try:
+                proxima_linha = linhas[num_row+1]
+            except Exception:
+                proxima_linha = ""
+
+            data_temp_proxima_linha = proxima_linha[posicao_data:posicao_data+17]
+            data_temp_proxima_linha = funcoesUteis.retornaCampoComoData(data_temp_proxima_linha)
+
             # ---- começa o tratamento de cada campo ----
-            data_temp = row[0:15]
+            data_temp = row[posicao_data:posicao_data+17]
             data_temp = funcoesUteis.retornaCampoComoData(data_temp)
+            # verifica se é uma data válida pra começar os tratamentos de cada campo
             if data_temp is not None:
                 data = funcoesUteis.transformaCampoDataParaFormatoBrasileiro(data_temp)
 
-                row = funcoesUteis.trataCampoTexto(row)
-                row_divida = row.split()
-                print(row_divida)
+                # ignora linhas que não são de pagamentos
+                if data == "01/01/1900":
+                    continue
 
-                data_movimento = row_divida[1]
+                # retira os espaços excessivos
+                row = funcoesUteis.trataCampoTexto(row)
+
+                # divide as linhas em espaço pois as posições do BB variam muito, então vamos pegar os dados de acordo a posição base deles (agencia e tipo_operacao(D,C) )
+                row_dividida = row.split()
+                #print(row_dividida)
+
+                # vai servir apenas pra identificar em qual posição está a agência
+                data_movimento = row_dividida[1]
                 data_movimento = funcoesUteis.retornaCampoComoData(data_movimento)
+
+                # serve pra sabermos onde começar o processamento do histórico
+                posicao_agencia = 0
                 if data_movimento is None:
                     posicao_agencia = 1
                 else:
                     posicao_agencia = 2
 
-                while campos_historicos 
+                # ------ INICIO POSICAO_OPERACAO - serve pra sabermos até onde o histórico vai
+                try:
+                    posicao_operacao_debito = row_dividida.index('D')
+                except Exception:
+                    posicao_operacao_debito = 0
+                try:
+                    posicao_operacao_credito = row_dividida.index('C')
+                except Exception:
+                    posicao_operacao_credito = 0
+                
+                posicao_operacao = 0
+                
+                if posicao_operacao_debito > 0:
+                    if posicao_operacao_credito == 0:
+                        posicao_operacao = posicao_operacao_debito
+                    else:
+                        if posicao_operacao_debito <= posicao_operacao_credito:
+                            posicao_operacao = posicao_operacao_debito
+                        else:
+                            posicao_operacao = posicao_operacao_credito
+                if posicao_operacao_credito > 0:
+                    if posicao_operacao_debito == 0:
+                        posicao_operacao = posicao_operacao_credito
+                    else:
+                        if posicao_operacao_credito <= posicao_operacao_debito:
+                            posicao_operacao = posicao_operacao_credito
+                        else:
+                            posicao_operacao = posicao_operacao_debito
+                # ------------- FIM POSICAO_OPERACAO
 
-                for campo in row_divida:
-                    pass
+                primeiro_campo_historico = funcoesUteis.trocaCaracteresTextoPraLetraX(row_dividida[posicao_agencia+2])
+                if primeiro_campo_historico.count('X') > 0:
+                    posicao_inicio = posicao_agencia+2
+                else:
+                    posicao_inicio = posicao_agencia+3
+                
+                historico = ""
+                for i in range(posicao_inicio,posicao_operacao-2):
+                    historico = historico + " " + funcoesUteis.trataCampoTexto(row_dividida[i])
+                historico = historico.strip()
 
-            # if data == "01/01/1900":
-            #     continue
+                # ignora as linhas que são referente à saldos
+                if historico.count("SALDO") > 0:
+                    continue
 
-            # documento_temp = funcoesUteis.trataCampoTexto(row[posicao_documento:posicao_documento+12])
-            # if documento_temp != "":
-            #     documento = documento_temp
+                documento = funcoesUteis.trataCampoTexto(row_dividida[posicao_operacao-2])
 
-            # historico_temp = funcoesUteis.trataCampoTexto(row[posicao_historico:posicao_historico+56])
-            # if data_temp is not None and historico_temp != "":
-            #     historico = historico_temp
-            # if historico_temp.count("SALDO") > 0:
-            #     continue
+                valor = funcoesUteis.trataCampoDecimal(row_dividida[posicao_operacao-1])
+                
+                operador = row_dividida[posicao_operacao]
+                if operador == "D":
+                   operador = "-"
+                else:
+                   operador = "+"
+                
+                fornecedor_cliente = ""
 
-            # valor_temp = funcoesUteis.removerAcentosECaracteresEspeciais(row[posicao_valor:posicao_valor+20])
-            # try:
-            #     operador_temp = valor_temp[-1]
-            # except Exception:
-            #     operador_temp = ""
-            # valor_temp = funcoesUteis.trataCampoDecimal(valor_temp)
-            # if valor_temp > 0:
-            #     valor = valor_temp
-            #     operador = operador_temp
-            #     if operador == "D":
-            #         operador = "-"
-            #     else:
-            #         operador = "+"
-
-            # # lê a próxima linha pra saber se é uma linha com complementação dos dados da atual ou não
-            # try:
-            #     proxima_linha = linhas[num_row+1]
-            # except Exception:
-            #     proxima_linha = ""
-
-            # data_temp_proxima_linha = proxima_linha[posicao_data:posicao_data+10]
-            # data_temp_proxima_linha = funcoesUteis.retornaCampoComoData(data_temp_proxima_linha)
-
-            # valor_temp_proxima_linha = funcoesUteis.removerAcentosECaracteresEspeciais(proxima_linha[posicao_valor:posicao_valor+20])
-            # valor_temp_proxima_linha = funcoesUteis.trataCampoDecimal(valor_temp_proxima_linha)
+                # primeira geração dos dados quando todas as informações estão em uma linha apenas, ou seja, a próxima linha também já outro campo com data
+                if data_temp_proxima_linha is not None and valor > 0:
+                    saida.write(f"{data};{documento};{historico};{fornecedor_cliente};{valor:.2f};{operador}\n")
             
-            # # primeira geração dos dados quando todas as informações estão em uma linha apenas
-            # if data_temp is not None and data_temp_proxima_linha is not None:
-            #     saida.write(f"{data};{documento};{historico};;{valor_temp:.2f};{operador}\n")
+            # DAQUI PRA BAIXO analisando a complementação do depósito
+            posicao_historico_temp = row.upper().find("HISTÓRICO")
+            if posicao_historico_temp > 0:
+                posicao_historico = posicao_historico_temp - 10 # pega 10 posições a menos pra questão de 'segurança'
 
-            # # limpa dados do fornecedor_cliente
-            # if data_temp is not None:
-            #     fornecedor_cliente = ""
+            historico_temp = funcoesUteis.trataCampoTexto(row[posicao_historico:posicao_historico+65])
 
-            # # segunda geração dos dados quando as informações complementares está em APENAS uma LINHA ABAIXO
-            # if data_temp is None and valor_temp == 0 and historico_temp != "" and data_temp_proxima_linha is None and valor_temp_proxima_linha == 0:
-            #     fornecedor_cliente = fornecedor_cliente + " " + historico_temp
-            
-            # # terceira geração dos dados quando as informações complementares está em MAIS de uma LINHA ABAIXO
-            # if data_temp is None and valor_temp == 0 and historico_temp != "" and data_temp_proxima_linha is not None and valor_temp_proxima_linha > 0:
-            #     fornecedor_cliente = fornecedor_cliente + " " + historico_temp
-            #     fornecedor_cliente = fornecedor_cliente.strip()
+            fornecedor_cliente_temp = ""
+            # segundo geração dos dados quando as informações complementares está na LINHA ABAIXO
+            if data_temp is None and historico_temp != "" and data_temp_proxima_linha is not None and valor > 0:
+                fornecedor_cliente_temp = fornecedor_cliente_temp + " " + historico_temp
+                fornecedor_cliente_temp = fornecedor_cliente_temp.strip()
 
-            #     saida.write(f"{data};{documento};{historico};{fornecedor_cliente};{valor:.2f};{operador}\n")
+                if historico.count('TED') > 0 or historico.count('TRANSF') > 0 or historico.count('DOC CR') > 0:
+                    fornecedor_cliente_dividido = fornecedor_cliente_temp.split()
+
+                    for campo in fornecedor_cliente_dividido:
+                        if funcoesUteis.trocaCaracteresTextoPraLetraX(campo).count('X') > 0:
+                            fornecedor_cliente = fornecedor_cliente + " " + campo
+
+                    fornecedor_cliente = fornecedor_cliente.strip()
+                else:
+                    fornecedor_cliente = fornecedor_cliente_temp
+                
+                # analisa se na verdade é um histórico válido, pois pode ser uma linha que contenha um tanto de carecter que não serve pra nada. Então considera como
+                # histórico somente se conter o historico_temp válido
+                historico_temp_inicio = funcoesUteis.trataCampoTexto(row[0:posicao_historico])
+                if len(historico_temp_inicio) > 0:
+                    fornecedor_cliente = ""
+
+                saida.write(f"{data};{documento};{historico};{fornecedor_cliente};{valor:.2f};{operador}\n")
                 
     saida.close()
 

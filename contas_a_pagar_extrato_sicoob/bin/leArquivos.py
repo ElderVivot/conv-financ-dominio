@@ -261,7 +261,7 @@ def organizaExtrato(saida="temp\\baixas.csv"):
             
             # primeira geração dos dados quando todas as informações estão em uma linha apenas
             if data_temp is not None and data_temp_proxima_linha is not None:
-                saida.write(f"{data};{documento};{historico};;{valor_temp:.2f};{operador}\n")
+                saida.write(f"{data};{documento};{historico};;{valor:.2f};{operador}\n")
 
             # limpa dados do fornecedor_cliente
             if data_temp is not None:
