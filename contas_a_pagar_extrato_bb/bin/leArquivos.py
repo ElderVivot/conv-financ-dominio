@@ -8,8 +8,9 @@ import sys
 #import openpyxl
 #import pandas as pd
 import datetime
+import funcoesUteis
 
-def buscaArquivosEmPasta(caminho="Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\\contas_a_pagar_bb\\entrada", extensao=(".XLS", "XLSX")):
+def buscaArquivosEmPasta(caminho="", extensao=(".XLS", "XLSX")):
     arquivos = os.listdir(caminho)
     lista_arquivos = []
 
@@ -28,130 +29,144 @@ def removerAcentosECaracteresEspeciais(palavra):
     # Usa expressão regular para retornar a palavra apenas com valores corretos
     return re.sub('[^a-zA-Z0-9.!+:=)$(/*,\-_ \\\]', '', palavraTratada)
 
-def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv"):
-    saida = open(saida, "w", encoding='utf-8')
-    lista_dados = []
-    dados_linha = []
+# def PDFToText(arquivos=buscaArquivosEmPasta(caminho="entrada",extensao=(".PDF")), mode = "simple"):
+#     for arquivo in arquivos:
+#         nome_arquivo = os.path.basename(arquivo)
+#         saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".txt"
+#         try:
+#             comando = f"bin\\pdftotext.exe -{mode} \"{arquivo}\" \"{saida}\""
+#             os.system(comando)
+#         except Exception as ex:
+#             print(f"Nao foi possivel transformar o arquivo \"{saida}\". O erro é: {str(ex)}")
+
+# chama a geração da transformação pra PDF
+#PDFToText()
+
+def leLinhasExtrato(arquivos=buscaArquivosEmPasta(caminho="Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\\contas_a_pagar_extrato_bb\\temp", extensao=(".TXT"))):
+    lista_arquivos = {}
+    lista_linha = []
+    
     for arquivo in arquivos:
-        try:
-            arquivo = xlrd.open_workbook(arquivo, logfile=open(os.devnull, 'w'))
-        except Exception:
-            arquivo = xlrd.open_workbook(arquivo, logfile=open(os.devnull, 'w'), encoding_override='Windows-1252')
+        # pra cada arquivo criar uma posição no dicionário
+        lista_arquivos[arquivo] = lista_linha[:]
+        
+        # le o arquivo e grava num vetor
+        with open(arquivo, 'rt') as txtfile:
+            for linha in txtfile:
+                linha = str(linha).replace("\n", "")
+                lista_linha.append(linha)
+            lista_arquivos[arquivo] = lista_linha[:]
+            lista_linha.clear()
+        txtfile.close()
 
-        # guarda todas as planilhas que tem dentro do arquivo excel
-        planilhas = arquivo.sheet_names()
+    return lista_arquivos
 
-        # lê cada planilha
-        for p in planilhas:
+def organizaExtrato(saida="Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\\contas_a_pagar_extrato_bb\\temp\\baixas.csv"):
+    saida = open(saida, "w", encoding='utf-8')
+    saida.write("Data;Documento;Historico;Historico Complementar;Valor;Operacao\n")
 
-            # pega o nome da planilha
-            planilha = arquivo.sheet_by_name(p)
+    lista_arquivos = leLinhasExtrato()
+    
+    for linhas in lista_arquivos.values():
 
-            # pega a quantidade de linha que a planilha tem
-            max_row = planilha.nrows
-            # pega a quantidade de colunca que a planilha tem
-            max_column = planilha.ncols
+        posicao_data = 0
+        posicao_documento = 0
+        posicao_historico = 0
+        posicao_valor = 0
 
-            # lê cada linha e coluna da planilha e imprime
-            for i in range(0, max_row):
+        data = datetime.datetime.strptime("01/01/1900", "%d/%m/%Y").date()
+        data = data.strftime("%d/%m/%Y")
+        documento = ""
+        historico = ""
+        valor = 0
+        operador = ""
+        fornecedor_cliente = ""
 
-                valor_linha = planilha.row_values(rowx=i)
+        for num_row, row in enumerate(linhas):
 
-                # ignora linhas em branco
-                if valor_linha.count("") == max_column:
-                    continue
+            print(row)
+            
+            # ---- começa o tratamento de cada campo ----
+            data_temp = row[0:15]
+            data_temp = funcoesUteis.retornaCampoComoData(data_temp)
+            if data_temp is not None:
+                data = funcoesUteis.transformaCampoDataParaFormatoBrasileiro(data_temp)
 
-                # lê as colunas
-                for j in range(0, max_column):
+                row = funcoesUteis.trataCampoTexto(row)
+                row_divida = row.split()
+                print(row_divida)
 
-                    # as linhas abaixo analisa o tipo de dado que está na planilha e retorna no formato correto, sem ".0" para números ou a data no formato numérico
-                    tipo_valor = planilha.cell_type(rowx=i, colx=j)
-                    valor_celula = removerAcentosECaracteresEspeciais(str(planilha.cell_value(rowx=i, colx=j)))
-                    if tipo_valor == 2:
-                        valor_casas_decimais = valor_celula.split('.')
-                        valor_casas_decimais = valor_casas_decimais[1]
-                        if int(valor_casas_decimais) == 0:
-                            valor_celula = valor_celula.split('.')
-                            valor_celula = valor_celula[0]
-                    elif tipo_valor == 3:
-                        valor_celula = float(planilha.cell_value(rowx=i, colx=j))
-                        valor_celula = xlrd.xldate.xldate_as_datetime(valor_celula, datemode=0)
-                        valor_celula = valor_celula.strftime("%d/%m/%Y")
+                data_movimento = row_divida[1]
+                data_movimento = funcoesUteis.retornaCampoComoData(data_movimento)
+                if data_movimento is None:
+                    posicao_agencia = 1
+                else:
+                    posicao_agencia = 2
 
-                    # retira espaços e quebra de linha da célula
-                    valor_celula = str(valor_celula).strip().replace('\n', '')
+                while campos_historicos 
 
-                    # gera o resultado num arquivo
-                    resultado = valor_celula + ';'
-                    resultado = resultado.replace('None', '')
-                    saida.write(resultado)
+                for campo in row_divida:
+                    pass
 
-                    # adiciona o valor da célula na lista de dados_linha
-                    dados_linha.append(valor_celula)
+            # if data == "01/01/1900":
+            #     continue
 
-                # faz uma quebra de linha para passar pra nova linha
-                saida.write('\n')
+            # documento_temp = funcoesUteis.trataCampoTexto(row[posicao_documento:posicao_documento+12])
+            # if documento_temp != "":
+            #     documento = documento_temp
 
-                # copia os dados da linha para o vetor de lista_dados
-                lista_dados.append(dados_linha[:])
+            # historico_temp = funcoesUteis.trataCampoTexto(row[posicao_historico:posicao_historico+56])
+            # if data_temp is not None and historico_temp != "":
+            #     historico = historico_temp
+            # if historico_temp.count("SALDO") > 0:
+            #     continue
 
-                # limpa os dados da linha para ler a próxima
-                dados_linha.clear()
+            # valor_temp = funcoesUteis.removerAcentosECaracteresEspeciais(row[posicao_valor:posicao_valor+20])
+            # try:
+            #     operador_temp = valor_temp[-1]
+            # except Exception:
+            #     operador_temp = ""
+            # valor_temp = funcoesUteis.trataCampoDecimal(valor_temp)
+            # if valor_temp > 0:
+            #     valor = valor_temp
+            #     operador = operador_temp
+            #     if operador == "D":
+            #         operador = "-"
+            #     else:
+            #         operador = "+"
 
-    # fecha o arquivo
+            # # lê a próxima linha pra saber se é uma linha com complementação dos dados da atual ou não
+            # try:
+            #     proxima_linha = linhas[num_row+1]
+            # except Exception:
+            #     proxima_linha = ""
+
+            # data_temp_proxima_linha = proxima_linha[posicao_data:posicao_data+10]
+            # data_temp_proxima_linha = funcoesUteis.retornaCampoComoData(data_temp_proxima_linha)
+
+            # valor_temp_proxima_linha = funcoesUteis.removerAcentosECaracteresEspeciais(proxima_linha[posicao_valor:posicao_valor+20])
+            # valor_temp_proxima_linha = funcoesUteis.trataCampoDecimal(valor_temp_proxima_linha)
+            
+            # # primeira geração dos dados quando todas as informações estão em uma linha apenas
+            # if data_temp is not None and data_temp_proxima_linha is not None:
+            #     saida.write(f"{data};{documento};{historico};;{valor_temp:.2f};{operador}\n")
+
+            # # limpa dados do fornecedor_cliente
+            # if data_temp is not None:
+            #     fornecedor_cliente = ""
+
+            # # segunda geração dos dados quando as informações complementares está em APENAS uma LINHA ABAIXO
+            # if data_temp is None and valor_temp == 0 and historico_temp != "" and data_temp_proxima_linha is None and valor_temp_proxima_linha == 0:
+            #     fornecedor_cliente = fornecedor_cliente + " " + historico_temp
+            
+            # # terceira geração dos dados quando as informações complementares está em MAIS de uma LINHA ABAIXO
+            # if data_temp is None and valor_temp == 0 and historico_temp != "" and data_temp_proxima_linha is not None and valor_temp_proxima_linha > 0:
+            #     fornecedor_cliente = fornecedor_cliente + " " + historico_temp
+            #     fornecedor_cliente = fornecedor_cliente.strip()
+
+            #     saida.write(f"{data};{documento};{historico};{fornecedor_cliente};{valor:.2f};{operador}\n")
+                
     saida.close()
 
-    # retorna uma lista dos dados
-    return lista_dados
-
-def leCsv(arquivos=buscaArquivosEmPasta(extensao=(".csv")),saida="temp\\baixas.csv",separadorCampos=';'):
-    saida = open(saida, "w", encoding='utf-8')
-    lista_dados = []
-    dados_linha = []
-    for arquivo in arquivos:
-        with open(arquivo, 'rt') as csvfile:
-            csvreader = csv.reader(csvfile, delimiter=separadorCampos)
-            for row in csvreader:
-                for campo in row:
-                    valor_celula = removerAcentosECaracteresEspeciais(str(campo))
-                    
-                    # retira espaços e quebra de linha da célula
-                    valor_celula = str(valor_celula).strip().replace('\n', '')
-
-                    # gera o resultado num arquivo
-                    resultado = valor_celula + ';'
-                    resultado = resultado.replace('None', '')
-                    saida.write(resultado)
-
-                    # adiciona o valor da célula na lista de dados_linha
-                    dados_linha.append(valor_celula)
-
-                # faz uma quebra de linha para passar pra nova linha
-                saida.write('\n')
-
-                # copia os dados da linha para o vetor de lista_dados
-                lista_dados.append(dados_linha[:])
-
-                # limpa os dados da linha para ler a próxima
-                dados_linha.clear()
-
-    # fecha o arquivo
-    saida.close()
-
-    # retorna uma lista dos dados
-    return lista_dados
-
-def PDFToText(arquivos=buscaArquivosEmPasta(extensao=(".PDF")), mode = "simples"):
-    for arquivo in arquivos:
-        nome_arquivo = os.path.basename(arquivo)
-        saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".txt"
-        try:
-            #comando = "{}\\pdftotext.exe -{} \"{}\" \"{}\"".format(os.path.abspath(os.path.dirname(__file__)), mode, arquivo, saida)
-            comando = f"bin\\pdftotext.exe -simple \"{arquivo}\" \"{saida}\""
-            resultado = os.system(comando)
-        except Exception as ex:
-            print(f"Nao foi possivel transformar o arquivo \"{saida}\". O erro é: {str(ex)}")
-
-#leXls_Xlsx()
-#leCsv()
-PDFToText()
+# chama a geração pra organizar o extrato
+organizaExtrato()

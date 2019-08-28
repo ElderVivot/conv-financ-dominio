@@ -202,15 +202,15 @@ BEGIN {
 				continue;
 			}
 			
-			texto_for = "Favorecido / Beneficiario"
-			texto_cnpj_for = "CPF / CNPJ"
-			texto_nota = "N° Documento"
-			texto_emissao = "Data de Inclusao"
-			texto_venc = "Data vencimento"
+			texto_for = "Historico Complementar"
+			texto_cnpj_for = "---------"
+			texto_nota = "Documento"
+			texto_emissao = "---------"
+			texto_venc = "---------"
 			texto_baixa = "Data"
 			texto_valor_original = "---------"
-			texto_valor_pago = "Valor (R$)"
-			texto_valor_recebido = "---------"
+			texto_valor_pago = "Valor"
+			texto_valor_recebido = "Valor"
 			texto_valor_desc = "---------"
 			texto_valor_juros = "---------"
 			texto_valor_multa = "---------"
@@ -222,17 +222,19 @@ BEGIN {
 			texto_natureza_pagto = "-------------"
 			texto_tipo_rec_ou_pag = "---------"
 			texto_tarifas = "---------"
-			texto_autorizacao = "Situacao"
+			texto_historico_complementar = "Historico"
+			texto_operacao = "Operacao"
+			texto_autorizacao = "---------"
 						
-			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 5 )
-			pos_cnpj_for = $IfElse( int(NumColuna(texto_cnpj_for)) > 0, int(NumColuna(texto_cnpj_for)), 6 )
-			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 4 )
-			pos_emissao = $IfElse( int(NumColuna(texto_emissao)) > 0, int(NumColuna(texto_emissao)), 3 )
-			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 2 )
+			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 4 )
+			pos_cnpj_for = $IfElse( int(NumColuna(texto_cnpj_for)) > 0, int(NumColuna(texto_cnpj_for)), 999 )
+			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 2 )
+			pos_emissao = $IfElse( int(NumColuna(texto_emissao)) > 0, int(NumColuna(texto_emissao)), 999 )
+			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 999 )
 			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 1 )
 			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 999 )
-			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 7 )
-			pos_valor_recebido = $IfElse( int(NumColuna(texto_valor_recebido)) > 0, int(NumColuna(texto_valor_recebido)), 999 )
+			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 5 )
+			pos_valor_recebido = $IfElse( int(NumColuna(texto_valor_recebido)) > 0, int(NumColuna(texto_valor_recebido)), 5 )
 			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 999 )
 			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 999 )
 			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 999 )
@@ -245,6 +247,8 @@ BEGIN {
 			pos_tipo_rec_ou_pag = $IfElse( int(NumColuna(texto_tipo_rec_ou_pag)) > 0, int(NumColuna(texto_tipo_rec_ou_pag)), 999 )
 			pos_valor_tarifas = $IfElse( int(NumColuna(texto_tarifas)) > 0, int(NumColuna(texto_tarifas)), 999 )
 			pos_autorizacao = $IfElse( int(NumColuna(texto_autorizacao)) > 0, int(NumColuna(texto_autorizacao)), 9 )
+			pos_historico_complementar = $IfElse( int(NumColuna(texto_historico_complementar)) > 0, int(NumColuna(texto_historico_complementar)), 3 )
+			pos_operacao = $IfElse( int(NumColuna(texto_operacao)) > 0, int(NumColuna(texto_operacao)), 6 )
 						
 			campo_1 = ""
 			campo_1 = Trim($1)
@@ -255,6 +259,13 @@ BEGIN {
 			forn_cli = Trim(pos_for)
 			forn_cli = subsCharEspecial(forn_cli)
 			forn_cli = upperCase(forn_cli)
+
+			forn_cli_2 = ""
+			forn_cli_2 = Trim(pos_historico_complementar)
+			forn_cli_2 = subsCharEspecial(forn_cli_2)
+			forn_cli_2 = upperCase(forn_cli_2)
+
+			forn_cli = IfElse(forn_cli == "", forn_cli_2, forn_cli)
 			
 			nota_completo = ""
 			nota_completo = Trim(pos_nota)
@@ -313,13 +324,16 @@ BEGIN {
 			valor_recebido = FormataCampo("double", valor_recebido, 12, 2)
 			valor_recebido_int = int(soNumeros(valor_recebido))
 
-			if( valor_pago_int > 0 ){
-				operacao_arq = "-"
+			operacao_arq = ""
+			operacao_arq = Trim(pos_operacao)
+			operacao_arq = subsCharEspecial(operacao_arq)
+			operacao_arq = upperCase(operacao_arq)
+
+			valor_considerar = 0
+			if( operacao_arq == "-" )
 				valor_considerar = valor_pago
-			} else {
-				operacao_arq = "+"
-				valor_considerar = valor_recebido_int
-			}
+			else
+				valor_considerar = valor_recebido
 			
 			valor_juros = ""
 			valor_juros = Trim(pos_valor_juros)
@@ -540,8 +554,9 @@ BEGIN {
 			# ESTAS LINHA SERVE PRA DEIXAR REGISTRADO O QUE TEM NA PLANILHA DO CLIENTE E FOI PAGO. SERÁ UTILIZADO PARA COMPARAÇÃO COM O OFX AFIM DE AVALIAR O QUE ESTÁ NO OFX DE PAGTO E NÃO ESTÁ NESTA PLANILHA
 			PagouNoBanco[operacao_arq, baixa_extrato, valor_considerar] = 1
 
-			banco_arquivo = "SAFRA"
-			baixa_extrato = ""
+			banco_arquivo = "SICOOB"
+			banco = banco_arquivo
+			baixa_extrato = baixa
 			
 			# AS LINHAS ABAIXO SÃO UTILIZADAS PARA IMPRIMIR SOMENTE O QUE FOR DAQUELA COMPETENCIA
 			baixa_temp = ""
@@ -555,16 +570,16 @@ BEGIN {
 			situacao_pagto = upperCase(situacao_pagto)
 			
 			# PAGOS
-			if( baixa != "NULO" && int(valor_pago) > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim && situacao_pagto == "PAGO" ){
+			if( baixa != "NULO" && int(soNumeros(valor_considerar)) > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
 				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
       				  valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
 			}
 			
 			# RECEBIMENTOS
-			#if( baixa != "NULO" && int(valor_recebido) > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
-			#	print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_recebido, 
-      		#		  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
-			#}
+			if( baixa != "NULO" && int(soNumeros(valor_considerar)) > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_recebido, 
+      				  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
+			}
 				
 	} close(ArquivosCsv)
 	
