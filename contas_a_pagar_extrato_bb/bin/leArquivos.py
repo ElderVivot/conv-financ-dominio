@@ -9,6 +9,7 @@ import sys
 #import pandas as pd
 import datetime
 import funcoesUteis
+import platform
 
 def buscaArquivosEmPasta(caminho="", extensao=(".XLS", "XLSX")):
     arquivos = os.listdir(caminho)
@@ -34,7 +35,16 @@ def PDFToText(arquivos=buscaArquivosEmPasta(caminho="entrada",extensao=(".PDF"))
         nome_arquivo = os.path.basename(arquivo)
         saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".txt"
         try:
-            comando = f"bin\\pdftotext.exe -{mode} \"{arquivo}\" \"{saida}\""
+
+            # verifica se o Windows é 32 ou 64 bits
+            architecture = platform.architecture()
+            if architecture[0].count('32') > 0:
+                pdftotext = "pdftotext32.exe"
+            else:
+                pdftotext = "pdftotext64.exe"
+            
+            # chama o comando pra transformação do PDF
+            comando = f"bin\\{pdftotext} -{mode} \"{arquivo}\" \"{saida}\""
             os.system(comando)
         except Exception as ex:
             print(f"Nao foi possivel transformar o arquivo \"{saida}\". O erro é: {str(ex)}")
@@ -61,7 +71,7 @@ def leLinhasExtrato(arquivos=buscaArquivosEmPasta(caminho="temp", extensao=(".TX
 
     return lista_arquivos
 
-def organizaExtrato(saida="Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\\contas_a_pagar_extrato_bb\\temp\\baixas.csv"):
+def organizaExtrato(saida="temp\\baixas.csv"):
     saida = open(saida, "w", encoding='utf-8')
     saida.write("Data;Documento;Historico;Historico Complementar;Valor;Operacao\n")
 

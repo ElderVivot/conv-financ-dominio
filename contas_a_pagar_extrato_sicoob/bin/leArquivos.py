@@ -9,6 +9,7 @@ import sys
 #import pandas as pd
 import datetime
 import funcoesUteis
+import platform
 
 def buscaArquivosEmPasta(caminho="", extensao=(".XLS", "XLSX")):
     arquivos = os.listdir(caminho)
@@ -147,7 +148,15 @@ def PDFToText(arquivos=buscaArquivosEmPasta(caminho="entrada",extensao=(".PDF"))
         nome_arquivo = os.path.basename(arquivo)
         saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".txt"
         try:
-            comando = f"bin\\pdftotext.exe -{mode} \"{arquivo}\" \"{saida}\""
+           # verifica se o Windows é 32 ou 64 bits
+            architecture = platform.architecture()
+            if architecture[0].count('32') > 0:
+                pdftotext = "pdftotext32.exe"
+            else:
+                pdftotext = "pdftotext64.exe"
+            
+            # chama o comando pra transformação do PDF
+            comando = f"bin\\{pdftotext} -{mode} \"{arquivo}\" \"{saida}\""
             os.system(comando)
         except Exception as ex:
             print(f"Nao foi possivel transformar o arquivo \"{saida}\". O erro é: {str(ex)}")
