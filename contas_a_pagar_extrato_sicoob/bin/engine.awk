@@ -550,7 +550,7 @@ BEGIN {
 			# ESTAS LINHA SERVE PRA DEIXAR REGISTRADO O QUE TEM NA PLANILHA DO CLIENTE E FOI PAGO. SERÁ UTILIZADO PARA COMPARAÇÃO COM O OFX AFIM DE AVALIAR O QUE ESTÁ NO OFX DE PAGTO E NÃO ESTÁ NESTA PLANILHA
 			PagouNoBanco[operacao_arq, baixa_extrato, valor_considerar] = 1
 
-			banco_arquivo = "SICOOB"
+			banco_arquivo = "BCO BRASIL"
 			banco = banco_arquivo
 			baixa_extrato = baixa
 			
@@ -579,29 +579,27 @@ BEGIN {
 				
 	} close(ArquivosCsv)
 	
-	#print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "saida\\movtos_feitos_no_cartao_nao_estao_na_planilha.csv"
-	
 	# VAI VER NO OFX QUAIS DÉBITOS QUE NÃO ESTÃO NA PLANILHA DO CLIENTE, GERALMENTE SÃO CHEQUES COMPENSADOS EM MESES ANTERIORES OU TARIFAS
-	while ( (getline < "temp\\extrato_cartao.csv") > 0 ) {
-		num_banco_2 = $1
+	# while ( (getline < "temp\\extrato_cartao.csv") > 0 ) {
+	# 	num_banco_2 = $1
 		
-		conta_corrente_3 = $2
-		conta_corrente_3_int = int( soNumeros(conta_corrente_3) )
+	# 	conta_corrente_3 = $2
+	# 	conta_corrente_3_int = int( soNumeros(conta_corrente_3) )
 		
-		tipo_mov_2 = $3
-		data_mov_2 = $4
-		operacao_3 = $5
-		valor_transacao_2 = $6
-		num_doc_2 = $7
-		historico_2 = $8
+	# 	tipo_mov_2 = $3
+	# 	data_mov_2 = $4
+	# 	operacao_3 = $5
+	# 	valor_transacao_2 = $6
+	# 	num_doc_2 = $7
+	# 	historico_2 = $8
 		
-		pagou_no_banco = PagouNoBanco[operacao_3, data_mov_2, valor_transacao_2]
+	# 	pagou_no_banco = PagouNoBanco[operacao_3, data_mov_2, valor_transacao_2]
 		
-		if( ( operacao_3 == "-" || operacao_3 == "Operacao") && pagou_no_banco != 1 )
-		#if( pagou_no_banco != 1 )
-			print $0 >> "saida\\pagtos_feitos_no_cartao_nao_estao_na_planilha.csv"
+	# 	if( ( operacao_3 == "-" || operacao_3 == "Operacao") && pagou_no_banco != 1 )
+	# 	#if( pagou_no_banco != 1 )
+	# 		print $0 >> "saida\\pagtos_feitos_no_cartao_nao_estao_na_planilha.csv"
 		
-	} close("temp\\extrato_cartao.csv")
+	# } close("temp\\extrato_cartao.csv")
 	
 	system("if exist bin\\*.txt del /q bin\\*.txt")
 }

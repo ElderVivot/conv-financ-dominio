@@ -206,7 +206,29 @@ def organizaExtrato(saida="temp\\baixas.csv"):
             historico_temp = funcoesUteis.trataCampoTexto(row[posicao_historico:posicao_historico+65])
 
             fornecedor_cliente_temp = ""
-            # segundo geração dos dados quando as informações complementares está na LINHA ABAIXO
+            # segunda geração dos dados quando as informações complementares está em APENAS uma LINHA ABAIXO
+            if data_temp is None and historico_temp != "" and data_temp_proxima_linha is None and valor > 0:
+                fornecedor_cliente_temp = fornecedor_cliente_temp + " " + historico_temp
+                fornecedor_cliente_temp = fornecedor_cliente_temp.strip()
+
+                if historico.count('TED') > 0 or historico.count('TRANSF') > 0 or historico.count('DOC CR') > 0:
+                    fornecedor_cliente_dividido = fornecedor_cliente_temp.split()
+
+                    for campo in fornecedor_cliente_dividido:
+                        if funcoesUteis.trocaCaracteresTextoPraLetraX(campo).count('X') > 0:
+                            fornecedor_cliente = fornecedor_cliente + " " + campo
+
+                    fornecedor_cliente = fornecedor_cliente.strip()
+                else:
+                    fornecedor_cliente = fornecedor_cliente_temp
+
+                # analisa se na verdade é um histórico válido, pois pode ser uma linha que contenha um tanto de carecter que não serve pra nada. Então considera como
+                # histórico somente se conter o historico_temp válido
+                historico_temp_inicio = funcoesUteis.trataCampoTexto(row[0:posicao_historico])
+                if len(historico_temp_inicio) > 0:
+                    fornecedor_cliente = ""
+
+            # terceira geração dos dados quando as informações complementares está em MAIS DE UMA LINHA ABAIXO
             if data_temp is None and historico_temp != "" and data_temp_proxima_linha is not None and valor > 0:
                 fornecedor_cliente_temp = fornecedor_cliente_temp + " " + historico_temp
                 fornecedor_cliente_temp = fornecedor_cliente_temp.strip()
