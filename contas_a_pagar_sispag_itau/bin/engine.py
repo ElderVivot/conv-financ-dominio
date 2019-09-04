@@ -10,7 +10,23 @@ def cnpj_for(codi_emp, nome_for):
         cursor.execute(f"SELECT MAX(cgce_for)"
                        f"  FROM bethadba.effornece "
                        f" WHERE codi_emp IN ({emp}) "
-                       f"   AND nome_for LIKE '%{nome_for}%'")
+                       f"   AND ( nome_for LIKE '%{nome_for}%' OR nomr_for LIKE '%{nome_for}%' )")
+        data = cursor.fetchone()
+        if data != '(None, )':
+            break
+    cursor.close()
+    connection.close()
+
+    return data
+
+def cnpj_for_verifica_a_esquerda(codi_emp, nome_for):
+    connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio',PORT='2638')
+    cursor = connection.cursor()
+    for emp in codi_emp:
+        cursor.execute(f"SELECT MAX(cgce_for)"
+                       f"  FROM bethadba.effornece "
+                       f" WHERE codi_emp IN ({emp}) "
+                       f"   AND nome_for LIKE '{nome_for}%'")
         data = cursor.fetchone()
         if data != '(None, )':
             break
@@ -155,7 +171,10 @@ with open(entrada, 'rt') as csvfile:
 
                 _nome_for_75porcento = _nome_for_ori[0 : int(len(_nome_for_ori)*0.75)]
 
-                _cnpj_for_nome_75porcento = apenas_valor_campo_dominio(str(cnpj_for(_codi_emp_v, _nome_for_75porcento)))
+                if len(_nome_for_ori) < 10:
+                    _cnpj_for_nome_75porcento_ou_menor_que_10_letras = apenas_valor_campo_dominio(str(cnpj_for_verifica_a_esquerda(_codi_emp_v, _nome_for_ori)))
+                else:
+                    _cnpj_for_nome_75porcento_ou_menor_que_10_letras = apenas_valor_campo_dominio(str(cnpj_for(_codi_emp_v, _nome_for_75porcento)))
 
                 _nome_for_dividido = _nome_for_ori.split()
                 if len(_nome_for_dividido) > 2:
@@ -201,13 +220,15 @@ with open(entrada, 'rt') as csvfile:
                     _cnpj_for = _cnpj_for_nota
                 elif _cnpj_for_nota_pelo_nome != "'":
                     _cnpj_for = _cnpj_for_nota_pelo_nome
-                elif len(_nome_for_2palavras_a_menos) >= 3:
+                elif len(_nome_for_2palavras_a_menos) >= 3 and _cnpj_for_nome_2palavras_a_menos != "'" and _cnpj_for_nome_2palavras_a_menos != "":
                     _cnpj_for = _cnpj_for_nome_2palavras_a_menos
                 else:
-                    _cnpj_for = _cnpj_for_nome_75porcento
+                    _cnpj_for = _cnpj_for_nome_75porcento_ou_menor_que_10_letras
 
                 if _cnpj_for == "'" and str(row[2]) != "'00000000000000":
                     _cnpj_for = row[2]
+
+                #print(f"{_nome_for_ori};{_cnpj_for_nota};{_cnpj_for_nota_pelo_nome};{_cnpj_for_nome_2palavras_a_menos};{_cnpj_for_nome_75porcento_ou_menor_que_10_letras}")
 
                 # busca o código da conta para quando for filial
                 _cnpj_filtro = _cnpj_for.replace("'", '')

@@ -10,7 +10,23 @@ def cnpj_for(codi_emp, nome_for):
         cursor.execute(f"SELECT MAX(cgce_for)"
                        f"  FROM bethadba.effornece "
                        f" WHERE codi_emp IN ({emp}) "
-                       f"   AND nome_for LIKE '%{nome_for}%'")
+                       f"   AND ( nome_for LIKE '%{nome_for}%' OR nomr_for LIKE '%{nome_for}%' )")
+        data = cursor.fetchone()
+        if data != '(None, )':
+            break
+    cursor.close()
+    connection.close()
+
+    return data
+
+def cnpj_for_verifica_a_esquerda(codi_emp, nome_for):
+    connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio',PORT='2638')
+    cursor = connection.cursor()
+    for emp in codi_emp:
+        cursor.execute(f"SELECT MAX(cgce_for)"
+                       f"  FROM bethadba.effornece "
+                       f" WHERE codi_emp IN ({emp}) "
+                       f"   AND nome_for LIKE '{nome_for}%'")
         data = cursor.fetchone()
         if data != '(None, )':
             break
@@ -139,6 +155,7 @@ with open(entrada, 'rt') as csvfile:
                             'Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;'
                             'Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
             else:
+                
                 #_codi_emp = str(row[14])
                 #_codi_emp = apenas_valor_campo_dominio(str(codi_emp_por_cnpj(_codi_emp)))
 
@@ -154,17 +171,26 @@ with open(entrada, 'rt') as csvfile:
 
                 _nome_for_75porcento = _nome_for_ori[0 : int(len(_nome_for_ori)*0.75)]
 
-                _cnpj_for_nome_75porcento = apenas_valor_campo_dominio(str(cnpj_for(_codi_emp_v, _nome_for_75porcento)))
+                if len(_nome_for_ori) < 10:
+                    _cnpj_for_nome_75porcento_ou_menor_que_10_letras = apenas_valor_campo_dominio(str(cnpj_for_verifica_a_esquerda(_codi_emp_v, _nome_for_ori)))
+                else:
+                    _cnpj_for_nome_75porcento_ou_menor_que_10_letras = apenas_valor_campo_dominio(str(cnpj_for(_codi_emp_v, _nome_for_75porcento)))
 
                 _nome_for_dividido = _nome_for_ori.split()
                 if len(_nome_for_dividido) > 2:
                     _nome_for_2palavras_a_menos_vetor = _nome_for_dividido[0 : len(_nome_for_dividido) - 2]
+
+                    _nome_for_2palavras_a_menos = ' '.join(_nome_for_2palavras_a_menos_vetor)
+
+                    _cnpj_for_nome_2palavras_a_menos = apenas_valor_campo_dominio(str(cnpj_for(_codi_emp_v, _nome_for_2palavras_a_menos)))
+
+                    # se for nome muito curto pra evitar que retorne errado
+                    if len(_nome_for_2palavras_a_menos.split()) == 1 and len(_nome_for_2palavras_a_menos) < 7:
+                        _cnpj_for_nome_2palavras_a_menos = ""
                 else:
-                    _nome_for_2palavras_a_menos_vetor = []
-
-                _nome_for_2palavras_a_menos = ' '.join(_nome_for_2palavras_a_menos_vetor)
-
-                _cnpj_for_nome_2palavras_a_menos = apenas_valor_campo_dominio(str(cnpj_for(_codi_emp_v, _nome_for_2palavras_a_menos)))
+                     _nome_for_2palavras_a_menos_vetor = []
+                     _nome_for_2palavras_a_menos = ''
+                     _cnpj_for_nome_2palavras_a_menos = ''
 
                 try:
                     _nume_nota = int(row[0])
@@ -194,13 +220,15 @@ with open(entrada, 'rt') as csvfile:
                     _cnpj_for = _cnpj_for_nota
                 elif _cnpj_for_nota_pelo_nome != "'":
                     _cnpj_for = _cnpj_for_nota_pelo_nome
-                elif len(_nome_for_2palavras_a_menos) >= 3:
+                elif len(_nome_for_2palavras_a_menos) >= 3 and _cnpj_for_nome_2palavras_a_menos != "'" and _cnpj_for_nome_2palavras_a_menos != "":
                     _cnpj_for = _cnpj_for_nome_2palavras_a_menos
                 else:
-                    _cnpj_for = _cnpj_for_nome_75porcento
+                    _cnpj_for = _cnpj_for_nome_75porcento_ou_menor_que_10_letras
 
                 if _cnpj_for == "'" and str(row[2]) != "'00000000000000":
                     _cnpj_for = row[2]
+
+                #print(f"{_nome_for_ori};{_cnpj_for_nota};{_cnpj_for_nota_pelo_nome};{_cnpj_for_nome_2palavras_a_menos};{_cnpj_for_nome_75porcento_ou_menor_que_10_letras}")
 
                 # busca o código da conta para quando for filial
                 _cnpj_filtro = _cnpj_for.replace("'", '')
@@ -208,11 +236,12 @@ with open(entrada, 'rt') as csvfile:
                     _codi_cta_e_codi_emp = apenas_valor_campo_dominio(str(codi_conta(_codi_emp_v, _cnpj_filtro)))
                     _codi_cta_e_codi_emp = _codi_cta_e_codi_emp.split("'-'")
 
-                    _codi_cta = _codi_cta_e_codi_emp[0].replace("'", "")
+                    _codi_cta = _codi_cta_e_codi_emp[0]
                     codi_emp = _codi_cta_e_codi_emp[1]
                 else:
                     _codi_cta = ""
                     codi_emp = _codi_emp
+                _codi_cta = _codi_cta.replace("'", '')
 
                 result = (f"{row[0]};{row[1]};{_cnpj_for};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
                             f";{row[11]};{row[12]};{row[13]};{codi_emp};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
@@ -220,20 +249,23 @@ with open(entrada, 'rt') as csvfile:
 
 saida.close()
 
-entrada = 'temp\\recebtos_agrupados.csv'
-saida = open('saida\\recebtos_agrupados.csv', 'w')
+try:
+    entrada = 'temp\\recebtos_agrupados.csv'
+    saida = open('saida\\recebtos_agrupados.csv', 'w')
 
-with open(entrada, 'rt') as csvfile:
-    csvreader = csv.reader(csvfile, delimiter=';')
-    for row in csvreader:
-        if str(row[0]) == 'Documento':
-            saida.write('Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
-        else:
-            #_codi_emp = str(row[14])
-            #_codi_emp = apenas_valor_campo_dominio(str(codi_emp_por_cnpj(_codi_emp)))
+    with open(entrada, 'rt') as csvfile:
+        csvreader = csv.reader(csvfile, delimiter=';')
+        for row in csvreader:
+            if str(row[0]) == 'Documento':
+                saida.write('Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
+            else:
+                #_codi_emp = str(row[14])
+                #_codi_emp = apenas_valor_campo_dominio(str(codi_emp_por_cnpj(_codi_emp)))
 
-            result = (f"{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
-                          f";{row[11]};{row[12]};{row[13]};{_codi_emp};{row[15]};{row[16]};{row[17]};{row[18]}\n")
-            saida.write(result)
+                result = (f"{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
+                            f";{row[11]};{row[12]};{row[13]};{_codi_emp};{row[15]};{row[16]};{row[17]};{row[18]}\n")
+                saida.write(result)
 
-saida.close()
+    saida.close()
+except Exception:
+    ""

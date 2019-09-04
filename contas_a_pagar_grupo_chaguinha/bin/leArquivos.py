@@ -9,7 +9,7 @@ import sys
 #import pandas as pd
 import datetime
 
-def buscaArquivosEmPasta(caminho="entrada", extensao=(".xls", "xlsx")):
+def buscaArquivosEmPasta(caminho="entrada", extensao=(".XLS", ".XLSX")):
     arquivos = os.listdir(caminho)
     lista_arquivos = []
 

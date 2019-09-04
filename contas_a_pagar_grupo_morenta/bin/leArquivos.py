@@ -9,11 +9,12 @@ import sys
 #import pandas as pd
 import datetime
 
-def buscaArquivosEmPasta(caminho="entrada", extensao=(".xls", "xlsx")):
+def buscaArquivosEmPasta(caminho="entrada", extensao=(".XLS", ".XLSX")):
     arquivos = os.listdir(caminho)
     lista_arquivos = []
 
     for arquivo in arquivos:
+        arquivo = str(arquivo).upper()
         if arquivo.endswith(extensao):
             lista_arquivos.append(caminho+"\\"+arquivo)
 
@@ -35,7 +36,10 @@ def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv"):
     lista_dados = []
     dados_linha = []
     for arquivo in arquivos:
-        arquivo = xlrd.open_workbook(arquivo, logfile=open(os.devnull, 'w'))
+        try:
+            arquivo = xlrd.open_workbook(arquivo, logfile=open(os.devnull, 'w'))
+        except Exception:
+            arquivo = xlrd.open_workbook(arquivo, logfile=open(os.devnull, 'w'), encoding_override='Windows-1252')
 
         # guarda todas as planilhas que tem dentro do arquivo excel
         planilhas = arquivo.sheet_names()
@@ -103,7 +107,7 @@ def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv"):
     # retorna uma lista dos dados
     return lista_dados
 
-def leCsv(arquivos=buscaArquivosEmPasta(extensao=(".csv")),saida="temp\\baixas.csv",separadorCampos=';'):
+def leCsv(arquivos=buscaArquivosEmPasta(extensao=(".TXT")),saida="temp\\baixas.csv",separadorCampos=','):
     saida = open(saida, "w", encoding='utf-8')
     lista_dados = []
     dados_linha = []
