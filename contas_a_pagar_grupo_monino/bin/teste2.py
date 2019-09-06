@@ -12,7 +12,6 @@ def cnpj_for(codi_emp, nome_for):
                        f" WHERE codi_emp IN ({emp}) "
                        f"   AND ( nome_for LIKE '%{nome_for}%' OR nomr_for LIKE '%{nome_for}%' )")
         data = str(cursor.fetchone())
-        print('cnpj_for',emp,data)
         if data.count('None') == 0:
             break
     cursor.close()
@@ -29,7 +28,6 @@ def cnpj_for_verifica_a_esquerda(codi_emp, nome_for):
                        f" WHERE codi_emp IN ({emp}) "
                        f"   AND nome_for LIKE '{nome_for}%'")
         data = str(cursor.fetchone())
-        print('cnpj_for_verifica_a_esquerda',emp,data)
         if data.count('None') == 0:
             break
     cursor.close()
@@ -52,7 +50,6 @@ def cnpj_for_nota(codi_emp, nume_nota, emissao_nota_ini, emissao_nota_fim):
                        f"   AND ( ( ent.ddoc_ent BETWEEN DATE('{emissao_nota_ini}') AND DATE('{emissao_nota_fim}') ) "
                        f"        OR ( ent.dent_ent BETWEEN DATE('{emissao_nota_ini}') AND DATE('{emissao_nota_fim}') ) ) ")
         data = str(cursor.fetchone())
-        print('cnpj_for_nota',emp,data)
         if data.count('None') == 0:
             break
     cursor.close()
@@ -74,7 +71,6 @@ def cnpj_for_nota_2(codi_emp, nume_nota, nome_for):
                        f"   AND ent.nume_ent = {nume_nota}"
                        f"   AND forn.nome_for LIKE '%{nome_for}%' ")
         data = str(cursor.fetchone())
-        print('cnpj_for_nota_2',emp,data)
         if data.count('None') == 0:
             break
     cursor.close()
@@ -167,8 +163,6 @@ with open(entrada, 'rt') as csvfile:
                     empresa = apenas_valor_campo_dominio(empresa).replace("'", "")
                     if empresa != "":
                         _codi_emp_v.append(int(empresa))
-
-                _codi_emp_v = sorted(_codi_emp_v)
 
                 _nome_for_ori = str(row[1])
 

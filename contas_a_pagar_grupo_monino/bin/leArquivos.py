@@ -31,17 +31,21 @@ def removerAcentosECaracteresEspeciais(palavra):
     # Usa expressão regular para retornar a palavra apenas com valores corretos
     return re.sub('[^a-zA-Z0-9.!+:=)(/*,\-_ \\\]', '', palavraTratada)
 
-def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv"):
-    saida = open(saida, "w", encoding='utf-8')
+def leXls_Xlsx(arquivos=buscaArquivosEmPasta()):
     lista_dados = []
     dados_linha = []
     for arquivo in arquivos:
+
+        nome_arquivo = os.path.basename(arquivo)
+        saida = "temp\\" + nome_arquivo[0:len(nome_arquivo)-4] + ".csv"
+        saida = open(saida, "w", encoding='utf-8')
+    
         try:
             arquivo = xlrd.open_workbook(arquivo, logfile=open(os.devnull, 'w'))
         except Exception:
             arquivo = xlrd.open_workbook(arquivo, logfile=open(os.devnull, 'w'), encoding_override='Windows-1252')
 
-        # guarda todas as planilhas que tem dentro do arquivo excel
+       # guarda todas as planilhas que tem dentro do arquivo excel
         planilhas = arquivo.sheet_names()
 
         # lê cada planilha
@@ -101,49 +105,47 @@ def leXls_Xlsx(arquivos=buscaArquivosEmPasta(),saida="temp\\baixas.csv"):
                 # limpa os dados da linha para ler a próxima
                 dados_linha.clear()
 
-    # fecha o arquivo
-    saida.close()
-
-    # retorna uma lista dos dados
-    return lista_dados
-
-def leCsv(arquivos=buscaArquivosEmPasta(extensao=(".TXT")),saida="temp\\baixas.csv",separadorCampos=','):
-    saida = open(saida, "w", encoding='utf-8')
-    lista_dados = []
-    dados_linha = []
-    for arquivo in arquivos:
-        with open(arquivo, 'rt') as csvfile:
-            csvreader = csv.reader(csvfile, delimiter=separadorCampos)
-            for row in csvreader:
-                for campo in row:
-                    valor_celula = removerAcentosECaracteresEspeciais(str(campo))
-                    
-                    # retira espaços e quebra de linha da célula
-                    valor_celula = str(valor_celula).strip().replace('\n', '')
-
-                    # gera o resultado num arquivo
-                    resultado = valor_celula + ';'
-                    resultado = resultado.replace('None', '')
-                    saida.write(resultado)
-
-                    # adiciona o valor da célula na lista de dados_linha
-                    dados_linha.append(valor_celula)
-
-                # faz uma quebra de linha para passar pra nova linha
-                saida.write('\n')
-
-                # copia os dados da linha para o vetor de lista_dados
-                lista_dados.append(dados_linha[:])
-
-                # limpa os dados da linha para ler a próxima
-                dados_linha.clear()
-
-    # fecha o arquivo
-    saida.close()
+        # fecha o arquivo
+        saida.close()
 
     # retorna uma lista dos dados
     return lista_dados
 
 leXls_Xlsx()
-#leCsv()
-#PDFtoText()
+
+# def leCsv(arquivos=buscaArquivosEmPasta(extensao=(".TXT")),saida="temp\\baixas.csv",separadorCampos=','):
+#     saida = open(saida, "w", encoding='utf-8')
+#     lista_dados = []
+#     dados_linha = []
+#     for arquivo in arquivos:
+#         with open(arquivo, 'rt') as csvfile:
+#             csvreader = csv.reader(csvfile, delimiter=separadorCampos)
+#             for row in csvreader:
+#                 for campo in row:
+#                     valor_celula = removerAcentosECaracteresEspeciais(str(campo))
+                    
+#                     # retira espaços e quebra de linha da célula
+#                     valor_celula = str(valor_celula).strip().replace('\n', '')
+
+#                     # gera o resultado num arquivo
+#                     resultado = valor_celula + ';'
+#                     resultado = resultado.replace('None', '')
+#                     saida.write(resultado)
+
+#                     # adiciona o valor da célula na lista de dados_linha
+#                     dados_linha.append(valor_celula)
+
+#                 # faz uma quebra de linha para passar pra nova linha
+#                 saida.write('\n')
+
+#                 # copia os dados da linha para o vetor de lista_dados
+#                 lista_dados.append(dados_linha[:])
+
+#                 # limpa os dados da linha para ler a próxima
+#                 dados_linha.clear()
+
+#     # fecha o arquivo
+#     saida.close()
+
+#     # retorna uma lista dos dados
+#     return lista_dados

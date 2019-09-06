@@ -11,8 +11,8 @@ def cnpj_for(codi_emp, nome_for):
                        f"  FROM bethadba.effornece "
                        f" WHERE codi_emp IN ({emp}) "
                        f"   AND ( nome_for LIKE '%{nome_for}%' OR nomr_for LIKE '%{nome_for}%' )")
-        data = cursor.fetchone()
-        if data != '(None, )':
+        data = str(cursor.fetchone())
+        if data.count('None') == 0:
             break
     cursor.close()
     connection.close()
@@ -27,8 +27,8 @@ def cnpj_for_verifica_a_esquerda(codi_emp, nome_for):
                        f"  FROM bethadba.effornece "
                        f" WHERE codi_emp IN ({emp}) "
                        f"   AND nome_for LIKE '{nome_for}%'")
-        data = cursor.fetchone()
-        if data != '(None, )':
+        data = str(cursor.fetchone())
+        if data.count('None') == 0:
             break
     cursor.close()
     connection.close()
@@ -49,8 +49,8 @@ def cnpj_for_nota(codi_emp, nume_nota, emissao_nota_ini, emissao_nota_fim):
                        f"   AND ent.nume_ent = {nume_nota}"
                        f"   AND ( ( ent.ddoc_ent BETWEEN DATE('{emissao_nota_ini}') AND DATE('{emissao_nota_fim}') ) "
                        f"        OR ( ent.dent_ent BETWEEN DATE('{emissao_nota_ini}') AND DATE('{emissao_nota_fim}') ) ) ")
-        data = cursor.fetchone()
-        if data != '(None, )':
+        data = str(cursor.fetchone())
+        if data.count('None') == 0:
             break
     cursor.close()
     connection.close()
@@ -70,8 +70,8 @@ def cnpj_for_nota_2(codi_emp, nume_nota, nome_for):
                        f" WHERE ent.codi_emp IN ({emp})"
                        f"   AND ent.nume_ent = {nume_nota}"
                        f"   AND forn.nome_for LIKE '%{nome_for}%' ")
-        data = cursor.fetchone()
-        if data != '(None, )':
+        data = str(cursor.fetchone())
+        if data.count('None') == 0:
             break
     cursor.close()
     connection.close()
@@ -87,8 +87,8 @@ def codi_conta(codi_emp, cgce_for_):
                        f"  FROM bethadba.effornece "
                        f" WHERE codi_emp IN ({emp})"
                        f"   AND cgce_for LIKE '%{cgce_for_}%'")
-        data = cursor.fetchone()
-        if data != '(None, )':
+        data = str(cursor.fetchone())
+        if data.count('None') == 0:
             break
     cursor.close()
     connection.close()
