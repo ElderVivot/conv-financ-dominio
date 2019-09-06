@@ -198,7 +198,7 @@ BEGIN {
 		
 		while ((getline < filecsv) > 0) {
 
-			if ( Trim(toupper($1)) == toupper("DATA") ){
+			if ( Trim(toupper($1)) == toupper("EMPRESA") ){
 				load_columns();
 				continue;
 			}
@@ -215,9 +215,9 @@ BEGIN {
 			texto_valor_desc = "---------"
 			texto_valor_juros = "---------"
 			texto_valor_multa = "---------"
-			texto_obs = "OBSERVACAO/JUROS"
+			texto_obs = "OBSERVACAO"
 			texto_categoria = "PLANO DE CONTAS"
-			texto_banco_arquivo = "OBSERVACAO"
+			texto_banco_arquivo = "PAGO POR"
 			texto_empresa = "EMPRESA"
 			texto_tipo_pagto = "FORMA DE PAGMENTO"
 			texto_natureza_pagto = "-------------"
@@ -236,12 +236,12 @@ BEGIN {
 			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 999 )
 			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 999 )
 			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 999 )
-			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 4 )
+			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 16 )
 			pos_natureza_pagto = $IfElse( int(NumColuna(texto_natureza_pagto)) > 0, int(NumColuna(texto_natureza_pagto)), 999 )
-			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 15)
+			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 18)
 			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), 14 )
 			pos_categoria = $IfElse( int(NumColuna(texto_categoria)) > 0, int(NumColuna(texto_categoria)), 13 )
-			pos_empresa = $IfElse( int(NumColuna(texto_empresa)) > 0, int(NumColuna(texto_empresa)), 999 )
+			pos_empresa = $IfElse( int(NumColuna(texto_empresa)) > 0, int(NumColuna(texto_empresa)), 1 )
 			pos_tipo_rec_ou_pag = $IfElse( int(NumColuna(texto_tipo_rec_ou_pag)) > 0, int(NumColuna(texto_tipo_rec_ou_pag)), 999 )
 			pos_valor_tarifas = $IfElse( int(NumColuna(texto_tarifas)) > 0, int(NumColuna(texto_tarifas)), 999 )
 						
@@ -268,6 +268,9 @@ BEGIN {
 			
 			if( index(nota_completo_orig, "-") == 0 && index(nota_completo_orig, "/") == 0 )
 				nota = nota_completo_orig
+				
+			if(index(nota, "SEM") > 0 && index(nota, "NOTA") > 0)
+				nota = ""
 			
 			nota = int(soNumeros(nota))
 			
@@ -372,7 +375,22 @@ BEGIN {
 			empresa = subsCharEspecial(empresa)
 			empresa = upperCase(empresa)
 			
-			codi_emp = empresa
+			if( index(empresa, "1929") > 0 )
+				codi_emp = 1396
+			else if( index(empresa, "CHEZ") > 0 )
+				codi_emp = 1426
+			else if( index(empresa, "GRA") > 0 && index(empresa, "BISTRO") > 0 )
+				codi_emp = 1393
+			else if( index(empresa, "GTM") > 0 )
+				codi_emp = 1394
+			else if( index(empresa, "ICM") > 0 )
+				codi_emp = 1392
+			else if( index(empresa, "IZ") > 0 && index(empresa, "REST") > 0 )
+				codi_emp = 1391
+			else if( index(empresa, "MONINO") > 0 && index(empresa, "BUFFET") > 0 )
+				codi_emp = 1395
+			else
+				codi_emp = 0
 			
 			banco_arquivo = ""
 			banco_arquivo = Trim(pos_banco_arquivo)

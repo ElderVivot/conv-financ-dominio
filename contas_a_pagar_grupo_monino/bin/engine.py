@@ -150,11 +150,12 @@ with open(entrada, 'rt') as csvfile:
             if str(row[0]) == 'Documento':
                 saida.write('Documento;Nome Fornecedor;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;'
                             'Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;'
-                            'Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
+                            'É uma NF?;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
             else:
                 
-                #_codi_emp = str(row[14])
-                #_codi_emp = apenas_valor_campo_dominio(str(codi_emp_por_cnpj(_codi_emp)))
+                _codi_emp_arquivo = int(row[14])
+                if _codi_emp != _codi_emp_arquivo:
+                    continue
 
                 _lista_filiais = str(lista_filiais(_codi_emp))
 
@@ -232,13 +233,16 @@ with open(entrada, 'rt') as csvfile:
 
                 _cnpj_for = ""
                 codi_emp = 0
+                nota_existe = 'NAO'
                 # Primeiro busca pela nota, se não encontrar busca pelo nome
                 if _cnpj_for_nota != "'" and _cnpj_for_nota_pelo_nome == "'":
                     _cnpj_for = _cnpj_for_nota
                     codi_emp = _codi_emp_nota
+                    nota_existe = 'SIM'
                 elif _cnpj_for_nota_pelo_nome != "'":
                     _cnpj_for = _cnpj_for_nota_pelo_nome
                     codi_emp = _codi_emp_nota_pelo_nome
+                    nota_existe = 'SIM'
                 elif len(_nome_for_2palavras_a_menos) >= 3 and _cnpj_for_nome_2palavras_a_menos != "'" and _cnpj_for_nome_2palavras_a_menos != "":
                     _cnpj_for = _cnpj_for_nome_2palavras_a_menos
                     codi_emp = _codi_emp_nome_2palavras_a_menos
@@ -261,7 +265,7 @@ with open(entrada, 'rt') as csvfile:
                 _codi_cta = _codi_cta.replace("'", '')
 
                 result = (f"{row[0]};{row[1]};{_cnpj_for};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
-                            f";{row[11]};{row[12]};{row[13]};{codi_emp};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
+                            f";{row[11]};{row[12]};{row[13]};{nota_existe};{codi_emp};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
                 saida.write(result)
 
 saida.close()

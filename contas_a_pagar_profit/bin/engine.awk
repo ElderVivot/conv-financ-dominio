@@ -253,8 +253,6 @@ BEGIN {
 					NumNota[num_titulo_2, baixa_doc] = nota
 					ValorJuros[num_titulo_2, baixa_doc] = valor_juros
 					ValorDesc[num_titulo_2, baixa_doc] = valor_desconto
-					
-					print num_titulo_2, baixa_doc, NumNota[num_titulo_2, baixa_doc] > "temp\\pordoc.csv"
 				}
 			}
 			
@@ -290,7 +288,6 @@ BEGIN {
 					num_titulo_3 = Trim($1)
 					
 					BancoArquivo[num_titulo_3, baixa_banco] = banco_arq_banco
-					print num_titulo_3, baixa_banco, BancoArquivo[num_titulo_3, baixa_banco] > "temp\\porbanco.csv"
 				}
 			}
 			
@@ -504,8 +501,6 @@ BEGIN {
 				num_nota = NumNota[num_titulo, baixa]
 				#num_nota = IfElse(num_nota == "", num_cheque, num_nota)
 				
-				print num_titulo, baixa, NumNota[num_titulo, baixa], BancoArquivo[num_titulo, baixa] > "temp\\geral.csv"
-				
 				if( num_cheque != "" )
 					tipo_doc = "CHEQUE"
 				
@@ -523,8 +518,6 @@ BEGIN {
 			}
 		} close(file)
 	} close(ArquivosCsv)
-	
-	print NumNota["86365531", "06/08/2019"] > "temp\\teste.csv"
 	
 	#print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "saida\\movtos_feitos_no_cartao_nao_estao_na_planilha.csv"
 	
