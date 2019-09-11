@@ -206,10 +206,10 @@ BEGIN {
 			texto_for = "FAVORECIDO"
 			texto_cnpj_for = "---------"
 			texto_nota = "NF"
-			texto_emissao = "REFERENCIA"
-			texto_venc = "DATA VENCIMENTO"
-			texto_baixa = "DATA PAGAMENTO"
-			texto_valor_original = "VALOR PARCELA"
+			texto_emissao = "REFERENCIA NF - BOLETO"
+			texto_venc = "---------"
+			texto_baixa = "DATA DE PAGAMENTO"
+			texto_valor_original = "---------"
 			texto_valor_pago = "VALOR EFETUADO"
 			texto_valor_recebido = "---------"
 			texto_valor_desc = "---------"
@@ -217,30 +217,30 @@ BEGIN {
 			texto_valor_multa = "---------"
 			texto_obs = "OBSERVACAO"
 			texto_categoria = "PLANO DE CONTAS"
-			texto_banco_arquivo = "PAGO POR"
+			texto_banco_arquivo = "---------"
 			texto_empresa = "EMPRESA"
-			texto_tipo_pagto = "FORMA DE PAGMENTO"
+			texto_tipo_pagto = "CATEGORIAS"
 			texto_natureza_pagto = "-------------"
 			texto_tipo_rec_ou_pag = "---------"
 			texto_tarifas = "---------"
 						
-			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 12 )
+			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 5 )
 			pos_cnpj_for = $IfElse( int(NumColuna(texto_cnpj_for)) > 0, int(NumColuna(texto_cnpj_for)), 999 )
-			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 7 )
+			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 4 )
 			pos_emissao = $IfElse( int(NumColuna(texto_emissao)) > 0, int(NumColuna(texto_emissao)), 15 )
-			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 2 )
-			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 3 )
-			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 6 )
-			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 4 )
+			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 999 )
+			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 2 )
+			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 999 )
+			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 3 )
 			pos_valor_recebido = $IfElse( int(NumColuna(texto_valor_recebido)) > 0, int(NumColuna(texto_valor_recebido)), 999 )
 			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 999 )
 			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 999 )
 			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 999 )
 			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 16 )
 			pos_natureza_pagto = $IfElse( int(NumColuna(texto_natureza_pagto)) > 0, int(NumColuna(texto_natureza_pagto)), 999 )
-			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 17)
-			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), IfElse( int(NumColuna("FORMA DE PAGAMENTO")) > 0, int(NumColuna("FORMA DE PAGAMENTO")), 14 ) )
-			pos_categoria = $IfElse( int(NumColuna(texto_categoria)) > 0, int(NumColuna(texto_categoria)), 13 )
+			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 999)
+			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), 6 )
+			pos_categoria = $IfElse( int(NumColuna(texto_categoria)) > 0, int(NumColuna(texto_categoria)), 7 )
 			pos_empresa = $IfElse( int(NumColuna(texto_empresa)) > 0, int(NumColuna(texto_empresa)), 1 )
 			pos_tipo_rec_ou_pag = $IfElse( int(NumColuna(texto_tipo_rec_ou_pag)) > 0, int(NumColuna(texto_tipo_rec_ou_pag)), 999 )
 			pos_valor_tarifas = $IfElse( int(NumColuna(texto_tarifas)) > 0, int(NumColuna(texto_tarifas)), 999 )
@@ -348,15 +348,15 @@ BEGIN {
 			valor_desconto = Trim(pos_valor_desc)
 			valor_desconto = FormataCampo("double", valor_desconto, 12, 2)
 			
-			if( valor_juros == "0,00" && valor_pago_int > valor_original_int ){
-				valor_juros = valor_pago_int - valor_original_int
-				valor_juros = TransformaPraDecimal(valor_juros)
-			}
+			# if( valor_juros == "0,00" && valor_pago_int > valor_original_int ){
+			# 	valor_juros = valor_pago_int - valor_original_int
+			# 	valor_juros = TransformaPraDecimal(valor_juros)
+			# }
 			
-			if( valor_desconto == "0,00" && valor_pago_int < valor_original_int ){
-				valor_desconto = valor_original_int - valor_pago_int
-				valor_desconto = TransformaPraDecimal(valor_desconto)
-			}
+			# if( valor_desconto == "0,00" && valor_pago_int < valor_original_int ){
+			# 	valor_desconto = valor_original_int - valor_pago_int
+			# 	valor_desconto = TransformaPraDecimal(valor_desconto)
+			# }
 			
 			valor_multa = ""
 			valor_multa = Trim(pos_valor_multa)
@@ -566,6 +566,8 @@ BEGIN {
 				banco = "NAO ENCONTROU NO OFX"
 			else
 				banco = "AVALIAR NAO FOI ENCONTRADO" "-" banco_2
+
+			banco_arquivo = "DINHEIRO"
 			
 			if( banco_arquivo == "DINHEIRO" && banco == "NAO ENCONTROU NO OFX" )
 				banco = "DINHEIRO"
