@@ -22,13 +22,14 @@ if exist saida\* del /q saida\*
 if exist temp\* del /q temp\*
 
 echo - Filtrando linhas validas de pagamentos.
-call bin\leArquivos.py
+REM call bin\leArquivos.py
+call bin\dist\leArquivos\leArquivos.exe
 REM bin\awk95 -f bin\funcoes.awk -f bin\engine.awk -v _comp_ini=%comp_ini% -v _comp_fim=%comp_fim%
 REM echo.
 
 REM --> mesmo arquivo do bin\engine.py, mas este não precisa da instalação do python
-REM bin\dist\engine\engine.exe
-call bin\engine.py
+REM call bin\engine.py
+call bin\dist\engine\engine.exe
 
 echo.
 echo - Processo finalizado. Aperte qualquer tela para sair.
