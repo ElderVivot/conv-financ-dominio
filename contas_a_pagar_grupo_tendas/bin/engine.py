@@ -3,6 +3,23 @@ import csv
 import leArquivos
 from operator import itemgetter
 import datetime
+import re
+
+def trataCampoDecimal(valorCampo, qtdCasaDecimais=2):
+    valorCampo = str(valorCampo)
+    valorCampo = re.sub('[^0-9.,]', '', valorCampo)
+    if valorCampo.count(',') > 0 and valorCampo.count('.') > 0:
+        valorCampo = valorCampo.replace('.','')
+
+    if ',' in valorCampo:
+        valorCampo = valorCampo.replace(',','.')
+    
+    try:
+        valorCampo = float(valorCampo)
+    except Exception as e:
+        valorCampo = float(0)
+
+    return valorCampo
 
 def trataCampoData(valor):
     try:
@@ -72,6 +89,8 @@ def organizaDados():
                 dataLancamento = trataCampoData(dataLancamento)
 
             valorLancamento = dado[posicaoValorLancamento]
+            valorLancamento = trataCampoDecimal(valorLancamento, 2)
+            valorLancamento = str(valorLancamento).replace('.',',')
 
             codigoHistorico = dado[posicaoCodigoHistorico]
 
@@ -103,7 +122,7 @@ def exportaDados(saida="saida\\lancamentos.csv"):
 
     for i in range(0,tamanhoListaDados):
         dataLancamento = dados[i]['dataLancamento'].strftime('%d/%m/%Y')
-        valorLancamento = (f"{float(dados[i]['valorLancamento']):.2f}").replace('.', ',')
+        valorLancamento = dados[i]['valorLancamento']
         if i > 0:
             if dados[i-1]['dataLancamento'] == dados[i]['dataLancamento']:
                 dadosExportar = (f"L;{valorLancamento};{dados[i]['contaDebito']};"

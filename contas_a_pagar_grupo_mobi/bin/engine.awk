@@ -263,9 +263,9 @@ BEGIN {
 				categoria = subsCharEspecial(categoria)
 				categoria = upperCase(categoria)
 
-				valor_total = ""
-				valor_total = Trim($7)
-				valor_total = FormataCampo("double", valor_total, 12, 2)
+				valor_total_pago = ""
+				valor_total_pago = Trim($7)
+				valor_total_pago = FormataCampo("double", valor_total_pago, 12, 2)
 				valor_total_int = int(soNumeros(valor_total))
 
 				forn_cli_linha_completa = ""
