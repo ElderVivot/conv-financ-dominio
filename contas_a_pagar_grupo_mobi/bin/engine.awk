@@ -195,8 +195,30 @@ BEGIN {
 	while ((getline < ArquivosCsv) > 0) {
 		
 		filecsv = "temp\\" $0
+
+		linha = 0
 		
 		while ((getline < filecsv) > 0) {
+			linha++
+
+			data_linha = ""
+			data_linha = Trim($2)
+			data_linha = FormatDate(data_linha)
+			data_linha = isDate(data_linha)
+
+			DataLinha[filecsv, linha] = data_linha
+		} close(filecsv)
+	}close(ArquivosCsv)
+
+	while ((getline < ArquivosCsv) > 0) {
+		
+		filecsv = "temp\\" $0
+
+		linha_2 = 0
+		
+		while ((getline < filecsv) > 0) {
+
+			linha_2++
 
 			if ( Trim(toupper($1)) == toupper("EMPRESA") ){
 				load_columns();
@@ -249,30 +271,6 @@ BEGIN {
 			campo_1 = Trim($1)
 			campo_1 = subsCharEspecial(campo_1)
 			campo_1 = upperCase(campo_1)
-
-			campo_2 = ""
-			campo_2 = Trim($2)
-			campo_2 = FormatDate(campo_2)
-			campo_2 = isDate(campo_2)
-			if(campo_2 != "NULO"){
-				baixa = ""
-				baixa = campo_2
-
-				categoria = ""
-				categoria = Trim($3)
-				categoria = subsCharEspecial(categoria)
-				categoria = upperCase(categoria)
-
-				valor_total_pago = ""
-				valor_total_pago = Trim($7)
-				valor_total_pago = FormataCampo("double", valor_total_pago, 12, 2)
-				valor_total_int = int(soNumeros(valor_total))
-
-				forn_cli_linha_completa = ""
-				forn_cli_linha_completa = Trim($4)
-				forn_cli_linha_completa = subsCharEspecial(forn_cli_linha_completa)
-				forn_cli_linha_completa = upperCase(forn_cli_linha_completa)
-			}
 
 			nota_completo = ""
 			nota_completo = Trim($1)
@@ -338,7 +336,7 @@ BEGIN {
 			valor_pago_int = int(soNumeros(valor_pago))
 			
 			valor_recebido = ""
-			valor_recebido = Trim($6)
+			valor_recebido = Trim($4)
 			valor_recebido = FormataCampo("double", valor_recebido, 12, 2)
 			valor_recebido_int = int(soNumeros(valor_recebido))
 			
@@ -442,6 +440,56 @@ BEGIN {
 			}else{
 				num_banco_arq = 0
 				banco_arquivo = banco_arquivo
+			}
+
+			# linhas onde são tipo um cabeçalho, ou seja, onde estão os dados da data, valores totais, etc
+			campo_2 = ""
+			campo_2 = Trim($2)
+			campo_2 = FormatDate(campo_2)
+			campo_2 = isDate(campo_2)
+			if(campo_2 != "NULO"){
+				baixa = ""
+				baixa = campo_2
+
+				categoria = ""
+				categoria = Trim($3)
+				categoria = subsCharEspecial(categoria)
+				categoria = upperCase(categoria)
+
+				valor_total_pago = ""
+				valor_total_pago = Trim($7)
+				valor_total_pago = FormataCampo("double", valor_total_pago, 12, 2)
+				valor_total_pago_int = 0
+				valor_total_pago_int = int(soNumeros(valor_total_pago))
+
+				valor_total_recebido = ""
+				valor_total_recebido = Trim($6)
+				valor_total_recebido = FormataCampo("double", valor_total_recebido, 12, 2)
+				valor_total_recebido_int = 0
+				valor_total_recebido_int = int(soNumeros(valor_total_recebido))
+
+				forn_cli_linha_completa = ""
+				forn_cli_linha_completa = Trim($4)
+				forn_cli_linha_completa = subsCharEspecial(forn_cli_linha_completa)
+				forn_cli_linha_completa = upperCase(forn_cli_linha_completa)
+
+				if(valor_total_pago_int > 0){
+					print "INICIO", baixa, valor_total_pago, banco_arquivo, forn_cli_linha_completa, categoria >> "temp\\pagtos_agrupados.csv"
+
+					if(DataLinha[filecsv, linha_2 + 1] != "NULO"){
+						print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_total_pago, 
+      				          valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+					}
+				}
+
+				if(valor_total_recebido_int > 0){
+					print "INICIO", baixa, valor_total_recebido, banco_arquivo, forn_cli_linha_completa, categoria >> "temp\\recebtos_agrupados.csv"
+
+					if(DataLinha[filecsv, linha_2 + 1] != "NULO"){
+						print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_total_recebido, 
+      				          valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
+					}
+				}
 			}
 												
 			# TEM PAGAMENTOS QUE O CLIENTE LANÇA NA PLANILHA COM DATA ERRADA DA BAIXA, PORTANTO ESTAS LINHAS ABAIXO VAI VERIFICAR ISTO E O LIMITE É 3 DIAS A MAIS OU 3 DIAS A MENOS
@@ -587,13 +635,13 @@ BEGIN {
 			baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
 			
 			# PAGOS
-			if( baixa != "NULO" && valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim && forn_cli != "" ){
+			if( baixa != "NULO" && valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim && forn_cli != "" && valor_total_pago_int > 0 && campo_2 == "NULO" ){
 				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
       				  valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
 			}
 			
 			# RECEBIMENTOS
-			if( baixa != "NULO" && valor_recebido_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim && forn_cli_linha_completa != "" ){
+			if( baixa != "NULO" && valor_recebido_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim && forn_cli_linha_completa != "" && valor_total_recebido_int > 0 && campo_2 == "NULO" ){
 				print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_recebido, 
       				  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
 			}

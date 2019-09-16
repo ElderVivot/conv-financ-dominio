@@ -125,6 +125,16 @@ def leCsv(arquivos=buscaArquivosEmPasta(extensao=(".CSV")),separadorCampos=';'):
         with open(arquivo, 'rt') as csvfile:
             csvreader = csv.reader(csvfile, delimiter=separadorCampos)
             for row in csvreader:
+                
+                existe_valor_linha = ""
+                for campo in row:
+                    valor_celula = removerAcentosECaracteresEspeciais(str(campo).strip().replace('\n', ''))
+                    existe_valor_linha += valor_celula
+                
+                # se não existir nenhum valor na linha passa pra próxima
+                if existe_valor_linha == "":
+                    continue
+
                 for campo in row:
                     valor_celula = removerAcentosECaracteresEspeciais(str(campo))
                     
