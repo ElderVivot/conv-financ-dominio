@@ -250,9 +250,11 @@ with open(entrada, 'rt') as csvfile:
                     _cnpj_for = _cnpj_for_nome_75porcento_ou_menor_que_10_letras
                     codi_emp = _codi_emp_75porcento_ou_menor_que_10_letras
 
+                if _cnpj_for == "'":
+                    codi_emp = _codi_emp
+
                 if _cnpj_for == "'" and str(row[2]) != "'00000000000000":
                     _cnpj_for = row[2]
-                    codi_emp = _codi_emp_v[0]
 
                 #print(f"{_nome_for_ori};{_cnpj_for_nota};{_cnpj_for_nota_pelo_nome};{_cnpj_for_nome_2palavras_a_menos};{_cnpj_for_nome_75porcento_ou_menor_que_10_letras}")
 

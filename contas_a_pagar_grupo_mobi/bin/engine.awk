@@ -206,7 +206,19 @@ BEGIN {
 			data_linha = FormatDate(data_linha)
 			data_linha = isDate(data_linha)
 
+			campo_4 = ""
+			campo_4 = Trim($4)
+			campo_4 = subsCharEspecial(campo_4)
+			campo_4 = upperCase(campo_4)
+			if( index(campo_4, "SALDO") > 0 ){
+				campo_4 = 1
+			} else {
+				campo_4 = 0
+			}
+
 			DataLinha[filecsv, linha] = data_linha
+			Campo4[filecsv, linha] = campo_4
+
 		} close(filecsv)
 	}close(ArquivosCsv)
 
@@ -220,20 +232,20 @@ BEGIN {
 
 			linha_2++
 
-			if ( Trim(toupper($1)) == toupper("EMPRESA") ){
+			if ( Trim(toupper($2)) == toupper("Data") ){
 				load_columns();
 				continue;
 			}
 			
-			texto_for = "---------"
+			texto_for = "Favorecido"
 			texto_cnpj_for = "---------"
 			texto_nota = "---------"
 			texto_emissao = "---------"
 			texto_venc = "---------"
-			texto_baixa = "---------"
+			texto_baixa = "Data"
 			texto_valor_original = "---------"
-			texto_valor_pago = "---------"
-			texto_valor_recebido = "---------"
+			texto_valor_pago = "Saida"
+			texto_valor_recebido = "Entrada"
 			texto_valor_desc = "---------"
 			texto_valor_juros = "---------"
 			texto_valor_multa = "---------"
@@ -246,15 +258,15 @@ BEGIN {
 			texto_tipo_rec_ou_pag = "---------"
 			texto_tarifas = "---------"
 						
-			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 999 )
+			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 4 )
 			pos_cnpj_for = $IfElse( int(NumColuna(texto_cnpj_for)) > 0, int(NumColuna(texto_cnpj_for)), 999 )
 			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 999 )
 			pos_emissao = $IfElse( int(NumColuna(texto_emissao)) > 0, int(NumColuna(texto_emissao)), 999 )
 			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 999 )
-			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 999 )
+			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 2 )
 			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 999 )
-			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 999 )
-			pos_valor_recebido = $IfElse( int(NumColuna(texto_valor_recebido)) > 0, int(NumColuna(texto_valor_recebido)), 999 )
+			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 7 )
+			pos_valor_recebido = $IfElse( int(NumColuna(texto_valor_recebido)) > 0, int(NumColuna(texto_valor_recebido)), 6 )
 			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 999 )
 			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 999 )
 			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 999 )
@@ -303,6 +315,10 @@ BEGIN {
 			forn_cli = Trim($3)
 			forn_cli = subsCharEspecial(forn_cli)
 			forn_cli = upperCase(forn_cli)
+
+			forn_cli_temp = ""
+			forn_cli_temp = FormatDate(forn_cli)
+			forn_cli_temp = isDate(forn_cli_temp)
 			
 			vencimento = ""
 			vencimento = Trim(pos_venc)
@@ -333,11 +349,25 @@ BEGIN {
 			valor_pago = ""
 			valor_pago = Trim($4)
 			valor_pago = FormataCampo("double", valor_pago, 12, 2)
+
+			valor_pago_2 = ""
+			valor_pago_2 = Trim($5)
+			valor_pago_2 = FormataCampo("double", valor_pago_2, 12, 2)
+
+			valor_pago = IfElse(valor_pago == "0,00", valor_pago_2, valor_pago)
+
 			valor_pago_int = int(soNumeros(valor_pago))
 			
 			valor_recebido = ""
 			valor_recebido = Trim($4)
 			valor_recebido = FormataCampo("double", valor_recebido, 12, 2)
+
+			valor_recebido_2 = ""
+			valor_recebido_2 = Trim($5)
+			valor_recebido_2 = FormataCampo("double", valor_recebido_2, 12, 2)
+
+			valor_recebido = IfElse(valor_recebido == "0,00", valor_recebido_2, valor_recebido)
+
 			valor_recebido_int = int(soNumeros(valor_recebido))
 			
 			valor_taxa = ""
@@ -457,13 +487,15 @@ BEGIN {
 				categoria = upperCase(categoria)
 
 				valor_total_pago = ""
-				valor_total_pago = Trim($7)
+				valor_total_pago = Trim(pos_valor_pago)
+				valor_total_pago_original = valor_total_pago
 				valor_total_pago = FormataCampo("double", valor_total_pago, 12, 2)
 				valor_total_pago_int = 0
 				valor_total_pago_int = int(soNumeros(valor_total_pago))
 
 				valor_total_recebido = ""
-				valor_total_recebido = Trim($6)
+				valor_total_recebido = Trim(pos_valor_recebido)
+				valor_total_recebido_original = valor_total_recebido
 				valor_total_recebido = FormataCampo("double", valor_total_recebido, 12, 2)
 				valor_total_recebido_int = 0
 				valor_total_recebido_int = int(soNumeros(valor_total_recebido))
@@ -473,19 +505,22 @@ BEGIN {
 				forn_cli_linha_completa = subsCharEspecial(forn_cli_linha_completa)
 				forn_cli_linha_completa = upperCase(forn_cli_linha_completa)
 
-				if(valor_total_pago_int > 0){
-					print "INICIO", baixa, valor_total_pago, banco_arquivo, forn_cli_linha_completa, categoria >> "temp\\pagtos_agrupados.csv"
+				data_proxima_linha = DataLinha[filecsv, linha_2 + 1]
+				campo_4_proxima_linha = Campo4[filecsv, linha_2 + 1]
 
-					if(DataLinha[filecsv, linha_2 + 1] != "NULO"){
+				if(valor_total_pago_int > 0){
+					print "INICIO", baixa, valor_total_pago, banco_arquivo, forn_cli_linha_completa, codi_emp, data_proxima_linha >> "temp\\pagtos_agrupados.csv"
+
+					if(data_proxima_linha != "NULO" || campo_4_proxima_linha == 1){
 						print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_total_pago, 
       				          valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
 					}
 				}
 
 				if(valor_total_recebido_int > 0){
-					print "INICIO", baixa, valor_total_recebido, banco_arquivo, forn_cli_linha_completa, categoria >> "temp\\recebtos_agrupados.csv"
+					print "INICIO", baixa, valor_total_recebido, banco_arquivo, forn_cli_linha_completa, codi_emp, data_proxima_linha >> "temp\\recebtos_agrupados.csv"
 
-					if(DataLinha[filecsv, linha_2 + 1] != "NULO"){
+					if(data_proxima_linha != "NULO" || campo_4_proxima_linha == 1){
 						print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_total_recebido, 
       				          valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
 					}
@@ -634,14 +669,14 @@ BEGIN {
 			baixa_temp = IfElse(baixa_temp == "", baixa, baixa_temp)
 			baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
 			
-			# PAGOS
-			if( baixa != "NULO" && valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim && forn_cli != "" && valor_total_pago_int > 0 && campo_2 == "NULO" ){
+			# PAGOS --> a última verificação é pras linhas que são saldos, se for saldo na coluna do fornecedor vai vir uma data
+			if( baixa != "NULO" && valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim && forn_cli != "" && valor_total_pago_int > 0 && campo_2 == "NULO" && forn_cli_temp == "NULO" ){
 				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
       				  valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
 			}
 			
 			# RECEBIMENTOS
-			if( baixa != "NULO" && valor_recebido_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim && forn_cli_linha_completa != "" && valor_total_recebido_int > 0 && campo_2 == "NULO" ){
+			if( baixa != "NULO" && valor_recebido_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim && forn_cli_linha_completa != "" && valor_total_recebido_int > 0 && campo_2 == "NULO" && forn_cli_temp == "NULO" ){
 				print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_recebido, 
       				  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
 			}

@@ -152,7 +152,12 @@ with open(entrada, 'rt') as csvfile:
                             'Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;'
                             'É uma NF?;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
             elif str(row[0]) == 'INICIO':
-                saida.write(f'{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]}\n')
+
+                _codi_emp_arquivo = int(row[5])
+                if _codi_emp != _codi_emp_arquivo:
+                    continue
+
+                saida.write(f'{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]}\n')
             else:
                 
                 _codi_emp_arquivo = int(row[14])
@@ -284,10 +289,17 @@ try:
             if str(row[0]) == 'Documento':
                 saida.write('Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
             elif str(row[0]) == 'INICIO':
-                saida.write(f'{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]}\n')
+
+                _codi_emp_arquivo = int(row[5])
+                if _codi_emp != _codi_emp_arquivo:
+                    continue
+
+                saida.write(f'{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]}\n')
             else:
-                #_codi_emp = str(row[14])
-                #_codi_emp = apenas_valor_campo_dominio(str(codi_emp_por_cnpj(_codi_emp)))
+                
+                _codi_emp_arquivo = int(row[14])
+                if _codi_emp != _codi_emp_arquivo:
+                    continue
 
                 result = (f"{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
                             f";{row[11]};{row[12]};{row[13]};{_codi_emp};{row[15]};{row[16]};{row[17]};{row[18]}\n")
