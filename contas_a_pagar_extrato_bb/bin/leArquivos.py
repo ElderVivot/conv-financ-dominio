@@ -64,6 +64,9 @@ def leLinhasExtrato(arquivos=buscaArquivosEmPasta(caminho="temp", extensao=(".TX
         with open(arquivo, 'rt') as txtfile:
             for linha in txtfile:
                 linha = str(linha).replace("\n", "")
+                # ignora linhas totalmente em branco
+                if(funcoesUteis.trataCampoTexto(linha) == ""):
+                    continue
                 lista_linha.append(linha)
             lista_arquivos[arquivo] = lista_linha[:]
             lista_linha.clear()
@@ -92,7 +95,7 @@ def organizaExtrato(saida="temp\\baixas.csv"):
 
         for num_row, row in enumerate(linhas):
 
-            posicao_data_temp = row.upper().find("DT.")
+            posicao_data_temp = str(row).upper().find("DT.")
             if posicao_data_temp > 0:
                 if posicao_data_temp > 5:
                     posicao_data = posicao_data_temp-5
