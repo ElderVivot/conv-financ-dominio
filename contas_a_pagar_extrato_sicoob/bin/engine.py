@@ -225,6 +225,9 @@ with open(entrada, 'rt') as csvfile:
                 else:
                     _cnpj_for = _cnpj_for_nome_75porcento_ou_menor_que_10_letras
 
+                if _cnpj_for == "'":
+                    codi_emp = _codi_emp
+
                 if _cnpj_for == "'" and str(row[2]) != "'00000000000000":
                     _cnpj_for = row[2]
 
