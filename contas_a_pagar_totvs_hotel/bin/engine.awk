@@ -4,7 +4,7 @@ BEGIN {
 	Arquivos = "bin\\lista";
 	
 	while ((getline < Arquivos) > 0) {
-		file = "entrada\\" $0
+		file = "temp\\" $0
 		saida = "saida\\" substr( $0, 1, length($0) - 4 ) ".txt"
 		saida2 = "saida\\" substr( $0, 1, length($0) - 4 ) "_nao_eh_nota" ".csv"
 		
@@ -100,7 +100,7 @@ BEGIN {
 				if( num_cheque != num_cheque_ant && num_cheque != "" && forma_pagto_2 == "CHEQUE" )
 					print "I", baixa, num_cheque > saida
 				
-				if( forma_pagto_2 == "DEBITO EM C/C" || forma_pagto_2 == "DÉBITO EM C/C" )
+				if( forma_pagto_2 == "DEBITO EM C/C" || forma_pagto_2 == "Dï¿½BITO EM C/C" )
 					print "I", baixa, num_cheque > saida
 				
 				print "L", nota_completo, cnpj_forn_cli, num_cheque, nota_1, baixa, forma_pagto_completo, valor_bruto, valor_pago, valor_desconto, valor_juros, forn_cli > saida

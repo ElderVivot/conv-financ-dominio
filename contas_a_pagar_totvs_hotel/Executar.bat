@@ -19,7 +19,9 @@ if exist saida\* del /q saida\*
 
 if exist bin\lista del /q bin\lista
 
-dir /b entrada > bin\lista
+call bin\leArquivos.py
+
+dir /b temp > bin\lista
 
 echo %marcador%Filtrando linhas validas de pagamentos.
 bin\awk95 -f bin\funcoes.awk -f bin\engine.awk
