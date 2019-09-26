@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import xlrd
 import os
 import unicodedata
@@ -32,7 +34,7 @@ def removerAcentosECaracteresEspeciais(palavra):
 
 def PDFToText(arquivos=buscaArquivosEmPasta(caminho="entrada",extensao=(".PDF")), mode = "simple"):
     for arquivo in arquivos:
-        nome_arquivo = os.path.basename(arquivo)
+        nome_arquivo = funcoesUteis.trataCampoTexto(os.path.basename(arquivo))
         saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".tmp"
         try:
             # verifica se o Windows é 32 ou 64 bits
@@ -56,7 +58,6 @@ def leTxt(arquivos=buscaArquivosEmPasta(caminho="temp", extensao=(".TMP"))):
     lista_linha = []
     
     for arquivo in arquivos:
-
         nome_arquivo = os.path.basename(arquivo)
         saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".txt"
         saida = open(saida, "w", encoding='utf-8')
@@ -68,6 +69,8 @@ def leTxt(arquivos=buscaArquivosEmPasta(caminho="temp", extensao=(".TMP"))):
         with open(arquivo, 'rt') as txtfile:
             for linha in txtfile:
                 linha = funcoesUteis.trataCampoTexto(linha)
+                if linha == "":
+                    continue
                 lista_linha.append(linha)
                 saida.write(f'{linha}\n')
             lista_arquivos[arquivo] = lista_linha[:]

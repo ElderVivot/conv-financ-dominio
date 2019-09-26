@@ -1,3 +1,5 @@
+# coding: utf-8
+
 BEGIN { 
 	FS = "";
 	OFS = ";";
@@ -190,7 +192,10 @@ BEGIN {
 	print "Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\recebtos_agrupados.csv"
 	
 	while ((getline < ArquivosCsv) > 0) {
-		file = "temp\\" $0
+		nomeArquivo = $0
+		file = "temp\\" nomeArquivo
+
+		conseguiu_processar_arquivo = 0
 		
 		# PRIMEIRO WHILE QUE VAI LER TODOS OS ARQUIVOS E VER QUAL É A ESTRUTURA QUE ELE ESTÁ
 		while ((getline < file) > 0) {
@@ -205,6 +210,12 @@ BEGIN {
 			campo_2 = Trim(linha_v[2])
 
 			if(campo_1 == "NOME DO FAVORECIDO"){
+				forn_cli = ""
+				forn_cli = campo_2 "" Trim(linha_v[3]) "" Trim(linha_v[4])
+				forn_cli = Trim(forn_cli)
+			}
+
+			if(campo_1 == "NOME"){
 				forn_cli = ""
 				forn_cli = campo_2 "" Trim(linha_v[3]) "" Trim(linha_v[4])
 				forn_cli = Trim(forn_cli)
@@ -240,7 +251,25 @@ BEGIN {
 				vencimento = IfElse( vencimento == "NULO", "", vencimento )
 			}
 
+			if(campo_1 == "CNPJ"){
+				cnpj_forn_cli = ""
+				cnpj_forn_cli = soNumeros(campo_2)
+				cnpj_forn_cli = IfElse(cnpj_forn_cli == "", "00000000000000", cnpj_forn_cli)
+			}
+
+			if(campo_1 == "CPF"){
+				cnpj_forn_cli = ""
+				cnpj_forn_cli = soNumeros(campo_2)
+				cnpj_forn_cli = IfElse(cnpj_forn_cli == "", "00000000000000", cnpj_forn_cli)
+			}
+
 			if(campo_1 == "CPF/CNPJ"){
+				cnpj_forn_cli = ""
+				cnpj_forn_cli = soNumeros(campo_2)
+				cnpj_forn_cli = IfElse(cnpj_forn_cli == "", "00000000000000", cnpj_forn_cli)
+			}
+
+			if(campo_1 == "CPF / CNPJ"){
 				cnpj_forn_cli = ""
 				cnpj_forn_cli = soNumeros(campo_2)
 				cnpj_forn_cli = IfElse(cnpj_forn_cli == "", "00000000000000", cnpj_forn_cli)
@@ -253,6 +282,27 @@ BEGIN {
 				empresa = upperCase(empresa)
 
 				codi_emp = empresa
+			}
+
+			if(campo_1 == "VALOR"){
+				valor_pago = ""
+				valor_pago = campo_2
+				valor_pago = FormataCampo("double", valor_pago, 12, 2)
+				valor_pago_int = int(soNumeros(valor_pago))
+			}
+
+			if(campo_1 == "VALOR DA TED"){
+				valor_pago = ""
+				valor_pago = campo_2
+				valor_pago = FormataCampo("double", valor_pago, 12, 2)
+				valor_pago_int = int(soNumeros(valor_pago))
+			}
+
+			if(campo_1 == "VALOR DA TRANSFERENCIA (R$)"){
+				valor_pago = ""
+				valor_pago = campo_2
+				valor_pago = FormataCampo("double", valor_pago, 12, 2)
+				valor_pago_int = int(soNumeros(valor_pago))
 			}
 			
 			if(campo_1 == "VALOR PAGO"){
@@ -333,15 +383,16 @@ BEGIN {
 
 				# AS LINHAS ABAIXO SÃO UTILIZADAS PARA IMPRIMIR SOMENTE O QUE FOR DAQUELA COMPETENCIA
 				baixa_temp = ""
-				baixa_temp = baixa_extrato
-				baixa_temp = IfElse(baixa_temp == "", baixa, baixa_temp)
+				baixa_temp = baixa
 				baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
 				
 				# PAGOS
-				#if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
 					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
 						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
-				#}
+
+					conseguiu_processar_arquivo = 1
+				}
 			}
 			
 			if( substr(campo_1, 1, 26) == "TRANSFERENCIA REALIZADA EM" ){
@@ -353,18 +404,87 @@ BEGIN {
 
 				# AS LINHAS ABAIXO SÃO UTILIZADAS PARA IMPRIMIR SOMENTE O QUE FOR DAQUELA COMPETENCIA
 				baixa_temp = ""
-				baixa_temp = baixa_extrato
-				baixa_temp = IfElse(baixa_temp == "", baixa, baixa_temp)
+				baixa_temp = baixa
 				baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
 				
 				# PAGOS
-				#if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
 					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
 						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
-				#}
+
+					conseguiu_processar_arquivo = 1
+				}
+			}
+
+			if( substr(campo_1, 1, 25) == "TRANSFERENCIA EFETUADA EM" ){
+				baixa = ""
+				baixa = Trim(substr($0,26,11))
+				gsub("[.]", "/", baixa)
+				# baixa = FormatDate(baixa)
+				# baixa = isDate(baixa)
+
+				# AS LINHAS ABAIXO SÃO UTILIZADAS PARA IMPRIMIR SOMENTE O QUE FOR DAQUELA COMPETENCIA
+				baixa_temp = ""
+				baixa_temp = baixa
+				baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
+				
+				# PAGOS
+				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
+						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+
+					conseguiu_processar_arquivo = 1
+				}
+			}
+
+			if( substr(campo_1, 1, 20) == "OPERACAO EFETUADA EM" ){
+				baixa = ""
+				baixa = Trim(substr($0,21,11))
+				gsub("[.]", "/", baixa)
+				# baixa = FormatDate(baixa)
+				# baixa = isDate(baixa)
+
+				# AS LINHAS ABAIXO SÃO UTILIZADAS PARA IMPRIMIR SOMENTE O QUE FOR DAQUELA COMPETENCIA
+				baixa_temp = ""
+				baixa_temp = baixa
+				baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
+				
+				# PAGOS
+				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
+						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+					
+					conseguiu_processar_arquivo = 1
+				}
+			}
+
+			if( substr(campo_1, 1, 17) == "TED SOLICITADA EM" ){
+				baixa = ""
+				baixa = Trim(substr($0,18,11))
+				gsub("[.]", "/", baixa)
+				# baixa = FormatDate(baixa)
+				# baixa = isDate(baixa)
+
+				# AS LINHAS ABAIXO SÃO UTILIZADAS PARA IMPRIMIR SOMENTE O QUE FOR DAQUELA COMPETENCIA
+				baixa_temp = ""
+				baixa_temp = baixa
+				baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
+				
+				# PAGOS
+				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
+						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+					
+					conseguiu_processar_arquivo = 1
+				}
 			}
 			
-		} close(file)	
+		} close(file)
+
+		if(conseguiu_processar_arquivo == 0){
+			system("copy temp\\\"" nomeArquivo "\" naoprocessados\\\"" nomeArquivo "\" > nul")
+			print("      - Arquivo \"" nomeArquivo "\" nao foi possivel processar.")
+		}
 	} close(ArquivosCsv)
 	
 	#print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "saida\\movtos_feitos_no_cartao_nao_estao_na_planilha.csv"

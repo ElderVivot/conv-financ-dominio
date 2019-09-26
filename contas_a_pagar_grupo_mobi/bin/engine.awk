@@ -12,8 +12,10 @@ BEGIN {
 	
 	_comp_ini = int(Trim(substr(_comp_ini, 4)) "" substr(_comp_ini, 1, 2))
 	_comp_fim = int(Trim(substr(_comp_fim, 4)) "" substr(_comp_fim, 1, 2))
+
+	system("if not exist temp\\extrato_cartao.csv echo Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico;Historico Complementar >> temp\\extrato_cartao.csv")
 	
-	print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "temp\\extrato_cartao.csv"
+	#print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "temp\\extrato_cartao.csv"
 	
 	# LE O ARQUIVO OFX AFIM DE PODER COMPARAR O QUE FOI PAGO NO CARTAO COM A PLANILHA DE BAIXA DO CLIENTE
 	while ((getline < ArquivosOfx) > 0) {
@@ -70,7 +72,6 @@ BEGIN {
 					data_mov = selecionaTAG( ofx, "<dtposted>", "</dtposted>" )
 					data_mov = substr(data_mov, 1, 8)
 					data_mov = substr(data_mov, 7, 2) "/" substr(data_mov, 5, 2) "/" substr(data_mov, 1, 4)
-					data_mov_int = int(substr(data_mov, 7) "" substr(data_mov, 4, 2))
 				}
 				
 				if( substr(ofx, 1, 8) == "<trnamt>" ){
@@ -95,23 +96,7 @@ BEGIN {
 					historico = upperCase( selecionaTAG( ofx, "<memo>", "</memo>" ) )
 				
 				if( substr(ofx, 1, 10) == "</stmttrn>" ){
-					
-					ExisteMov[operacao, data_mov, valor_transacao] = 1
-					BancoPago[operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
-					DataPagto[operacao, data_mov, valor_transacao] = data_mov
-					
-					ExisteMovBanco[num_banco, operacao, data_mov, valor_transacao] = 1
-					BancoPagoBanco[num_banco, operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
-					DataPagtoBanco[num_banco, operacao, data_mov, valor_transacao] = data_mov
-					
-					# QUANDO É CHEQUE GUARDA A DATA QUE O CHEQUE COMPENSOU, É ELA QUE TEM QUE SER UTILIZADA COMO DATA DA BAIXA
-					if( historico == "CHEQ COMP" || historico == "CHEQUE SAC" ){
-						DataCompensacaoCheque[num_doc] = data_mov
-						BancoPagoCheque[num_doc] = num_banco "-" conta_corrente
-					}
-					
-					if( _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
-						print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
+					print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
 				}
 			
 			}
@@ -138,7 +123,6 @@ BEGIN {
 					data_mov = substr( ofx, 11 , length(ofx) - 10 )
 					data_mov = substr(data_mov, 1, 8)
 					data_mov = substr(data_mov, 7, 2) "/" substr(data_mov, 5, 2) "/" substr(data_mov, 1, 4)
-					data_mov_int = int(substr(data_mov, 7) "" substr(data_mov, 4, 2))
 				}
 				
 				if( substr(ofx, 1, 8) == "<trnamt>" ){
@@ -163,23 +147,7 @@ BEGIN {
 					historico = upperCase( substr( ofx, 7 , length(ofx) - 6 ) )
 				
 				if( substr(ofx, 1, 10) == "</stmttrn>" ){
-					
-					ExisteMov[operacao, data_mov, valor_transacao] = 1
-					BancoPago[operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
-					DataPagto[operacao, data_mov, valor_transacao] = data_mov
-					
-					ExisteMovBanco[num_banco, operacao, data_mov, valor_transacao] = 1
-					BancoPagoBanco[num_banco, operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
-					DataPagtoBanco[num_banco, operacao, data_mov, valor_transacao] = data_mov
-					
-					# QUANDO É CHEQUE GUARDA A DATA QUE O CHEQUE COMPENSOU, É ELA QUE TEM QUE SER UTILIZADA COMO DATA DA BAIXA
-					if( historico == "CHEQ COMP" || historico == "CHEQUE SAC" ){
-						DataCompensacaoCheque[num_doc] = data_mov
-						BancoPagoCheque[num_doc] = num_banco "-" conta_corrente
-					}
-					
-					if( _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
-						print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
+					print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
 				}
 			}
 			
@@ -188,6 +156,33 @@ BEGIN {
 	
 	FS = ";"; 
 	OFS = FS;
+
+	# VAI VER NO OFX QUAIS DÉBITOS QUE NÃO ESTÃO NA PLANILHA DO CLIENTE
+	while ( (getline < "temp\\extrato_cartao.csv") > 0 ) {
+		num_banco_extrato = $1
+		conta_corrente_extrato = $2
+		tipo_mov_extrato = $3
+		data_mov_extrato = $4
+		operacao_extrato = $5
+		valor_transacao_extrato = $6
+		num_doc_extrato = $7
+		historico_extrato = $8
+		historico_complementar_extrato = $9
+
+		ExisteMov[operacao_extrato, data_mov_extrato, valor_transacao_extrato] = 1
+		BancoPago[operacao_extrato, data_mov_extrato, valor_transacao_extrato] = num_banco_extrato "-" conta_corrente_extrato
+		DataPagto[operacao_extrato, data_mov_extrato, valor_transacao_extrato] = data_mov_extrato
+		
+		ExisteMovBanco[num_banco_extrato, operacao_extrato, data_mov_extrato, valor_transacao_extrato] = 1
+		BancoPagoBanco[num_banco_extrato, operacao_extrato, data_mov_extrato, valor_transacao_extrato] = num_banco_extrato "-" conta_corrente_extrato
+		DataPagtoBanco[num_banco_extrato, operacao_extrato, data_mov_extrato, valor_transacao_extrato] = data_mov_extrato
+		
+		# QUANDO É CHEQUE GUARDA A DATA QUE O CHEQUE COMPENSOU, É ELA QUE TEM QUE SER UTILIZADA COMO DATA DA BAIXA
+		if( index(historico_extrato, "CHEQ COMP") > 0 || index(historico_extrato, "CHEQUE SAC") > 0 ){
+			DataCompensacaoCheque[num_doc_extrato] = data_mov_extrato
+			BancoPagoCheque[num_doc_extrato] = num_banco_extrato "-" conta_corrente_extrato
+		}
+	} close("temp\\extrato_cartao.csv")
 	
 	print "Documento;Nome Fornecedor;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\pagtos_agrupados.csv"
 	print "Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\recebtos_agrupados.csv"
@@ -283,6 +278,49 @@ BEGIN {
 			campo_1 = Trim($1)
 			campo_1 = subsCharEspecial(campo_1)
 			campo_1 = upperCase(campo_1)
+
+			# linhas onde são tipo um cabeçalho, ou seja, onde estão os dados da data, valores totais, etc
+			campo_2 = ""
+			campo_2 = Trim($2)
+			campo_2 = FormatDate(campo_2)
+			campo_2 = isDate(campo_2)
+			if(campo_2 != "NULO"){
+				baixa = ""
+				baixa = campo_2
+
+				categoria = ""
+				categoria = Trim($3)
+				categoria = subsCharEspecial(categoria)
+				categoria = upperCase(categoria)
+
+				valor_total_pago = ""
+				valor_total_pago = Trim(pos_valor_pago)
+				valor_total_pago_original = valor_total_pago
+				valor_total_pago = FormataCampo("double", valor_total_pago, 12, 2)
+				valor_total_pago_int = int(soNumeros(valor_total_pago))
+
+				valor_total_recebido = ""
+				valor_total_recebido = Trim(pos_valor_recebido)
+				valor_total_recebido_original = valor_total_recebido
+				valor_total_recebido = FormataCampo("double", valor_total_recebido, 12, 2)
+				valor_total_recebido_int = int(soNumeros(valor_total_recebido))
+
+				if( valor_pago_int > 0 ){
+					operacao_arq = "-"
+					valor_considerar = valor_total_pago
+				} else {
+					operacao_arq = "+"
+					valor_considerar = valor_total_recebido
+				}
+
+				forn_cli_linha_completa = ""
+				forn_cli_linha_completa = Trim($4)
+				forn_cli_linha_completa = subsCharEspecial(forn_cli_linha_completa)
+				forn_cli_linha_completa = upperCase(forn_cli_linha_completa)
+
+				data_proxima_linha = DataLinha[filecsv, linha_2 + 1]
+				campo_4_proxima_linha = Campo4[filecsv, linha_2 + 1]
+			}
 
 			nota_completo = ""
 			nota_completo = Trim($1)
@@ -385,14 +423,6 @@ BEGIN {
 				valor_recebido_int = valor_taxa_int
 			}
 			
-			if( valor_pago_int > 0 ){
-				operacao_arq = "-"
-				valor_considerar = valor_pago
-			} else {
-				operacao_arq = "+"
-				valor_considerar = valor_recebido_int
-			}
-			
 			valor_juros = ""
 			valor_juros = Trim(pos_valor_juros)
 			valor_juros = FormataCampo("double", valor_juros, 12, 2)
@@ -472,61 +502,6 @@ BEGIN {
 				banco_arquivo = banco_arquivo
 			}
 
-			# linhas onde são tipo um cabeçalho, ou seja, onde estão os dados da data, valores totais, etc
-			campo_2 = ""
-			campo_2 = Trim($2)
-			campo_2 = FormatDate(campo_2)
-			campo_2 = isDate(campo_2)
-			if(campo_2 != "NULO"){
-				baixa = ""
-				baixa = campo_2
-
-				categoria = ""
-				categoria = Trim($3)
-				categoria = subsCharEspecial(categoria)
-				categoria = upperCase(categoria)
-
-				valor_total_pago = ""
-				valor_total_pago = Trim(pos_valor_pago)
-				valor_total_pago_original = valor_total_pago
-				valor_total_pago = FormataCampo("double", valor_total_pago, 12, 2)
-				valor_total_pago_int = 0
-				valor_total_pago_int = int(soNumeros(valor_total_pago))
-
-				valor_total_recebido = ""
-				valor_total_recebido = Trim(pos_valor_recebido)
-				valor_total_recebido_original = valor_total_recebido
-				valor_total_recebido = FormataCampo("double", valor_total_recebido, 12, 2)
-				valor_total_recebido_int = 0
-				valor_total_recebido_int = int(soNumeros(valor_total_recebido))
-
-				forn_cli_linha_completa = ""
-				forn_cli_linha_completa = Trim($4)
-				forn_cli_linha_completa = subsCharEspecial(forn_cli_linha_completa)
-				forn_cli_linha_completa = upperCase(forn_cli_linha_completa)
-
-				data_proxima_linha = DataLinha[filecsv, linha_2 + 1]
-				campo_4_proxima_linha = Campo4[filecsv, linha_2 + 1]
-
-				if(valor_total_pago_int > 0){
-					print "INICIO", baixa, valor_total_pago, banco_arquivo, forn_cli_linha_completa, codi_emp, data_proxima_linha >> "temp\\pagtos_agrupados.csv"
-
-					if(data_proxima_linha != "NULO" || campo_4_proxima_linha == 1){
-						print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_total_pago, 
-      				          valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
-					}
-				}
-
-				if(valor_total_recebido_int > 0){
-					print "INICIO", baixa, valor_total_recebido, banco_arquivo, forn_cli_linha_completa, codi_emp, data_proxima_linha >> "temp\\recebtos_agrupados.csv"
-
-					if(data_proxima_linha != "NULO" || campo_4_proxima_linha == 1){
-						print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_total_recebido, 
-      				          valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
-					}
-				}
-			}
-												
 			# TEM PAGAMENTOS QUE O CLIENTE LANÇA NA PLANILHA COM DATA ERRADA DA BAIXA, PORTANTO ESTAS LINHAS ABAIXO VAI VERIFICAR ISTO E O LIMITE É 3 DIAS A MAIS OU 3 DIAS A MENOS
 			baixa_extrato = ""
 			baixa_mais1 = ""
@@ -668,6 +643,27 @@ BEGIN {
 			baixa_temp = baixa_extrato
 			baixa_temp = IfElse(baixa_temp == "", baixa, baixa_temp)
 			baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
+
+			# imprime as linhas onde são tipo um cabeçalho, ou seja, onde estão os dados da data, valores totais, etc
+			if(campo_2 != "NULO"){
+				if(valor_total_pago_int > 0){
+					print "INICIO", baixa, valor_total_pago, banco_arquivo, forn_cli_linha_completa, codi_emp, data_proxima_linha >> "temp\\pagtos_agrupados.csv"
+
+					if(data_proxima_linha != "NULO" || campo_4_proxima_linha == 1){
+						print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_total_pago, 
+      				          valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+					}
+				}
+
+				if(valor_total_recebido_int > 0){
+					print "INICIO", baixa, valor_total_recebido, banco_arquivo, forn_cli_linha_completa, codi_emp, data_proxima_linha >> "temp\\recebtos_agrupados.csv"
+
+					if(data_proxima_linha != "NULO" || campo_4_proxima_linha == 1){
+						print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_total_recebido, 
+      				          valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
+					}
+				}
+			}
 			
 			# PAGOS --> a última verificação é pras linhas que são saldos, se for saldo na coluna do fornecedor vai vir uma data
 			if( baixa != "NULO" && valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim && forn_cli != "" && valor_total_pago_int > 0 && campo_2 == "NULO" && forn_cli_temp == "NULO" ){
@@ -685,7 +681,7 @@ BEGIN {
 				
 	} close(ArquivosCsv)
 	
-	# VAI VER NO OFX QUAIS DÉBITOS QUE NÃO ESTÃO NA PLANILHA DO CLIENTE, GERALMENTE SÃO CHEQUES COMPENSADOS EM MESES ANTERIORES OU TARIFAS
+	# VAI VER NO OFX QUAIS DÉBITOS QUE NÃO ESTÃO NA PLANILHA DO CLIENTE
 	while ( (getline < "temp\\extrato_cartao.csv") > 0 ) {
 		num_banco_2 = $1
 		
@@ -693,16 +689,18 @@ BEGIN {
 		conta_corrente_3_int = int( soNumeros(conta_corrente_3) )
 		
 		tipo_mov_2 = $3
+
 		data_mov_2 = $4
+		data_mov_int = int(substr(data_mov_2, 7) "" substr(data_mov_2, 4, 2))
+
 		operacao_3 = $5
 		valor_transacao_2 = $6
 		num_doc_2 = $7
 		historico_2 = $8
 		
 		pagou_no_banco = PagouNoBanco[operacao_3, data_mov_2, valor_transacao_2]
-		
-		if( ( operacao_3 == "-" || operacao_3 == "Operacao") && pagou_no_banco != 1 )
-		#if( pagou_no_banco != 1 )
+
+		if( ( operacao_3 == "-" || operacao_3 == "Operacao") && pagou_no_banco != 1 && _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
 			print $0 >> "saida\\pagtos_feitos_no_cartao_nao_estao_na_planilha.csv"
 		
 	} close("temp\\extrato_cartao.csv")

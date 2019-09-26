@@ -18,8 +18,9 @@ set /P comp_fim=- Competencia Final (MM/AAAA):
 
 echo.
 echo - Apagando dados da pasta saidas.
-if exist saida\* del /q saida\*
-if exist temp\* del /q temp\*
+if exist saida\*.* del /q saida\*.*
+if exist temp\*.* del /q temp\*.*
+if exist naoprocessados\*.* del /q naoprocessados\*.*
 
 echo - Filtrando linhas validas de pagamentos.
 call bin\leArquivos.py
