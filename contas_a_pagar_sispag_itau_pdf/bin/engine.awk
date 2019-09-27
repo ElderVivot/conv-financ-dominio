@@ -491,8 +491,6 @@ BEGIN {
 				valor_pago_int = 0
 				categoria = ""
 			}
-
-			if()
 			
 		} close(file)
 

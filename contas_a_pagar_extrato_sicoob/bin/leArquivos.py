@@ -22,14 +22,6 @@ def buscaArquivosEmPasta(caminho="", extensao=(".XLS", "XLSX")):
 
     return lista_arquivos
 
-def removerAcentosECaracteresEspeciais(palavra):
-    # Unicode normalize transforma um caracter em seu equivalente em latin.
-    nfkd = unicodedata.normalize('NFKD', palavra).encode('ASCII', 'ignore').decode('ASCII')
-    palavraTratada = u"".join([c for c in nfkd if not unicodedata.combining(c)])
-
-    # Usa expressão regular para retornar a palavra apenas com valores corretos
-    return re.sub('[^a-zA-Z0-9.!+:=)$(/*,\-_ \\\]', '', palavraTratada)
-
 def PDFToText(arquivos=buscaArquivosEmPasta(caminho="entrada",extensao=(".PDF")), mode = "simple"):
     for arquivo in arquivos:
         nome_arquivo = os.path.basename(arquivo)
@@ -63,7 +55,7 @@ def leLinhasExtrato(arquivos=buscaArquivosEmPasta(caminho="temp", extensao=(".TX
         # le o arquivo e grava num vetor
         with open(arquivo, 'rt') as txtfile:
             for linha in txtfile:
-                linha = str(linha).replace("\n", "")
+                linha = funcoesUteis.removerAcentos(str(linha).upper().replace("\n", ""))
                 # ignora linhas totalmente em branco
                 if(funcoesUteis.trataCampoTexto(linha) == ""):
                     continue
@@ -84,6 +76,7 @@ def organizaExtrato(saida="temp\\baixas.csv"):
 
         posicao_historico = 0
         posicao_data = 0
+        posicao_documento = 0
 
         data = datetime.datetime.strptime("01/01/1900", "%d/%m/%Y").date()
         data = data.strftime("%d/%m/%Y")
@@ -92,13 +85,33 @@ def organizaExtrato(saida="temp\\baixas.csv"):
         operador = ""
         fornecedor_cliente = ""
         historico = ""
+        ano_extrato = 0
 
         for num_row, row in enumerate(linhas):
 
+            row = str(row)
+
+            posicao_data_temp = row.upper().find("DATA")
+            if posicao_data_temp > 0:
+                if posicao_data_temp > 5:
+                    posicao_data = posicao_data_temp-5
+                else:
+                    posicao_data = 0
+
+            posicao_documento_temp = row.upper().find("DOCUMENTO")
+            if posicao_documento_temp > 0:
+                posicao_documento = posicao_documento_temp
+
             # DAQUI PRA BAIXO analisando a complementação do depósito
-            posicao_historico_temp = row.upper().find("HISTÓRICO")
+            posicao_historico_temp = row.upper().find("HISTORICO")
             if posicao_historico_temp > 0:
-                posicao_historico = posicao_historico_temp - 10 # pega 10 posições a menos pra questão de 'segurança'
+                # serve pra identificar onde o historico começa, visto que algumas vezes não tem o documento no PDF
+                if posicao_documento == 0:
+                    posicao_historico = posicao_historico_temp - posicao_data_temp + 8 # pega 8 posições a menos pra questão de 'segurança'
+                else:
+                    posicao_historico = posicao_historico_temp - 10 # pega 10 posições a menos pra questão de 'segurança'
+                if posicao_historico > posicao_historico_temp:
+                    posicao_historico = posicao_historico_temp
 
             historico_temp = funcoesUteis.trataCampoTexto(row[posicao_historico:posicao_historico+65])
 
@@ -106,12 +119,22 @@ def organizaExtrato(saida="temp\\baixas.csv"):
             if historico_temp.count("SALDO") > 0:
                 continue
 
-            posicao_data_temp = str(row).upper().find("DATA")
-            if posicao_data_temp > 0:
-                if posicao_data_temp > 5:
-                    posicao_data = posicao_data_temp-5
-                else:
-                    posicao_data = 0
+            # serve pros extratos que não tem a data com o ano, e sim apenas com o dia e mês
+            periodo_temp = row.strip().split(':')
+            if periodo_temp[0] == 'PERIODO':
+                ano_extrato = periodo_temp[1].split('-')
+                ano_extrato = funcoesUteis.trataCampoTexto(ano_extrato[0])
+                ano_extrato = ano_extrato[-4:]
+
+            # serve pra identificar o tamanho das datas
+            if posicao_documento == 0:
+                qtd_char_data = posicao_historico - posicao_data
+                if qtd_char_data > 17:
+                    qtd_char_data = 17
+            else:
+                qtd_char_data = posicao_documento - posicao_data
+                if qtd_char_data > 17:
+                    qtd_char_data = 17
 
             # lê a próxima linha pra saber se é uma linha com complementação dos dados da atual ou não
             try:
@@ -119,12 +142,21 @@ def organizaExtrato(saida="temp\\baixas.csv"):
             except Exception:
                 proxima_linha = ""
 
-            data_temp_proxima_linha = proxima_linha[posicao_data:posicao_data+17]
+            data_temp_proxima_linha = proxima_linha[posicao_data:posicao_data+qtd_char_data-1]
+            data_temp_proxima_linha = data_temp_proxima_linha.strip()
+            # caso a data esteja apenas no forma DD/MM ele coloca o ano
+            if len(data_temp_proxima_linha) == 5:
+                data_temp_proxima_linha = (f'{data_temp_proxima_linha}/{ano_extrato}')
             data_temp_proxima_linha = funcoesUteis.retornaCampoComoData(data_temp_proxima_linha)
 
             # ---- começa o tratamento de cada campo ----
-            data_temp = row[posicao_data:posicao_data+17]
+            data_temp = row[posicao_data:posicao_data+qtd_char_data-1]
+            data_temp = data_temp.strip()
+            # caso a data esteja apenas no forma DD/MM ele coloca o ano
+            if len(data_temp) == 5:
+                data_temp = (f'{data_temp}/{ano_extrato}')
             data_temp = funcoesUteis.retornaCampoComoData(data_temp)
+
             # verifica se é uma data válida pra começar os tratamentos de cada campo
             if data_temp is not None:
                 data = funcoesUteis.transformaCampoDataParaFormatoBrasileiro(data_temp)

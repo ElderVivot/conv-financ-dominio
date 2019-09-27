@@ -10,6 +10,10 @@ def removerAcentosECaracteresEspeciais(palavra):
     # Usa expressão regular para retornar a palavra apenas com valores corretos
     return re.sub('[^a-zA-Z0-9.!+:=)?$(/*,\-_ \\\]', '', palavraTratada)
 
+def removerAcentos(palavra):
+    # Unicode normalize transforma um caracter em seu equivalente em latin.
+    return unicodedata.normalize('NFKD', palavra).encode('ASCII', 'ignore').decode('ASCII')
+
 def trocaCaracteresTextoPraLetraX(palavra):
     # Unicode normalize transforma um caracter em seu equivalente em latin.
     nfkd = unicodedata.normalize('NFKD', palavra).encode('ASCII', 'ignore').decode('ASCII')
