@@ -10,7 +10,7 @@ def cnpj_for(codi_emp, nome_for):
         cursor.execute(f"SELECT MAX(cgce_for)"
                        f"  FROM bethadba.effornece "
                        f" WHERE codi_emp IN ({emp}) "
-                       f"   AND ( REPLACE(nome_for, '''', '') LIKE '%{nome_for}%' OR REPLACE(nomr_for, '''', '') LIKE '%{nome_for}%' )")
+                       f"   AND ( nome_for LIKE '%{nome_for}%' OR nomr_for LIKE '%{nome_for}%' )")
         data = str(cursor.fetchone())
         if data.count('None') == 0:
             break
@@ -26,7 +26,7 @@ def cnpj_for_verifica_a_esquerda(codi_emp, nome_for):
         cursor.execute(f"SELECT MAX(cgce_for)"
                        f"  FROM bethadba.effornece "
                        f" WHERE codi_emp IN ({emp}) "
-                       f"   AND REPLACE(nome_for, '''', '') LIKE '{nome_for}%'")
+                       f"   AND nome_for LIKE '{nome_for}%'")
         data = str(cursor.fetchone())
         if data.count('None') == 0:
             break
@@ -69,7 +69,7 @@ def cnpj_for_nota_2(codi_emp, nume_nota, nome_for):
                        f"              AND forn.codi_for = ent.codi_for"
                        f" WHERE ent.codi_emp IN ({emp})"
                        f"   AND ent.nume_ent = {nume_nota}"
-                       f"   AND REPLACE(nome_for, '''', '') LIKE '%{nome_for}%' ")
+                       f"   AND forn.nome_for LIKE '%{nome_for}%' ")
         data = str(cursor.fetchone())
         if data.count('None') == 0:
             break
@@ -148,11 +148,17 @@ with open(entrada, 'rt') as csvfile:
         csvreader = csv.reader(csvfile, delimiter=';')
         for row in csvreader:
             if str(row[0]) == 'Documento':
-                saida.write('Documento;Nome Fornecedor;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;'
+                saida.write('Documento;Nome Fornecedor;CNPJ Fornecedor;Texto Fixo;Vencimento;Banco Planilha;Banco Oco. Extrato;'
                             'Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;'
                             'É uma NF?;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
+            elif str(row[0]) == 'INICIO':
+                saida.write(f'{row[0]};{row[1]};{row[2]}\n')
             else:
                 
+                # _codi_emp_arquivo = int(row[14])
+                # if _codi_emp != _codi_emp_arquivo:
+                #     continue
+
                 _lista_filiais = str(lista_filiais(_codi_emp))
 
                 _codi_emp_v = []
@@ -262,7 +268,7 @@ with open(entrada, 'rt') as csvfile:
                     _codi_cta = ""
                 _codi_cta = _codi_cta.replace("'", '')
 
-                result = (f"{row[0]};{row[1]};{_cnpj_for};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
+                result = (f"{row[0]};{row[1]};{_cnpj_for};LANC;{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
                             f";{row[11]};{row[12]};{row[13]};{nota_existe};{codi_emp};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
                 saida.write(result)
 
@@ -277,9 +283,18 @@ try:
         for row in csvreader:
             if str(row[0]) == 'Documento':
                 saida.write('Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
+            elif str(row[0]) == 'INICIO':
+
+                # _codi_emp_arquivo = int(row[5])
+                # if _codi_emp != _codi_emp_arquivo:
+                #     continue
+
+                saida.write(f'{row[0]};{row[1]};{row[2]}\n')
             else:
-                #_codi_emp = str(row[14])
-                #_codi_emp = apenas_valor_campo_dominio(str(codi_emp_por_cnpj(_codi_emp)))
+                
+                _codi_emp_arquivo = int(row[14])
+                if _codi_emp != _codi_emp_arquivo:
+                    continue
 
                 result = (f"{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
                             f";{row[11]};{row[12]};{row[13]};{_codi_emp};{row[15]};{row[16]};{row[17]};{row[18]}\n")
