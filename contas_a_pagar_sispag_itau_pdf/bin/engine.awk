@@ -209,39 +209,17 @@ BEGIN {
 
 			campo_2 = Trim(linha_v[2])
 
-			if(campo_1 == "NOME DO FAVORECIDO"){
-				forn_cli = ""
-				forn_cli = campo_2 "" Trim(linha_v[3]) "" Trim(linha_v[4])
-				forn_cli = Trim(forn_cli)
-			}
-
 			if(campo_1 == "NOME"){
 				forn_cli = ""
 				forn_cli = campo_2 "" Trim(linha_v[3]) "" Trim(linha_v[4])
 				forn_cli = Trim(forn_cli)
 			}
-			
-			# nota_completo = ""
-			# nota_completo = Trim(substr($0,5,16))
-			# nota_completo_orig = nota_completo
-			# if( index(nota_completo, "-") > 0 )
-			# 	nota_completo = split( nota_completo, nota_completo_v, "-" )
-			# if( index(nota_completo, "/") > 0 )
-			# 	nota_completo = split( nota_completo, nota_completo_v, "/" )
-			
-			# nota = ""
-			# nota = Trim(nota_completo_v[1])
-			
-			# if( index(nota_completo_orig, "-") == 0 && index(nota_completo_orig, "/") == 0 )
-			# 	nota = nota_completo_orig
-			
-			# nota = int(soNumeros(nota))
-			
-			# emissao = ""
-			# emissao = Trim(substr($0,62,10))
-			# emissao = FormatDate(emissao)
-			# emissao = isDate(emissao)
-			# emissao = IfElse( emissao == "NULO", "", emissao )
+
+			if(campo_1 == "NOME DO FAVORECIDO"){
+				forn_cli = ""
+				forn_cli = campo_2 "" Trim(linha_v[3]) "" Trim(linha_v[4])
+				forn_cli = Trim(forn_cli)
+			}
 			
 			if(campo_1 == "DATA DE VENCIMENTO"){
 				vencimento = ""
@@ -393,6 +371,13 @@ BEGIN {
 
 					conseguiu_processar_arquivo = 1
 				}
+
+				forn_cli = ""
+				cnpj_forn_cli = ""
+				vencimento = ""
+				valor_pago = "0,00"
+				valor_pago_int = 0
+				categoria = ""
 			}
 			
 			if( substr(campo_1, 1, 26) == "TRANSFERENCIA REALIZADA EM" ){
@@ -414,6 +399,13 @@ BEGIN {
 
 					conseguiu_processar_arquivo = 1
 				}
+
+				forn_cli = ""
+				cnpj_forn_cli = ""
+				vencimento = ""
+				valor_pago = "0,00"
+				valor_pago_int = 0
+				categoria = ""
 			}
 
 			if( substr(campo_1, 1, 25) == "TRANSFERENCIA EFETUADA EM" ){
@@ -435,6 +427,13 @@ BEGIN {
 
 					conseguiu_processar_arquivo = 1
 				}
+
+				forn_cli = ""
+				cnpj_forn_cli = ""
+				vencimento = ""
+				valor_pago = "0,00"
+				valor_pago_int = 0
+				categoria = ""
 			}
 
 			if( substr(campo_1, 1, 20) == "OPERACAO EFETUADA EM" ){
@@ -456,6 +455,13 @@ BEGIN {
 					
 					conseguiu_processar_arquivo = 1
 				}
+
+				forn_cli = ""
+				cnpj_forn_cli = ""
+				vencimento = ""
+				valor_pago = "0,00"
+				valor_pago_int = 0
+				categoria = ""
 			}
 
 			if( substr(campo_1, 1, 17) == "TED SOLICITADA EM" ){
@@ -477,7 +483,16 @@ BEGIN {
 					
 					conseguiu_processar_arquivo = 1
 				}
+
+				forn_cli = ""
+				cnpj_forn_cli = ""
+				vencimento = ""
+				valor_pago = "0,00"
+				valor_pago_int = 0
+				categoria = ""
 			}
+
+			if()
 			
 		} close(file)
 

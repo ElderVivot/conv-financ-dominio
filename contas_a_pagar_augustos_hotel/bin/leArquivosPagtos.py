@@ -113,14 +113,28 @@ def leXls_Xlsx(arquivos=buscaArquivosEmPasta()):
 
 leXls_Xlsx()
 
-# def leCsv(arquivos=buscaArquivosEmPasta(extensao=(".TXT")),saida="temp\\baixas.csv",separadorCampos=','):
-#     saida = open(saida, "w", encoding='utf-8')
+# def leCsv(arquivos=buscaArquivosEmPasta(extensao=(".CSV")),separadorCampos=';'):
 #     lista_dados = []
 #     dados_linha = []
 #     for arquivo in arquivos:
+
+#         nome_arquivo = os.path.basename(arquivo)
+#         saida = "temp\\" + removerAcentosECaracteresEspeciais(nome_arquivo[0:len(nome_arquivo)-4]) + ".csv"
+#         saida = open(saida, "w", encoding='utf-8')
+
 #         with open(arquivo, 'rt') as csvfile:
 #             csvreader = csv.reader(csvfile, delimiter=separadorCampos)
 #             for row in csvreader:
+                
+#                 existe_valor_linha = ""
+#                 for campo in row:
+#                     valor_celula = removerAcentosECaracteresEspeciais(str(campo).strip().replace('\n', ''))
+#                     existe_valor_linha += valor_celula
+                
+#                 # se não existir nenhum valor na linha passa pra próxima
+#                 if existe_valor_linha == "":
+#                     continue
+
 #                 for campo in row:
 #                     valor_celula = removerAcentosECaracteresEspeciais(str(campo))
                     
@@ -144,8 +158,10 @@ leXls_Xlsx()
 #                 # limpa os dados da linha para ler a próxima
 #                 dados_linha.clear()
 
-#     # fecha o arquivo
-#     saida.close()
+#         # fecha o arquivo
+#         saida.close()
 
 #     # retorna uma lista dos dados
 #     return lista_dados
+
+leXls_Xlsx()
