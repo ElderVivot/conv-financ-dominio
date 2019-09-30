@@ -65,13 +65,13 @@ def nume_nota_pelo_cnpj_e_valor(codi_emp, cgce_for, valor_pago, data_pagto):
     cursor = connection.cursor()
     for emp in codi_emp:
         cursor.execute(f"SELECT MAX(ent.nume_ent) "
-                       f"  FROM bethadba.efentradas AS ent"
-                       f"       INNER JOIN bethadba.effornece AS forn"
-                       f"            ON    forn.codi_emp = ent.codi_emp"
-                       f"              AND forn.codi_for = ent.codi_for"
-                       f" WHERE ent.codi_emp IN ({emp})"
-                       f"   AND forn.cgce_for = {cgce_for}"
-                       f"   AND ent.vcon_ent = {valor_pago}"
+                       f"  FROM bethadba.efentradas AS ent "
+                       f"       INNER JOIN bethadba.effornece AS forn "
+                       f"            ON    forn.codi_emp = ent.codi_emp "
+                       f"              AND forn.codi_for = ent.codi_for "
+                       f" WHERE ent.codi_emp IN ({emp}) "
+                       f"   AND forn.cgce_for = {cgce_for} "
+                       f"   AND ent.vcon_ent = {valor_pago} "
                        f"   AND ent.ddoc_ent <= DATE('{data_pagto}') ")
         data = str(cursor.fetchone())
         if data.count('None') == 0:
@@ -296,6 +296,11 @@ with open(entrada, 'rt') as csvfile:
                 valor_pago = float(valor_pago)
 
                 cnpj_for_sem_aspas = _cnpj_for.replace("'", '')
+
+                print(_codi_emp_v, cnpj_for_sem_aspas, valor_pago, _data_pagto)
+
+                if cnpj_for_sem_aspas == '':
+                    cnpj_for_sem_aspas = '0'
 
                 nume_nota = apenas_valor_campo_dominio(str(nume_nota_pelo_cnpj_e_valor(_codi_emp_v, cnpj_for_sem_aspas, valor_pago, _data_pagto)[0]))
                 nume_nota = nume_nota.replace('Decimal', '').replace("'", '')
