@@ -198,7 +198,7 @@ BEGIN {
 			texto_cnpj_for = "---------"
 			texto_nota = "Titulo"
 			texto_emissao = "-------"
-			texto_venc = "Vencimento"
+			texto_venc = "--------"
 			texto_baixa = "Baixa"
 			texto_valor_original = "--------"
 			texto_valor_pago = "Total"
@@ -206,20 +206,20 @@ BEGIN {
 			texto_valor_desc = "---------"
 			texto_valor_juros = "---------"
 			texto_valor_multa = "---------"
-			texto_obs = "Descricao"
+			texto_obs = "--------"
 			texto_categoria = "--------"
 			texto_banco_arquivo = "--------"
 			texto_empresa = "------"
-			texto_tipo_pagto = "Tipo"
+			texto_tipo_pagto = "--------"
 			texto_natureza_pagto = "-------------"
 			texto_tipo_rec_ou_pag = "---------"
 			texto_tarifas = "---------"
 						
 			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 2 )
 			pos_cnpj_for = $IfElse( int(NumColuna(texto_cnpj_for)) > 0, int(NumColuna(texto_cnpj_for)), 999 )
-			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 3 )
+			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 999 )
 			pos_emissao = $IfElse( int(NumColuna(texto_emissao)) > 0, int(NumColuna(texto_emissao)), 999 )
-			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 5 )
+			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 999 )
 			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 7 )
 			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 999 )
 			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 6 )
@@ -227,10 +227,10 @@ BEGIN {
 			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 999 )
 			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 999 )
 			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 999 )
-			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 9 )
+			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 999 )
 			pos_natureza_pagto = $IfElse( int(NumColuna(texto_natureza_pagto)) > 0, int(NumColuna(texto_natureza_pagto)), 999 )
 			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 999)
-			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), 4 )
+			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), 999 )
 			pos_categoria = $IfElse( int(NumColuna(texto_categoria)) > 0, int(NumColuna(texto_categoria)), 999 )
 			pos_empresa = $IfElse( int(NumColuna(texto_empresa)) > 0, int(NumColuna(texto_empresa)), 999 )
 			pos_tipo_rec_ou_pag = $IfElse( int(NumColuna(texto_tipo_rec_ou_pag)) > 0, int(NumColuna(texto_tipo_rec_ou_pag)), 999 )

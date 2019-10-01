@@ -86,6 +86,11 @@ def organizaExtratoSicoob(linhas):
 
         row = str(row)
 
+        conta_corrente_temp = row.strip().split(':')
+        if conta_corrente_temp[0] == 'CONTA':
+            conta_corrente = conta_corrente_temp[1].split('-')
+            conta_corrente = funcoesUteis.trataCampoTexto(conta_corrente[0])
+
         posicao_data_temp = row.upper().find("DATA")
         if posicao_data_temp > 0:
             if posicao_data_temp > 5:
@@ -231,11 +236,12 @@ def organizaExtratoSicoob(linhas):
     return linhasExtrato
 
 def identificaTipoMovimento():
-    lista_arquivos = leLinhasPDF()
-
+    
     extratos = "temp\\extrato_cartao.csv"
     extratos = open(extratos, "a", encoding='utf-8')
     extratos.write("Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico;Historico Complementar\n")
+
+    lista_arquivos = leLinhasPDF()
 
     for linhas in lista_arquivos.values():
 
