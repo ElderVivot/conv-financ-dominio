@@ -195,10 +195,13 @@ BEGIN {
 		}
 
 		forn_cli = historico_extrato
-		banco_arquivo = "BRADESCO-" conta_corrente_extrato
+		banco_arquivo = "BRADESCO"
 		baixa = data_mov_extrato
 		valor_pago = valor_transacao_extrato
 		obs = historico_extrato
+		valor_desconto = "0,00"
+		valor_juros = "0,00"
+		valor_multa = "0,00"
 
 		# PAGOS
 		if( operacao_extrato == "-" && _comp_ini <= data_mov_int && data_mov_int <= _comp_fim ){
