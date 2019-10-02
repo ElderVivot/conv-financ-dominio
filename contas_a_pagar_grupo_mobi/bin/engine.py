@@ -157,7 +157,7 @@ with open(entrada, 'rt') as csvfile:
                 if _codi_emp != _codi_emp_arquivo:
                     continue
 
-                saida.write(f'{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]}\n')
+                saida.write(f'{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]}\n')
             else:
                 
                 _codi_emp_arquivo = int(row[14])
@@ -294,7 +294,7 @@ try:
                 if _codi_emp != _codi_emp_arquivo:
                     continue
 
-                saida.write(f'{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]}\n')
+                saida.write(f'{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]}\n')
             else:
                 
                 _codi_emp_arquivo = int(row[14])

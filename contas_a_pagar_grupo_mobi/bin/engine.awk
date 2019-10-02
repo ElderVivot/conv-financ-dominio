@@ -295,21 +295,21 @@ BEGIN {
 
 				valor_total_pago = ""
 				valor_total_pago = Trim(pos_valor_pago)
-				valor_total_pago_original = valor_total_pago
 				valor_total_pago = FormataCampo("double", valor_total_pago, 12, 2)
 				valor_total_pago_int = int(soNumeros(valor_total_pago))
 
 				valor_total_recebido = ""
 				valor_total_recebido = Trim(pos_valor_recebido)
-				valor_total_recebido_original = valor_total_recebido
 				valor_total_recebido = FormataCampo("double", valor_total_recebido, 12, 2)
 				valor_total_recebido_int = int(soNumeros(valor_total_recebido))
 
-				if( valor_pago_int > 0 ){
+				if( valor_total_pago_int > 0 ){
 					operacao_arq = "-"
+					valor_considerar = 0
 					valor_considerar = valor_total_pago
 				} else {
 					operacao_arq = "+"
+					valor_considerar = 0
 					valor_considerar = valor_total_recebido
 				}
 
@@ -644,37 +644,40 @@ BEGIN {
 			baixa_temp = IfElse(baixa_temp == "", baixa, baixa_temp)
 			baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
 
-			# imprime as linhas onde são tipo um cabeçalho, ou seja, onde estão os dados da data, valores totais, etc
-			if(campo_2 != "NULO"){
-				if(valor_total_pago_int > 0){
-					print "INICIO", baixa, valor_total_pago, banco_arquivo, forn_cli_linha_completa, codi_emp, data_proxima_linha >> "temp\\pagtos_agrupados.csv"
+			if( _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
 
-					if(data_proxima_linha != "NULO" || campo_4_proxima_linha == 1){
-						print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_total_pago, 
-      				          valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+				# imprime as linhas onde são tipo um cabeçalho, ou seja, onde estão os dados da data, valores totais, etc
+				if(campo_2 != "NULO"){
+					if(valor_total_pago_int > 0){
+						print "INICIO", baixa, valor_total_pago, banco_arquivo, forn_cli_linha_completa, codi_emp >> "temp\\pagtos_agrupados.csv"
+
+						if(data_proxima_linha != "NULO" || campo_4_proxima_linha == 1){
+							print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_total_pago, 
+								valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+						}
+					}
+
+					if(valor_total_recebido_int > 0){
+						print "INICIO", baixa, valor_total_recebido, banco_arquivo, forn_cli_linha_completa, codi_emp >> "temp\\recebtos_agrupados.csv"
+
+						if(data_proxima_linha != "NULO" || campo_4_proxima_linha == 1){
+							print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_total_recebido, 
+								valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
+						}
 					}
 				}
-
-				if(valor_total_recebido_int > 0){
-					print "INICIO", baixa, valor_total_recebido, banco_arquivo, forn_cli_linha_completa, codi_emp, data_proxima_linha >> "temp\\recebtos_agrupados.csv"
-
-					if(data_proxima_linha != "NULO" || campo_4_proxima_linha == 1){
-						print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_total_recebido, 
-      				          valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
-					}
+				
+				# PAGOS --> a última verificação é pras linhas que são saldos, se for saldo na coluna do fornecedor vai vir uma data
+				if( baixa != "NULO" && valor_pago_int > 0 && forn_cli != "" && valor_total_pago_int > 0 && campo_2 == "NULO" && forn_cli_temp == "NULO" ){
+					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
+						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
 				}
-			}
-			
-			# PAGOS --> a última verificação é pras linhas que são saldos, se for saldo na coluna do fornecedor vai vir uma data
-			if( baixa != "NULO" && valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim && forn_cli != "" && valor_total_pago_int > 0 && campo_2 == "NULO" && forn_cli_temp == "NULO" ){
-				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
-      				  valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
-			}
-			
-			# RECEBIMENTOS
-			if( baixa != "NULO" && valor_recebido_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim && forn_cli_linha_completa != "" && valor_total_recebido_int > 0 && campo_2 == "NULO" && forn_cli_temp == "NULO" ){
-				print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_recebido, 
-      				  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
+				
+				# RECEBIMENTOS
+				if( baixa != "NULO" && valor_recebido_int > 0 && forn_cli_linha_completa != "" && valor_total_recebido_int > 0 && campo_2 == "NULO" && forn_cli_temp == "NULO" ){
+					print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_recebido, 
+						"0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
+				}
 			}
 			
 		}close(filecsv)
