@@ -10,6 +10,18 @@ def removerAcentosECaracteresEspeciais(palavra):
     # Usa expressão regular para retornar a palavra apenas com valores corretos
     return re.sub('[^a-zA-Z0-9.!+:=)?$(/*,\-_ \\\]', '', palavraTratada)
 
+# Minimaliza, ou seja, transforma todas as instancias repetidas de espaços em espaços simples.
+#   Exemplo, o texto "  cnpj:      09.582.876/0001-68    Espécie Documento          Aceite" viraria
+#   "cnpj: 09.582.876/0001-68 Espécie Documento Aceite"
+#
+# Nota: Ele faz um trim do texto também
+def minimalizeSpaces(text):
+    _result = text
+    while ("  " in _result):
+        _result = _result.replace("  ", " ")
+    _result = _result.strip()
+    return _result
+
 def trocaCaracteresTextoPraLetraX(palavra):
     # Unicode normalize transforma um caracter em seu equivalente em latin.
     nfkd = unicodedata.normalize('NFKD', palavra).encode('ASCII', 'ignore').decode('ASCII')

@@ -168,6 +168,9 @@ BEGIN {
 		num_doc_extrato = $7
 
 		historico_extrato = $8
+		
+		obs = historico_extrato
+		
 		if( index(historico_extrato, "COBRANCA") > 0 && index(historico_extrato, "ELETRON") > 0 ){
 			historico_extrato = substr(historico_extrato, index(historico_extrato, "COBRANCA") + 8 )
 			historico_extrato = Trim(historico_extrato)
@@ -176,6 +179,12 @@ BEGIN {
 		if( index(historico_extrato, "FORNECEDOR") > 0 && index(historico_extrato, "RECEBIMENTO") > 0 ){
 			historico_extrato = substr(historico_extrato, index(historico_extrato, "FORNECEDOR") + 10 )
 			historico_extrato = Trim(historico_extrato)
+		}
+
+		if( index(historico_extrato, "TRIBUTO") > 0 && index(historico_extrato, "INTERNET") > 0 ){
+			historico_extrato = substr(historico_extrato, index(historico_extrato, "INTERNET") + 8 )
+			historico_extrato = Trim(historico_extrato)
+			gsub("-", "", historico_extrato)
 		}
 
 		historico_complementar_extrato = $9
@@ -198,7 +207,6 @@ BEGIN {
 		banco_arquivo = "BRADESCO"
 		baixa = data_mov_extrato
 		valor_pago = valor_transacao_extrato
-		obs = historico_extrato
 		valor_desconto = "0,00"
 		valor_juros = "0,00"
 		valor_multa = "0,00"
