@@ -2,6 +2,7 @@
 import pyodbc
 import csv
 import datetime
+import funcoesUteis
 
 def cnpj_for(codi_emp, nome_for):
     connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio',PORT='2638')
@@ -164,6 +165,7 @@ with open(entrada, 'rt') as csvfile:
                 _codi_emp_v = sorted(_codi_emp_v)
 
                 _nome_for_ori = str(row[1])
+                _nome_for_ori = funcoesUteis.minimalizeSpaces(_nome_for_ori)
 
                 _nome_for_75porcento = _nome_for_ori[0 : int(len(_nome_for_ori)*0.75)]
 
@@ -262,7 +264,7 @@ with open(entrada, 'rt') as csvfile:
                     _codi_cta = ""
                 _codi_cta = _codi_cta.replace("'", '')
 
-                result = (f"{row[0]};{row[1]};{_cnpj_for};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
+                result = (f"{row[0]};{_nome_for_ori};{_cnpj_for};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
                             f";{row[11]};{row[12]};{row[13]};{nota_existe};{codi_emp};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
                 saida.write(result)
 
