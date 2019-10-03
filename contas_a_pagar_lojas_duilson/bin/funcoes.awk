@@ -2,28 +2,28 @@ BEGIN{
 	FS = ";"
 }
 
-# ------------------ FUNÇÃO MATCH(expressão, combinação ser encontrada) --> EXPLICAÇÃO -----------------------
-#O match() é bastante parecida com o index(), exceto que em vez de procurar por uma substring como o index() faz, ele procura por uma expressão regular. 
-#A função match() irá retornar a posição inicial da combinação, ou zero se não houver combinação. Além disso, o match() irá configurar duas variáveis 
-#chamadas RSTART e RLENGTH. RSTART contém o valor de retorno (a localização da primeira combinação), e RLENGTH irá conter seu comprimento em caracteres 
-#(ou -1 se nenhuma combinação for encontrada). Veja um exemplo da chamada ao match():
+# ------------------ FUNï¿½ï¿½O MATCH(expressï¿½o, combinaï¿½ï¿½o ser encontrada) --> EXPLICAï¿½ï¿½O -----------------------
+#O match() ï¿½ bastante parecida com o index(), exceto que em vez de procurar por uma substring como o index() faz, ele procura por uma expressï¿½o regular. 
+#A funï¿½ï¿½o match() irï¿½ retornar a posiï¿½ï¿½o inicial da combinaï¿½ï¿½o, ou zero se nï¿½o houver combinaï¿½ï¿½o. Alï¿½m disso, o match() irï¿½ configurar duas variï¿½veis 
+#chamadas RSTART e RLENGTH. RSTART contï¿½m o valor de retorno (a localizaï¿½ï¿½o da primeira combinaï¿½ï¿½o), e RLENGTH irï¿½ conter seu comprimento em caracteres 
+#(ou -1 se nenhuma combinaï¿½ï¿½o for encontrada). Veja um exemplo da chamada ao match():
 #print match("Elder ama Amanda",/ama/), RSTART, RLENGTH
-#O awk irá escrever: 7 7 3
-#O primeiro 7 é a posição inicial da combinação
-#O segundo 7 é o local onde encontrou a primeira combinação
-#O 3 é o tamanho do "ama"
+#O awk irï¿½ escrever: 7 7 3
+#O primeiro 7 ï¿½ a posiï¿½ï¿½o inicial da combinaï¿½ï¿½o
+#O segundo 7 ï¿½ o local onde encontrou a primeira combinaï¿½ï¿½o
+#O 3 ï¿½ o tamanho do "ama"
 
-# ----------------- FUNÇÃO INDEX(expressão, caracter a ser encontrado) --> EXPLICAÇÃO -------------------------
-#index("Amor", "r"): procura na string "Amor" a primeira ocorrência da string "r" e retorna a posição onde foi encontrada dentro da string "Amor" que 
+# ----------------- FUNï¿½ï¿½O INDEX(expressï¿½o, caracter a ser encontrado) --> EXPLICAï¿½ï¿½O -------------------------
+#index("Amor", "r"): procura na string "Amor" a primeira ocorrï¿½ncia da string "r" e retorna a posiï¿½ï¿½o onde foi encontrada dentro da string "Amor" que 
 #neste caso seria a quarta
 
-# ----------------- FUNÇÃO SPLIT (expressão, vetor, separador) --> EXPLICAÇÃO ------------------------------
-#A função split() divide a string em partes separadas por campos de acordo o separador, e armazena as partes no array, que no caso é o vetor. 
-#O valor do separador é uma expressão regular que descreve onde dividir a string. Se o valor do separador é omitido, o valor de FS é usado.
-# Se o seu valor for a string nula (""), então cada caracter torna-se um campo separador. O default é " ". 
-# O Split retorna o número de elementos criados. Exemplo: 
+# ----------------- FUNï¿½ï¿½O SPLIT (expressï¿½o, vetor, separador) --> EXPLICAï¿½ï¿½O ------------------------------
+#A funï¿½ï¿½o split() divide a string em partes separadas por campos de acordo o separador, e armazena as partes no array, que no caso ï¿½ o vetor. 
+#O valor do separador ï¿½ uma expressï¿½o regular que descreve onde dividir a string. Se o valor do separador ï¿½ omitido, o valor de FS ï¿½ usado.
+# Se o seu valor for a string nula (""), entï¿½o cada caracter torna-se um campo separador. O default ï¿½ " ". 
+# O Split retorna o nï¿½mero de elementos criados. Exemplo: 
 # campo = split("Elder e Amanda", amor, "e")
-# print campo, amor[1], amor[2]. Então o resultado será 2, Elder, Amanda 
+# print campo, amor[1], amor[2]. Entï¿½o o resultado serï¿½ 2, Elder, Amanda 
 
 function load_columns() {
 	delete COLUMN_INDEX;
@@ -58,28 +58,36 @@ function NumColuna(name) {
 	return 0;
 }
 
+function minimalizeSpaces(text){
+    _result = text
+    while("  " in _result)
+        gsub("  ", " ",_result)
+    _result = Trim(_result)
+    return _result
+}
+
 # AUMENTA A CAIXA DOS CARACTERES
 function upperCase(upCampo) {
 	# AUMENTA A CAIXA DOS CARACTERES NORMAIS USANDO toupper()
 	upCampo = toupper(upCampo);
 	
 	# AUMENTA A CAIXA DOS CARACTERES ACENTUADOS
-	gsub("â", "Â", upCampo)
-	gsub("à", "À", upCampo)
-	gsub("ã", "Ã", upCampo)
-	gsub("á", "Á", upCampo)
-	gsub("é", "É", upCampo)
-	gsub("ê", "Ê", upCampo)
-	gsub("í", "Í", upCampo)
-	gsub("î", "Î", upCampo)
-	gsub("ó", "Ó", upCampo)
-	gsub("ô", "Ô", upCampo)
-	gsub("õ", "Õ", upCampo)
-	gsub("ú", "Ú", upCampo)
-	gsub("û", "Û", upCampo)
-	gsub("ü", "U", upCampo)
-	gsub("Ü", "U", upCampo)
-	gsub("ç", "C", upCampo)
+	gsub("ï¿½", "ï¿½", upCampo)
+	gsub("ï¿½", "ï¿½", upCampo)
+	gsub("ï¿½", "ï¿½", upCampo)
+	gsub("ï¿½", "ï¿½", upCampo)
+	gsub("ï¿½", "ï¿½", upCampo)
+	gsub("ï¿½", "ï¿½", upCampo)
+	gsub("ï¿½", "ï¿½", upCampo)
+	gsub("ï¿½", "ï¿½", upCampo)
+	gsub("ï¿½", "ï¿½", upCampo)
+	gsub("ï¿½", "ï¿½", upCampo)
+	gsub("ï¿½", "ï¿½", upCampo)
+	gsub("ï¿½", "ï¿½", upCampo)
+	gsub("ï¿½", "ï¿½", upCampo)
+	gsub("ï¿½", "U", upCampo)
+	gsub("ï¿½", "U", upCampo)
+	gsub("ï¿½", "C", upCampo)
 	
 	return upCampo
 }
@@ -87,37 +95,37 @@ function upperCase(upCampo) {
 # TIRA CARACTERES ESPECIAIS
 function subsCharEspecial(tiraEsp){
 	
-	gsub("á", "a", tiraEsp)
-	gsub("à", "a", tiraEsp)
-	gsub("â", "a", tiraEsp)
-	gsub("ã", "a", tiraEsp)
-	gsub("Á", "A", tiraEsp)
-	gsub("À", "A", tiraEsp)
-	gsub("Â", "A", tiraEsp)
-	gsub("Ã", "A", tiraEsp)
+	gsub("ï¿½", "a", tiraEsp)
+	gsub("ï¿½", "a", tiraEsp)
+	gsub("ï¿½", "a", tiraEsp)
+	gsub("ï¿½", "a", tiraEsp)
+	gsub("ï¿½", "A", tiraEsp)
+	gsub("ï¿½", "A", tiraEsp)
+	gsub("ï¿½", "A", tiraEsp)
+	gsub("ï¿½", "A", tiraEsp)
 	gsub("&", "E", tiraEsp)
-	gsub("é", "e", tiraEsp)
-	gsub("ê", "e", tiraEsp)
-	gsub("Ê", "E", tiraEsp)
-	gsub("É", "E", tiraEsp)
-	gsub("í", "i", tiraEsp)
-	gsub("Í", "I", tiraEsp)
-	gsub("ó", "o", tiraEsp)
-	gsub("ô", "o", tiraEsp)
-	gsub("ò", "o", tiraEsp)
-	gsub("õ", "o", tiraEsp)
-	gsub("Ó", "O", tiraEsp)
-	gsub("Ô", "O", tiraEsp)
-	gsub("Õ", "o", tiraEsp)
-	gsub("Ò", "O", tiraEsp)
-	gsub("ú", "u", tiraEsp)
-	gsub("û", "u", tiraEsp)
-	gsub("Ú", "U", tiraEsp)
-	gsub("Û", "U", tiraEsp)
-	gsub("ç", "c", tiraEsp)
-	gsub("Ç", "C", tiraEsp)
+	gsub("ï¿½", "e", tiraEsp)
+	gsub("ï¿½", "e", tiraEsp)
+	gsub("ï¿½", "E", tiraEsp)
+	gsub("ï¿½", "E", tiraEsp)
+	gsub("ï¿½", "i", tiraEsp)
+	gsub("ï¿½", "I", tiraEsp)
+	gsub("ï¿½", "o", tiraEsp)
+	gsub("ï¿½", "o", tiraEsp)
+	gsub("ï¿½", "o", tiraEsp)
+	gsub("ï¿½", "o", tiraEsp)
+	gsub("ï¿½", "O", tiraEsp)
+	gsub("ï¿½", "O", tiraEsp)
+	gsub("ï¿½", "o", tiraEsp)
+	gsub("ï¿½", "O", tiraEsp)
+	gsub("ï¿½", "u", tiraEsp)
+	gsub("ï¿½", "u", tiraEsp)
+	gsub("ï¿½", "U", tiraEsp)
+	gsub("ï¿½", "U", tiraEsp)
+	gsub("ï¿½", "c", tiraEsp)
+	gsub("ï¿½", "C", tiraEsp)
 	gsub("\"", "", tiraEsp)
-	gsub("º", "", tiraEsp)
+	gsub("ï¿½", "", tiraEsp)
 	
 	return tiraEsp
 }
@@ -228,7 +236,7 @@ function Ddd_Fone_Filiais(argDdd, argFone){
 	return dddefone
 }
 
-# TIRA ESPAÇOS ANTES E NO FINAL DO TEXTO
+# TIRA ESPAï¿½OS ANTES E NO FINAL DO TEXTO
 function Trim(trimCampo){
 	gsub(/[ ]*$|^[ ]*/,"",trimCampo)
 	gsub("\t", "", trimCampo)
@@ -236,14 +244,14 @@ function Trim(trimCampo){
 	return trimCampo
 }
 
-# SÓ NÚMEROS
+# Sï¿½ Nï¿½MEROS
 function soNumeros(soNumero){
 	gsub(/[^0-9]/, "", soNumero)
 	
 	return soNumero
 }
 
-# TIRA UM CAMPO QUE ESTÁ DENTRO DE UM OUTRO --> NÃO PRECISA POIS TEM A SPLIT
+# TIRA UM CAMPO QUE ESTï¿½ DENTRO DE UM OUTRO --> Nï¿½O PRECISA POIS TEM A SPLIT
 #function TiraCampo(argCampo, argSeparador){
 #	novoCampo = ""
 #	
@@ -257,7 +265,7 @@ function soNumeros(soNumero){
 #	return novoCampo
 #}
 
-# TIRA UM CAMPO QUE ESTÁ DENTRO DE UM OUTRO --> RETORNA O ORIGINAL
+# TIRA UM CAMPO QUE ESTï¿½ DENTRO DE UM OUTRO --> RETORNA O ORIGINAL
 #function TiraCampoOriginal(argCampoOriginal, argSeparadorOriginal){
 #	novoCampoOriginal = ""
 #	
@@ -271,7 +279,7 @@ function soNumeros(soNumero){
 #	return novoCampoOriginal
 #}
 
-# FUNÇÃO IF ELSE --> AVALIAR PARA O QUE SERVE
+# FUNï¿½ï¿½O IF ELSE --> AVALIAR PARA O QUE SERVE
 function IfElse(alCondicao,auRetornoIf,auRetornoElse){
 		if (alCondicao)
 			{
@@ -284,10 +292,10 @@ function IfElse(alCondicao,auRetornoIf,auRetornoElse){
 }
 
 # Criade em: 19/01/2001
-# Recebe   : String com valor numérico padrão Europeu(1.250,56)
-# Retorna  : String com valor numérico padrão Americano(1250.56)
-# Definição: Usada para ajusar campo numérico com definição de
-#            vírgula como separador decimal e ponto para definição
+# Recebe   : String com valor numï¿½rico padrï¿½o Europeu(1.250,56)
+# Retorna  : String com valor numï¿½rico padrï¿½o Americano(1250.56)
+# Definiï¿½ï¿½o: Usada para ajusar campo numï¿½rico com definiï¿½ï¿½o de
+#            vï¿½rgula como separador decimal e ponto para definiï¿½ï¿½o
 #            de milhar.
 function Space(aiTamanho){	
 	lsReturn=""
@@ -299,12 +307,12 @@ function Space(aiTamanho){
 }
 
 # Criada em: 18/01/2002
-# Recebe   : anValor q é o valor a ser trabalhado, aiInteiros q é a quantidade d digitos
-#            ...inteiros q devera ficar em anValor e aiDecimais q é a quantidade de digitos
+# Recebe   : anValor q ï¿½ o valor a ser trabalhado, aiInteiros q ï¿½ a quantidade d digitos
+#            ...inteiros q devera ficar em anValor e aiDecimais q ï¿½ a quantidade de digitos
 #            ...de decimais(apos virgula ou ponto) q deve ficar em anValor
 # Retorna  : Valor de anValor formatado com aiInteiros e aiDecimais, preenchido com
-#            ...cadeia de zeros à esquerda.
-# Definicao: Servira para retornar os campos numericos preenchidos com zeros à esquerda.
+#            ...cadeia de zeros ï¿½ esquerda.
+# Definicao: Servira para retornar os campos numericos preenchidos com zeros ï¿½ esquerda.
 #
 function StrZero(anValor,aiTamInteiros,aiTamDecimais){
 
@@ -613,15 +621,15 @@ function FormataCampo(FcTipo, FcCampo, FcTamanho, FcDecimais) {
 	FcRetorno = ""
 	gsub(/[ ]*$|^[ ]*/, "", FcCampo)
 	#Pode ser utilizado para alguns sistemas
-	#gsub("ø", "º", FcCampo)
-	#gsub("Ç", "Ã", FcCampo)
-	#gsub("€", "Ç", FcCampo)
-	#gsub("", "É", FcCampo)
+	#gsub("ï¿½", "ï¿½", FcCampo)
+	#gsub("ï¿½", "ï¿½", FcCampo)
+	#gsub("ï¿½", "ï¿½", FcCampo)
+	#gsub("ï¿½", "ï¿½", FcCampo)
 	
 	#Se o campo for vazio returna "NULO"
 	if ((FcCampo == "")||(FcCampo == "<null>")) FcRetorno = "NULO"
 	
-	#Se não tiver informado o numero de decimais zera
+	#Se nï¿½o tiver informado o numero de decimais zera
 	if (FcDecimais == "") FcDecimais == 0	
 	#Se o formato for do tipo caracter
 	if ((FcTipo == "char")||(FcTipo == "varchar")) {
@@ -679,7 +687,7 @@ function TransformaPraDecimal( argValorInt ){
 	return valor_dec
 }
 
-# RETORNA DATA INFORMADA DE ACORDO O PADRÃO DESEJADO
+# RETORNA DATA INFORMADA DE ACORDO O PADRï¿½O DESEJADO
 function FormatDate(inDate, charSeparador, tpData) {
 	# tpData = BR --> dd/mm/aaaa
 	# tpData = US --> aaaa-mm-dd
@@ -694,13 +702,13 @@ function FormatDate(inDate, charSeparador, tpData) {
 	else
 		charSeparador = charSeparador
 	
-	# SE TIPO DA DATA NÃO FOR VÁLIDA
+	# SE TIPO DA DATA Nï¿½O FOR Vï¿½LIDA
 	if( (tpData == "") || ( (tpData != "BR") && (tpData != "US") ) )
 		tpData = "BR"
 	else
 		tpData = tpData
 	
-	#Recebe a data atual para saber em que ano está...
+	#Recebe a data atual para saber em que ano estï¿½...
 	fYear = getDate()
 	split(fYear, sYear, "/")
 	Year = substr(sYear[3], 1, 4)
@@ -734,7 +742,7 @@ function FormatDate(inDate, charSeparador, tpData) {
 			else
 				return ""
 			
-			#Se o dia for maior que dois, ou seja, se tiver horário também
+			#Se o dia for maior que dois, ou seja, se tiver horï¿½rio tambï¿½m
 			if( length(rtD) > 2 )
 				rtD = substr(rtD, 1, 2)
 			else
@@ -762,7 +770,7 @@ function FormatDate(inDate, charSeparador, tpData) {
 			else
 				return ""
 			
-			#Se o ano for maior que quatro, ou seja, se tiver horário também
+			#Se o ano for maior que quatro, ou seja, se tiver horï¿½rio tambï¿½m
 			if( length(rtY) > 4 )
 				rtY = substr(rtY, 1, 4)
 			else
@@ -772,7 +780,7 @@ function FormatDate(inDate, charSeparador, tpData) {
 			return ""
 	
 	} 
-	# Se não tiver separador
+	# Se nï¿½o tiver separador
 	else {
 		if (dateLength == 4) {
 			rtD = substr(inDate, 1, 2)
@@ -794,7 +802,7 @@ function FormatDate(inDate, charSeparador, tpData) {
 	return sprintf("%.2d/%.2d/%.4d", rtD, rtM, rtY)
 }
 
-# VERIFICA SE É UMA DATA VÁLIDA
+# VERIFICA SE ï¿½ UMA DATA Vï¿½LIDA
 function isDate(inDate) {
 	iDay = 0; 
 	iMonth = 0; 
@@ -817,15 +825,15 @@ function isDate(inDate) {
 		if (iYear == 0) 
 			return "NULO"
 		
-		#Meses até 30 -> 04, 06, 09, 11		
+		#Meses atï¿½ 30 -> 04, 06, 09, 11		
 		if ( ( (iMonth == 4)||(iMonth == 6)||(iMonth == 9)||(iMonth == 11) ) && (iDay > 30) )
 			return "NULO"
 		
-		#Mês de fevereiro
+		#Mï¿½s de fevereiro
 		if ( (iMonth == 2) && (iDay > 29) )
 			return "NULO"
 		
-		#Se chegou até aqui a data é válida
+		#Se chegou atï¿½ aqui a data ï¿½ vï¿½lida
 		return inDate
 	} 
 	else 
@@ -947,7 +955,7 @@ function SomaAno(asData,aiQuantiaAnos,asTipoData)
 		return lsRetorno
 }
 
-# RETORNA TIPO DA INSCRIÇÃO
+# RETORNA TIPO DA INSCRIï¿½ï¿½O
 function tpInscricao(argInscricao){
 	
 	tpInscr = ""
@@ -962,7 +970,7 @@ function tpInscricao(argInscricao){
 	return tpInscr
 }
 
-# VERIFICA SE ANO É BISSEXTO OU NÃO
+# VERIFICA SE ANO ï¿½ BISSEXTO OU Nï¿½O
 function AnoBissexto(aiAno)
 {
     liRetorno = ""
@@ -1001,14 +1009,14 @@ function transformaDataEmDias(argData){
 			continue
 		}
 		else{
-			qtdDias += 365 # senão incrementa 365
+			qtdDias += 365 # senï¿½o incrementa 365
 			continue
 		}	
 	}
 	
 	for(x = 0; x < mes_data; x++) { # calcula dias dos MESES ANTERIORES
 		
-		if ( (x == 1) || (x == 3) || (x == 5) || (x == 7) || (x == 8) || (x == 10) || (x == 12) ){  # verifica se é 31
+		if ( (x == 1) || (x == 3) || (x == 5) || (x == 7) || (x == 8) || (x == 10) || (x == 12) ){  # verifica se ï¿½ 31
 			qtdDias += 31
 			continue
 		}
@@ -1019,12 +1027,12 @@ function transformaDataEmDias(argData){
 				continue
 			}
 			else{
-				qtdDias += 28 # senão Fevereiro com 28 dias
+				qtdDias += 28 # senï¿½o Fevereiro com 28 dias
 				continue
 			}	
 			continue
 		} 
-		else{ # se não for 31 Dias recebe 30
+		else{ # se nï¿½o for 31 Dias recebe 30
 			qtdDias += 30
 			continue
 		}	
@@ -1036,7 +1044,7 @@ function transformaDataEmDias(argData){
 	return qtdDias
 }
 
-# RETORNA A DIFERENÇA EM DIAS DE DUAS DATAS INFORMADAS
+# RETORNA A DIFERENï¿½A EM DIAS DE DUAS DATAS INFORMADAS
 function diferencaEmDiasEntreData(argData1, argData2){
 	
 	diferenca = 0

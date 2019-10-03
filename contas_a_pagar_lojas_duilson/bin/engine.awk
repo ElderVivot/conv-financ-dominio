@@ -197,7 +197,7 @@ BEGIN {
 		
 		#while ((getline < file) > 0) {
 			
-			if ( Trim(toupper($1)) == toupper("Loja") ){
+			if ( Trim(toupper($1)) == toupper("Loja") || Trim(toupper($1)) == toupper("Duplicata")){
 				load_columns();
 				continue;
 			}
@@ -655,7 +655,10 @@ BEGIN {
 		conta_corrente_3_int = int( soNumeros(conta_corrente_3) )
 		
 		tipo_mov_2 = $3
+
 		data_mov_2 = $4
+		data_mov_int = int(substr(data_mov_2, 7) "" substr(data_mov_2, 4, 2))
+
 		operacao_3 = $5
 		valor_transacao_2 = $6
 		num_doc_2 = $7
@@ -663,9 +666,8 @@ BEGIN {
 		
 		pagou_no_banco = PagouNoBanco[operacao_3, data_mov_2, valor_transacao_2]
 		
-		#if( operacao_3 == "-" && pagou_no_banco != 1 )
-		if( pagou_no_banco != 1 )
-			print $0 >> "saida\\movtos_feitos_no_cartao_nao_estao_na_planilha.csv"
+		if( ( operacao_3 == "-" || operacao_3 == "Operacao") && pagou_no_banco != 1 && _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
+			print $0 >> "saida\\pagtos_feitos_no_cartao_nao_estao_na_planilha.csv"
 		
 	} close("temp\\extrato_cartao.csv")
 	
