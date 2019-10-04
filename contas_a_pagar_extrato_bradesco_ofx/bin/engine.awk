@@ -187,6 +187,21 @@ BEGIN {
 			gsub("-", "", historico_extrato)
 		}
 
+		if( index(historico_extrato, "TED") > 0 && index(historico_extrato, "DEST.") > 0 ){
+			historico_extrato = substr(historico_extrato, index(historico_extrato, "DEST.") + 5 )
+			historico_extrato = Trim(historico_extrato)
+		}
+
+		if( index(historico_extrato, "TRANSF") > 0 && index(historico_extrato, "DEST.") > 0 ){
+			historico_extrato = substr(historico_extrato, index(historico_extrato, "DEST.") + 5 )
+			historico_extrato = Trim(historico_extrato)
+		}
+
+		if( index(historico_extrato, "TRANSF") > 0 && index(historico_extrato, "PJ") > 0 ){
+			historico_extrato = substr(historico_extrato, index(historico_extrato, "PJ") + 2 )
+			historico_extrato = Trim(historico_extrato)
+		}
+
 		historico_complementar_extrato = $9
 
 		ExisteMov[operacao_extrato, data_mov_extrato, valor_transacao_extrato] = 1
