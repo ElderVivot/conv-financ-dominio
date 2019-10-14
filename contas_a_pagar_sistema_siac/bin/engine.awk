@@ -229,7 +229,7 @@ BEGIN {
 			vencimento = IfElse( vencimento == "NULO", "", vencimento )
 			
 			baixa = ""
-			baixa = Trim(substr($0,85,10))
+			baixa = Trim(substr($0,96,10))
 			baixa = FormatDate(baixa)
 			baixa = isDate(baixa)
 						
