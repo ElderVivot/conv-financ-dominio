@@ -1,6 +1,18 @@
 import unicodedata
 import re
 import datetime
+import os
+
+def buscaArquivosEmPasta(caminho, extensao):
+    arquivos = os.listdir(caminho)
+    lista_arquivos = []
+
+    for arquivo in arquivos:
+        arquivo = str(arquivo).upper()
+        if arquivo.endswith(extensao):
+            lista_arquivos.append(caminho+"\\"+arquivo)
+
+    return lista_arquivos
 
 def removerAcentosECaracteresEspeciais(palavra):
     # Unicode normalize transforma um caracter em seu equivalente em latin.

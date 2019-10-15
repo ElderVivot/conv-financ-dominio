@@ -11,18 +11,7 @@ import datetime
 import funcoesUteis
 import platform
 
-def buscaArquivosEmPasta(caminho="", extensao=(".XLS", "XLSX")):
-    arquivos = os.listdir(caminho)
-    lista_arquivos = []
-
-    for arquivo in arquivos:
-        arquivo = str(arquivo).upper()
-        if arquivo.endswith(extensao):
-            lista_arquivos.append(caminho+"\\"+arquivo)
-
-    return lista_arquivos
-
-def PDFToText(arquivos=buscaArquivosEmPasta(caminho="entrada",extensao=(".PDF")), mode = "simple"):
+def PDFToText(arquivos=funcoesUteis.buscaArquivosEmPasta(caminho="entrada",extensao=(".PDF")), mode = "simple"):
     for arquivo in arquivos:
         nome_arquivo = os.path.basename(arquivo)
         saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".txt"
@@ -44,7 +33,7 @@ def PDFToText(arquivos=buscaArquivosEmPasta(caminho="entrada",extensao=(".PDF"))
 # chama a geração da transformação pra PDF
 PDFToText()
 
-def leLinhasPDF(arquivos=buscaArquivosEmPasta(caminho="temp", extensao=(".TXT"))):
+def leLinhasPDF(arquivos=funcoesUteis.buscaArquivosEmPasta(caminho="temp", extensao=(".TXT"))):
     lista_arquivos = {}
     lista_linha = []
     

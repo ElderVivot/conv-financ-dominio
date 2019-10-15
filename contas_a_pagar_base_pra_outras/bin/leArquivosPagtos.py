@@ -8,17 +8,7 @@ import sys
 #import openpyxl
 #import pandas as pd
 import datetime
-
-def buscaArquivosEmPasta(caminho="entrada", extensao=(".XLS", ".XLSX")):
-    arquivos = os.listdir(caminho)
-    lista_arquivos = []
-
-    for arquivo in arquivos:
-        arquivo = str(arquivo).upper()
-        if arquivo.endswith(extensao):
-            lista_arquivos.append(caminho+"\\"+arquivo)
-
-    return lista_arquivos
+import funcoesUteis
 
 def FileExists(filepath):
     return os.path.isfile(filepath)
@@ -31,7 +21,7 @@ def removerAcentosECaracteresEspeciais(palavra):
     # Usa expressão regular para retornar a palavra apenas com valores corretos
     return re.sub('[^a-zA-Z0-9.!+:=)(/*,\-_ \\\]', '', palavraTratada)
 
-def leXls_Xlsx(arquivos=buscaArquivosEmPasta()):
+def leXls_Xlsx(arquivos=funcoesUteis.buscaArquivosEmPasta("entrada", extensao=(".XLS", "XLSX"))):
     lista_dados = []
     dados_linha = []
     for arquivo in arquivos:
@@ -113,7 +103,7 @@ def leXls_Xlsx(arquivos=buscaArquivosEmPasta()):
 
 leXls_Xlsx()
 
-# def leCsv(arquivos=buscaArquivosEmPasta(extensao=(".CSV")),separadorCampos=';'):
+# def leCsv(arquivos=funcoesUteis.buscaArquivosEmPasta(extensao=(".CSV")),separadorCampos=';'):
 #     lista_dados = []
 #     dados_linha = []
 #     for arquivo in arquivos:
