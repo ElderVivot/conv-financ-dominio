@@ -1,6 +1,22 @@
 import unicodedata
 import re
 import datetime
+import os
+
+def buscaArquivosEmPasta(caminho, extensao):
+    arquivos = os.listdir(caminho)
+    lista_arquivos = []
+
+    for arquivo in arquivos:
+        arquivo = str(arquivo).upper()
+        if arquivo.endswith(extensao):
+            lista_arquivos.append(caminho+"\\"+arquivo)
+
+    return lista_arquivos
+
+def removerAcentos(palavra):
+    # Unicode normalize transforma um caracter em seu equivalente em latin.
+    return unicodedata.normalize('NFKD', palavra).encode('ASCII', 'ignore').decode('ASCII')
 
 def removerAcentosECaracteresEspeciais(palavra):
     # Unicode normalize transforma um caracter em seu equivalente em latin.

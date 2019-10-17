@@ -12,10 +12,6 @@ BEGIN {
 	
 	_comp_ini = int(Trim(substr(_comp_ini, 4)) "" substr(_comp_ini, 1, 2))
 	_comp_fim = int(Trim(substr(_comp_fim, 4)) "" substr(_comp_fim, 1, 2))
-
-	system("if not exist temp\\extrato_cartao.csv echo Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico;Historico Complementar >> temp\\extrato_cartao.csv")
-	
-	#print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "temp\\extrato_cartao.csv"
 	
 	# LE O ARQUIVO OFX AFIM DE PODER COMPARAR O QUE FOI PAGO NO CARTAO COM A PLANILHA DE BAIXA DO CLIENTE
 	while ((getline < ArquivosOfx) > 0) {
@@ -190,86 +186,52 @@ BEGIN {
 	while ((getline < ArquivosCsv) > 0) {
 		
 		filecsv = "temp\\" $0
-
-		linha = 0
-		
-		while ((getline < filecsv) > 0) {
-			linha++
-
-			data_linha = ""
-			data_linha = Trim($2)
-			data_linha = FormatDate(data_linha)
-			data_linha = isDate(data_linha)
-
-			campo_4 = ""
-			campo_4 = Trim($4)
-			campo_4 = subsCharEspecial(campo_4)
-			campo_4 = upperCase(campo_4)
-			if( index(campo_4, "SALDO") > 0 ){
-				campo_4 = 1
-			} else {
-				campo_4 = 0
-			}
-
-			DataLinha[filecsv, linha] = data_linha
-			Campo4[filecsv, linha] = campo_4
-
-		} close(filecsv)
-	}close(ArquivosCsv)
-
-	while ((getline < ArquivosCsv) > 0) {
-		
-		filecsv = "temp\\" $0
-
-		linha_2 = 0
 		
 		while ((getline < filecsv) > 0) {
 
-			linha_2++
-
-			if ( Trim(toupper($2)) == toupper("Data") ){
+			if ( Trim(toupper($1)) == toupper("Emissao") ){
 				load_columns();
 				continue;
 			}
 			
-			texto_for = "Favorecido"
+			texto_for = "DESCRICAO"
 			texto_cnpj_for = "---------"
-			texto_nota = "---------"
-			texto_emissao = "---------"
-			texto_venc = "---------"
-			texto_baixa = "Data"
-			texto_valor_original = "---------"
-			texto_valor_pago = "Saida"
-			texto_valor_recebido = "Entrada"
-			texto_valor_desc = "---------"
-			texto_valor_juros = "---------"
-			texto_valor_multa = "---------"
-			texto_obs = "---------"
-			texto_categoria = "---------"
-			texto_banco_arquivo = "---------"
-			texto_empresa = "---------"
-			texto_tipo_pagto = "---------"
+			texto_nota = "NOTA"
+			texto_emissao = "EMISSAO"
+			texto_venc = "VENCIMENTO"
+			texto_baixa = "PAGAMENTO"
+			texto_valor_original = "VALOR PREVISTO"
+			texto_valor_pago = "VALOR A PAGAR"
+			texto_valor_recebido = "---------"
+			texto_valor_desc = "DESCONTO"
+			texto_valor_juros = "JUROS"
+			texto_valor_multa = "MULTA"
+			texto_obs = "OBSERVACOES"
+			texto_categoria = "PLANO DE CONTAS"
+			texto_banco_arquivo = "--------"
+			texto_empresa = "------"
+			texto_tipo_pagto = "--------"
 			texto_natureza_pagto = "-------------"
 			texto_tipo_rec_ou_pag = "---------"
 			texto_tarifas = "---------"
 						
-			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 4 )
+			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 2 )
 			pos_cnpj_for = $IfElse( int(NumColuna(texto_cnpj_for)) > 0, int(NumColuna(texto_cnpj_for)), 999 )
-			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 999 )
-			pos_emissao = $IfElse( int(NumColuna(texto_emissao)) > 0, int(NumColuna(texto_emissao)), 999 )
-			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 999 )
-			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 2 )
-			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 999 )
-			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 7 )
-			pos_valor_recebido = $IfElse( int(NumColuna(texto_valor_recebido)) > 0, int(NumColuna(texto_valor_recebido)), 6 )
-			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 999 )
-			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 999 )
-			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 999 )
-			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 999 )
+			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 4 )
+			pos_emissao = $IfElse( int(NumColuna(texto_emissao)) > 0, int(NumColuna(texto_emissao)), 1 )
+			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 5 )
+			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 12 )
+			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 6 )
+			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 10 )
+			pos_valor_recebido = $IfElse( int(NumColuna(texto_valor_recebido)) > 0, int(NumColuna(texto_valor_recebido)), 999 )
+			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 9 )
+			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 8 )
+			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 7 )
+			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 13 )
 			pos_natureza_pagto = $IfElse( int(NumColuna(texto_natureza_pagto)) > 0, int(NumColuna(texto_natureza_pagto)), 999 )
 			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 999)
 			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), 999 )
-			pos_categoria = $IfElse( int(NumColuna(texto_categoria)) > 0, int(NumColuna(texto_categoria)), 999 )
+			pos_categoria = $IfElse( int(NumColuna(texto_categoria)) > 0, int(NumColuna(texto_categoria)), 3 )
 			pos_empresa = $IfElse( int(NumColuna(texto_empresa)) > 0, int(NumColuna(texto_empresa)), 999 )
 			pos_tipo_rec_ou_pag = $IfElse( int(NumColuna(texto_tipo_rec_ou_pag)) > 0, int(NumColuna(texto_tipo_rec_ou_pag)), 999 )
 			pos_valor_tarifas = $IfElse( int(NumColuna(texto_tarifas)) > 0, int(NumColuna(texto_tarifas)), 999 )
@@ -278,52 +240,14 @@ BEGIN {
 			campo_1 = Trim($1)
 			campo_1 = subsCharEspecial(campo_1)
 			campo_1 = upperCase(campo_1)
-
-			# linhas onde são tipo um cabeçalho, ou seja, onde estão os dados da data, valores totais, etc
-			campo_2 = ""
-			campo_2 = Trim($2)
-			campo_2 = FormatDate(campo_2)
-			campo_2 = isDate(campo_2)
-			if(campo_2 != "NULO"){
-				baixa = ""
-				baixa = campo_2
-
-				categoria = ""
-				categoria = Trim($3)
-				categoria = subsCharEspecial(categoria)
-				categoria = upperCase(categoria)
-
-				valor_total_pago = ""
-				valor_total_pago = Trim(pos_valor_pago)
-				valor_total_pago = FormataCampo("double", valor_total_pago, 12, 2)
-				valor_total_pago_int = int(soNumeros(valor_total_pago))
-
-				valor_total_recebido = ""
-				valor_total_recebido = Trim(pos_valor_recebido)
-				valor_total_recebido = FormataCampo("double", valor_total_recebido, 12, 2)
-				valor_total_recebido_int = int(soNumeros(valor_total_recebido))
-
-				if( valor_total_pago_int > 0 ){
-					operacao_arq = "-"
-					valor_considerar = 0
-					valor_considerar = valor_total_pago
-				} else {
-					operacao_arq = "+"
-					valor_considerar = 0
-					valor_considerar = valor_total_recebido
-				}
-
-				forn_cli_linha_completa = ""
-				forn_cli_linha_completa = Trim($4)
-				forn_cli_linha_completa = subsCharEspecial(forn_cli_linha_completa)
-				forn_cli_linha_completa = upperCase(forn_cli_linha_completa)
-
-				data_proxima_linha = DataLinha[filecsv, linha_2 + 1]
-				campo_4_proxima_linha = Campo4[filecsv, linha_2 + 1]
-			}
-
+			
+			forn_cli = ""
+			forn_cli = Trim(pos_for)
+			forn_cli = subsCharEspecial(forn_cli)
+			forn_cli = upperCase(forn_cli)
+			
 			nota_completo = ""
-			nota_completo = Trim($1)
+			nota_completo = Trim(pos_nota)
 			nota_completo_orig = nota_completo
 			if( index(nota_completo, "-") > 0 )
 				nota_completo = split( nota_completo, nota_completo_v, "-" )
@@ -342,27 +266,17 @@ BEGIN {
 			}
 			
 			nota = int(soNumeros(nota))
-
-			tipo_pagto = ""
-			tipo_pagto = Trim($2)
-			tipo_pagto = subsCharEspecial(tipo_pagto)
-			tipo_pagto = upperCase(tipo_pagto)
-			tipo_pagto = tipo_pagto
-
-			forn_cli = ""
-			forn_cli = Trim($3)
-			forn_cli = subsCharEspecial(forn_cli)
-			forn_cli = upperCase(forn_cli)
-
-			forn_cli_temp = ""
-			forn_cli_temp = FormatDate(forn_cli)
-			forn_cli_temp = isDate(forn_cli_temp)
 			
 			vencimento = ""
 			vencimento = Trim(pos_venc)
 			vencimento = FormatDate(vencimento)
 			vencimento = isDate(vencimento)
 			vencimento = IfElse( vencimento == "NULO", "", vencimento )
+			
+			baixa = ""
+			baixa = Trim(pos_baixa)
+			baixa = FormatDate(baixa)
+			baixa = isDate(baixa)
 			
 			emissao = ""
 			emissao = Trim(pos_emissao)
@@ -385,27 +299,13 @@ BEGIN {
 			pago_recebido = upperCase(pago_recebido)
 			
 			valor_pago = ""
-			valor_pago = Trim($4)
+			valor_pago = Trim(pos_valor_pago)
 			valor_pago = FormataCampo("double", valor_pago, 12, 2)
-
-			valor_pago_2 = ""
-			valor_pago_2 = Trim($5)
-			valor_pago_2 = FormataCampo("double", valor_pago_2, 12, 2)
-
-			valor_pago = IfElse(valor_pago == "0,00", valor_pago_2, valor_pago)
-
 			valor_pago_int = int(soNumeros(valor_pago))
 			
 			valor_recebido = ""
-			valor_recebido = Trim($4)
+			valor_recebido = Trim(pos_valor_recebido)
 			valor_recebido = FormataCampo("double", valor_recebido, 12, 2)
-
-			valor_recebido_2 = ""
-			valor_recebido_2 = Trim($5)
-			valor_recebido_2 = FormataCampo("double", valor_recebido_2, 12, 2)
-
-			valor_recebido = IfElse(valor_recebido == "0,00", valor_recebido_2, valor_recebido)
-
 			valor_recebido_int = int(soNumeros(valor_recebido))
 			
 			valor_taxa = ""
@@ -421,6 +321,14 @@ BEGIN {
 			if( valor_taxa_int > 0 && valor_recebido_int == 0 ){
 				valor_recebido = valor_taxa
 				valor_recebido_int = valor_taxa_int
+			}
+			
+			if( valor_pago_int > 0 ){
+				operacao_arq = "-"
+				valor_considerar = valor_pago
+			} else {
+				operacao_arq = "+"
+				valor_considerar = valor_recebido_int
 			}
 			
 			valor_juros = ""
@@ -450,23 +358,27 @@ BEGIN {
 			obs = subsCharEspecial(obs)
 			obs = upperCase(obs)
 
-			if( substr(campo_1,1,8) == "EMPRESA:"){
-				empresa = ""
-				empresa = campo_1
-			}
+			categoria = ""
+			categoria = Trim(pos_categoria)
+			categoria = subsCharEspecial(categoria)
+			categoria = upperCase(categoria)
 			
-			if( index(empresa,"AGM") > 0 ){
-				codi_emp = 84
-			} else if(index(empresa,"MOBI") > 0){
-				codi_emp = 310
-			} else {
-				codi_emp = 0
-			}
+			tipo_pagto = ""
+			tipo_pagto = Trim(pos_tipo_pagto)
+			tipo_pagto = subsCharEspecial(tipo_pagto)
+			tipo_pagto = upperCase(tipo_pagto)
 			
-			if( substr(campo_1,1,15) == "CONTA BANCARIA:"){
-				banco_arquivo = ""
-				banco_arquivo = campo_1
-			}
+			empresa = ""
+			empresa = Trim(pos_empresa)
+			empresa = subsCharEspecial(empresa)
+			empresa = upperCase(empresa)
+			
+			codi_emp = ""
+
+			banco_arquivo = ""
+			banco_arquivo = Trim(pos_banco_arquivo)
+			banco_arquivo = subsCharEspecial(banco_arquivo)
+			banco_arquivo = upperCase(banco_arquivo)
 			
 			if( index(banco_arquivo, "SANTANDER") > 0 ){
 				num_banco_arq = 33
@@ -491,9 +403,12 @@ BEGIN {
 					num_banco_arq = 104
 					banco_arquivo = "CAIXA"
 				}
-			}else if( index(banco_arquivo, "BRASIL") > 0 ){
+			}else if( index(banco_arquivo, "BRASIL") > 0 || index(banco_arquivo, "BB") > 0 ){
 				num_banco_arq = 1
 				banco_arquivo = "BCO BRASIL"
+			}else if( banco_arquivo == "DH" || banco_arquivo == "CX" ){
+				num_banco_arq = 0
+				banco_arquivo = "DINHEIRO"
 			}else if( index(banco_arquivo, "TRI BANCO") > 0 ){
 				num_banco_arq = 634
 				banco_arquivo = "TRI BANCO"
@@ -501,7 +416,7 @@ BEGIN {
 				num_banco_arq = 0
 				banco_arquivo = banco_arquivo
 			}
-
+												
 			# TEM PAGAMENTOS QUE O CLIENTE LANÇA NA PLANILHA COM DATA ERRADA DA BAIXA, PORTANTO ESTAS LINHAS ABAIXO VAI VERIFICAR ISTO E O LIMITE É 3 DIAS A MAIS OU 3 DIAS A MENOS
 			baixa_extrato = ""
 			baixa_mais1 = ""
@@ -516,8 +431,8 @@ BEGIN {
 				baixa_mais2 = SomaDias(baixa, 2)
 				baixa_menos1 = SomaDias(baixa, -1)
 				baixa_menos2 = SomaDias(baixa, -2)
-				baixa_mais3 = SomaDias(baixa, 3)
-				baixa_menos3 = SomaDias(baixa, -3)
+				# baixa_mais3 = SomaDias(baixa, 3)
+				# baixa_menos3 = SomaDias(baixa, -3)
 				
 				# COMEÇA PELOS MAIORES DIAS E VAI PRO MENOR, POIS SE SOBRESCREVER, SOBRESCRE COM DADOS MAIS RECENTES
 				# - 3 DIAS
@@ -643,48 +558,24 @@ BEGIN {
 			baixa_temp = baixa_extrato
 			baixa_temp = IfElse(baixa_temp == "", baixa, baixa_temp)
 			baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
-
-			if( _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
-
-				# imprime as linhas onde são tipo um cabeçalho, ou seja, onde estão os dados da data, valores totais, etc
-				if(campo_2 != "NULO"){
-					if(valor_total_pago_int > 0){
-						print "INICIO", baixa, valor_total_pago, banco_arquivo, forn_cli_linha_completa, codi_emp >> "temp\\pagtos_agrupados.csv"
-
-						if(data_proxima_linha != "NULO" || campo_4_proxima_linha == 1){
-							print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_total_pago, 
-								valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
-						}
-					}
-
-					if(valor_total_recebido_int > 0){
-						print "INICIO", baixa, valor_total_recebido, banco_arquivo, forn_cli_linha_completa, codi_emp >> "temp\\recebtos_agrupados.csv"
-
-						if(data_proxima_linha != "NULO" || campo_4_proxima_linha == 1){
-							print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_total_recebido, 
-								valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
-						}
-					}
-				}
-				
-				# PAGOS --> a última verificação é pras linhas que são saldos, se for saldo na coluna do fornecedor vai vir uma data
-				if( baixa != "NULO" && valor_pago_int > 0 && forn_cli != "" && valor_total_pago_int > 0 && campo_2 == "NULO" && forn_cli_temp == "NULO" ){
-					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
-						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
-				}
-				
-				# RECEBIMENTOS
-				if( baixa != "NULO" && valor_recebido_int > 0 && forn_cli_linha_completa != "" && valor_total_recebido_int > 0 && campo_2 == "NULO" && forn_cli_temp == "NULO" ){
-					print nota, forn_cli_linha_completa, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_recebido, 
-						"0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
-				}
+			
+			# PAGOS
+			if( baixa != "NULO" && valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim && forn_cli != "" ){
+				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
+      				  valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+			}
+			
+			# RECEBIMENTOS
+			if( baixa != "NULO" && valor_recebido_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim && forn_cli != "" ){
+				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_recebido, 
+      				  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
 			}
 			
 		}close(filecsv)
 				
 	} close(ArquivosCsv)
 	
-	# VAI VER NO OFX QUAIS DÉBITOS QUE NÃO ESTÃO NA PLANILHA DO CLIENTE
+	# VAI VER NO OFX QUAIS DÉBITOS QUE NÃO ESTÃO NA PLANILHA DO CLIENTE, GERALMENTE SÃO CHEQUES COMPENSADOS EM MESES ANTERIORES OU TARIFAS
 	while ( (getline < "temp\\extrato_cartao.csv") > 0 ) {
 		num_banco_2 = $1
 		
@@ -692,7 +583,7 @@ BEGIN {
 		conta_corrente_3_int = int( soNumeros(conta_corrente_3) )
 		
 		tipo_mov_2 = $3
-
+		
 		data_mov_2 = $4
 		data_mov_int = int(substr(data_mov_2, 7) "" substr(data_mov_2, 4, 2))
 
@@ -702,7 +593,7 @@ BEGIN {
 		historico_2 = $8
 		
 		pagou_no_banco = PagouNoBanco[operacao_3, data_mov_2, valor_transacao_2]
-
+		
 		if(operacao_3 == "Operacao")
 			print $0 >> "saida\\pagtos_feitos_no_cartao_nao_estao_na_planilha.csv"
 

@@ -73,6 +73,7 @@ def organizaExtrato(saida="temp\\baixas.csv"):
     lista_arquivos = leLinhasExtrato()
     
     for linhas in lista_arquivos.values():
+        linha_ja_impressa = {}
 
         posicao_historico = 0
         posicao_data = 0
@@ -90,6 +91,11 @@ def organizaExtrato(saida="temp\\baixas.csv"):
         for num_row, row in enumerate(linhas):
 
             row = str(row)
+
+            try:
+                linha_ja_impressa[num_row] = linha_ja_impressa[num_row]
+            except Exception:
+                linha_ja_impressa[num_row] = 0
 
             posicao_data_temp = row.upper().find("DATA")
             if posicao_data_temp > 0:
@@ -117,7 +123,7 @@ def organizaExtrato(saida="temp\\baixas.csv"):
 
             # ignora as linhas que são referente à saldos
             if historico_temp.count("SALDO") > 0:
-                continue
+                historico_temp = " "
 
             # serve pros extratos que não tem a data com o ano, e sim apenas com o dia e mês
             periodo_temp = row.strip().split(':')
@@ -156,6 +162,14 @@ def organizaExtrato(saida="temp\\baixas.csv"):
             if len(data_temp) == 5:
                 data_temp = (f'{data_temp}/{ano_extrato}')
             data_temp = funcoesUteis.retornaCampoComoData(data_temp)
+
+            historico_temp_proxima_linha = funcoesUteis.trataCampoTexto(proxima_linha[posicao_historico:posicao_historico+65])
+
+            # ignora as linhas que são referente à saldos
+            if historico_temp_proxima_linha.count("SALDO") > 0:
+                historico_temp_proxima_linha = 1
+            else:
+                historico_temp_proxima_linha = 0
 
             # verifica se é uma data válida pra começar os tratamentos de cada campo
             if data_temp is not None:
@@ -203,12 +217,15 @@ def organizaExtrato(saida="temp\\baixas.csv"):
                 
                 fornecedor_cliente = ""
 
+                if historico_temp_proxima_linha == 1:
+                    linha_ja_impressa[num_row+1] = 1
+
                 # primeira geração dos dados quando todas as informações estão em uma linha apenas, ou seja, a próxima linha também já outro campo com data
-                if data_temp_proxima_linha is not None and valor > 0:
+                if (data_temp_proxima_linha is not None or historico_temp_proxima_linha == 1) and valor > 0:
                     saida.write(f"{data};{documento};{historico};{fornecedor_cliente};{valor:.2f};{operador}\n")
             
             # segunda geração dos dados quando as informações complementares está em APENAS uma LINHA ABAIXO
-            if data_temp is None and historico_temp != "" and data_temp_proxima_linha is None and valor > 0:
+            if data_temp is None and historico_temp != "" and data_temp_proxima_linha is None and valor > 0 and linha_ja_impressa[num_row] == 0:
                 fornecedor_cliente = fornecedor_cliente + " " + historico_temp
 
                 # analisa se na verdade é um histórico válido, pois pode ser uma linha que contenha um tanto de carecter que não serve pra nada. Então considera como
@@ -218,7 +235,7 @@ def organizaExtrato(saida="temp\\baixas.csv"):
                     fornecedor_cliente = ""
 
             # segundo geração dos dados quando as informações complementares está na LINHA ABAIXO
-            if data_temp is None and historico_temp != "" and data_temp_proxima_linha is not None and valor > 0:
+            if data_temp is None and historico_temp != "" and data_temp_proxima_linha is not None and valor > 0 and linha_ja_impressa[num_row] == 0:
                 fornecedor_cliente = fornecedor_cliente + " " + historico_temp
                 fornecedor_cliente = fornecedor_cliente.strip()
 
