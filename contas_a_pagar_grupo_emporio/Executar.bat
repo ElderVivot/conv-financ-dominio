@@ -19,12 +19,11 @@ set /P comp_fim=- Competencia Final (MM/AAAA):
 echo.
 echo - Apagando dados da pasta saidas.
 if exist saida\* del /q saida\*
-rem if exist temp\* del /q temp\*
+if exist temp\* del /q temp\*
 
 echo - Filtrando linhas validas de pagamentos.
 call bin\leArquivosPdf.py
 call bin\leArquivosPagtos.py
-call bin\leArquivosImgs.py
 bin\awk95 -f bin\funcoes.awk -f bin\engine.awk -v _comp_ini=%comp_ini% -v _comp_fim=%comp_fim%
 echo.
 
