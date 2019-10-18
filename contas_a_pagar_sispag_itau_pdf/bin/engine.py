@@ -297,8 +297,6 @@ with open(entrada, 'rt') as csvfile:
 
                 cnpj_for_sem_aspas = _cnpj_for.replace("'", '')
 
-                print(_codi_emp_v, cnpj_for_sem_aspas, valor_pago, _data_pagto)
-
                 if cnpj_for_sem_aspas == '':
                     cnpj_for_sem_aspas = '0'
 

@@ -23,6 +23,7 @@ if exist temp\*.* del /q temp\*.*
 if exist naoprocessados\*.* del /q naoprocessados\*.*
 
 echo - Filtrando linhas validas de pagamentos.
+call bin\dividePdfUmaPaginaCada.py
 call bin\leArquivos.py
 bin\awk95 -f bin\funcoes.awk -f bin\engine.awk -v _comp_ini=%comp_ini% -v _comp_fim=%comp_fim%
 echo.

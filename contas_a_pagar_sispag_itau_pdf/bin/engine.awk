@@ -193,12 +193,28 @@ BEGIN {
 	
 	while ((getline < ArquivosCsv) > 0) {
 		nomeArquivo = $0
+		nomeArquivoPDF = substr($0, 1, length($0) - 4) ".pdf"
 		file = "temp\\" nomeArquivo
 
 		conseguiu_processar_arquivo = 0
+
+		numLinha = 1
 		
 		# PRIMEIRO WHILE QUE VAI LER TODOS OS ARQUIVOS E VER QUAL É A ESTRUTURA QUE ELE ESTÁ
 		while ((getline < file) > 0) {
+
+			# zera os campos pra ele não pegar dados errados
+			if(numLinha == 1){
+				forn_cli = ""
+				cnpj_forn_cli = ""
+				vencimento = ""
+				valor_pago = "0,00"
+				valor_pago_int = 0
+				categoria = ""
+				obs = ""
+				nome_favorecido = ""
+			}
+			numLinha++
 
 			split_dois_pontos = split($0, linha_v, ":")
 
@@ -219,6 +235,19 @@ BEGIN {
 				forn_cli = ""
 				forn_cli = campo_2 "" Trim(linha_v[3]) "" Trim(linha_v[4])
 				forn_cli = Trim(forn_cli)
+				nome_favorecido = forn_cli
+			}
+
+			if(index(campo_1, "GUIA DE RECOLHIMENTO") > 0){
+				obs = ""
+				obs = campo_1
+				obs = Trim(obs)
+			}
+
+			if(campo_1 == "INFORMACOES FORNECIDAS PELO PAGADOR"){
+				obs = ""
+				obs = campo_2 "" Trim(linha_v[3]) "" Trim(linha_v[4])
+				obs = Trim(obs)
 			}
 			
 			if(campo_1 == "DATA DE VENCIMENTO"){
@@ -269,6 +298,13 @@ BEGIN {
 				valor_pago_int = int(soNumeros(valor_pago))
 			}
 
+			if(campo_1 == "VALOR RECOLHIDO"){
+				valor_pago = ""
+				valor_pago = campo_2
+				valor_pago = FormataCampo("double", valor_pago, 12, 2)
+				valor_pago_int = int(soNumeros(valor_pago))
+			}
+
 			if(campo_1 == "VALOR DA TED"){
 				valor_pago = ""
 				valor_pago = campo_2
@@ -288,6 +324,11 @@ BEGIN {
 				valor_pago = campo_2
 				valor_pago = FormataCampo("double", valor_pago, 12, 2)
 				valor_pago_int = int(soNumeros(valor_pago))
+			}
+
+			# quando é pagamento de imposto não tem o nome do fornecedor, o dados vem na informação complementar
+			if( obs != "" && vencimento == "" && nome_favorecido == "" ){
+				forn_cli = obs
 			}
 			
 			# valor_original = ""
@@ -321,24 +362,9 @@ BEGIN {
 			valor_desconto = Trim(substr($0,128,11))
 			valor_desconto = FormataCampo("double", valor_desconto, 12, 2)
 			
-			#if( valor_juros == "0,00" && valor_pago_int > valor_original_int ){
-			#	valor_juros = valor_pago_int - valor_original_int
-			#	valor_juros = TransformaPraDecimal(valor_juros)
-			#}
-			
-			#if( valor_desconto == "0,00" && valor_pago_int < valor_original_int ){
-			#	valor_desconto = valor_original_int - valor_pago_int
-			#	valor_desconto = TransformaPraDecimal(valor_desconto)
-			#}
-			
 			valor_multa = ""
 			valor_multa = Trim(pos_valor_multa)
 			valor_multa = FormataCampo("double", valor_multa, 12, 2)
-			
-			obs = ""
-			obs = Trim(pos_obs)
-			obs = subsCharEspecial(obs)
-			obs = upperCase(obs)
 			
 			categoria = ""
 			categoria = Trim(pos_categoria)
@@ -352,9 +378,10 @@ BEGIN {
 
 			banco_arquivo = "ITAU"
 
-			if( substr(campo_1, 1, 21) == "PAGAMENTO EFETUADO EM" ){
+			texto_filtro = "PAGAMENTO EFETUADO EM"
+			if( substr(campo_1, 1, length(texto_filtro)) == texto_filtro ){
 				baixa = ""
-				baixa = Trim(substr($0,22,11))
+				baixa = Trim(substr($0, length(texto_filtro)+1 ,11))
 				gsub("[.]", "/", baixa)
 				# baixa = FormatDate(baixa)
 				# baixa = isDate(baixa)
@@ -371,18 +398,12 @@ BEGIN {
 
 					conseguiu_processar_arquivo = 1
 				}
-
-				forn_cli = ""
-				cnpj_forn_cli = ""
-				vencimento = ""
-				valor_pago = "0,00"
-				valor_pago_int = 0
-				categoria = ""
 			}
 			
-			if( substr(campo_1, 1, 26) == "TRANSFERENCIA REALIZADA EM" ){
+			texto_filtro = "TRANSFERENCIA REALIZADA EM"
+			if( substr(campo_1, 1, length(texto_filtro)) == texto_filtro ){
 				baixa = ""
-				baixa = Trim(substr($0,27,11))
+				baixa = Trim(substr($0, length(texto_filtro)+1 ,11))
 				gsub("[.]", "/", baixa)
 				# baixa = FormatDate(baixa)
 				# baixa = isDate(baixa)
@@ -399,18 +420,12 @@ BEGIN {
 
 					conseguiu_processar_arquivo = 1
 				}
-
-				forn_cli = ""
-				cnpj_forn_cli = ""
-				vencimento = ""
-				valor_pago = "0,00"
-				valor_pago_int = 0
-				categoria = ""
 			}
 
-			if( substr(campo_1, 1, 25) == "TRANSFERENCIA EFETUADA EM" ){
+			texto_filtro = "TRANSFERENCIA EFETUADA EM"
+			if( substr(campo_1, 1, length(texto_filtro)) == texto_filtro ){
 				baixa = ""
-				baixa = Trim(substr($0,26,11))
+				baixa = Trim(substr($0, length(texto_filtro)+1 ,11))
 				gsub("[.]", "/", baixa)
 				# baixa = FormatDate(baixa)
 				# baixa = isDate(baixa)
@@ -427,18 +442,34 @@ BEGIN {
 
 					conseguiu_processar_arquivo = 1
 				}
-
-				forn_cli = ""
-				cnpj_forn_cli = ""
-				vencimento = ""
-				valor_pago = "0,00"
-				valor_pago_int = 0
-				categoria = ""
 			}
 
-			if( substr(campo_1, 1, 20) == "OPERACAO EFETUADA EM" ){
+			texto_filtro = "PAGAMENTO REALIZADO EM"
+			if( substr(campo_1, 1, length(texto_filtro)) == texto_filtro ){
 				baixa = ""
-				baixa = Trim(substr($0,21,11))
+				baixa = Trim(substr($0, length(texto_filtro)+1 ,11))
+				gsub("[.]", "/", baixa)
+				# baixa = FormatDate(baixa)
+				# baixa = isDate(baixa)
+
+				# AS LINHAS ABAIXO SÃO UTILIZADAS PARA IMPRIMIR SOMENTE O QUE FOR DAQUELA COMPETENCIA
+				baixa_temp = ""
+				baixa_temp = baixa
+				baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
+				
+				# PAGOS
+				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
+						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+
+					conseguiu_processar_arquivo = 1
+				}
+			}
+
+			texto_filtro = "OPERACAO EFETUADA EM"
+			if( substr(campo_1, 1, length(texto_filtro)) == texto_filtro ){
+				baixa = ""
+				baixa = Trim(substr($0, length(texto_filtro)+1 ,11))
 				gsub("[.]", "/", baixa)
 				# baixa = FormatDate(baixa)
 				# baixa = isDate(baixa)
@@ -455,18 +486,12 @@ BEGIN {
 					
 					conseguiu_processar_arquivo = 1
 				}
-
-				forn_cli = ""
-				cnpj_forn_cli = ""
-				vencimento = ""
-				valor_pago = "0,00"
-				valor_pago_int = 0
-				categoria = ""
 			}
 
-			if( substr(campo_1, 1, 17) == "TED SOLICITADA EM" ){
+			texto_filtro = "TED SOLICITADA EM"
+			if( substr(campo_1, 1, length(texto_filtro)) == texto_filtro ){
 				baixa = ""
-				baixa = Trim(substr($0,18,11))
+				baixa = Trim(substr($0, length(texto_filtro)+1 ,11))
 				gsub("[.]", "/", baixa)
 				# baixa = FormatDate(baixa)
 				# baixa = isDate(baixa)
@@ -483,20 +508,13 @@ BEGIN {
 					
 					conseguiu_processar_arquivo = 1
 				}
-
-				forn_cli = ""
-				cnpj_forn_cli = ""
-				vencimento = ""
-				valor_pago = "0,00"
-				valor_pago_int = 0
-				categoria = ""
 			}
 			
 		} close(file)
 
 		if(conseguiu_processar_arquivo == 0){
-			system("copy temp\\\"" nomeArquivo "\" naoprocessados\\\"" nomeArquivo "\" > nul")
-			print("      - Arquivo \"" nomeArquivo "\" nao foi possivel processar.")
+			system("copy temp\\\"" nomeArquivoPDF "\" naoprocessados\\\"" nomeArquivoPDF "\" > nul")
+			print("      - Arquivo \"" nomeArquivoPDF "\" nao foi possivel processar.")
 		}
 	} close(ArquivosCsv)
 	
