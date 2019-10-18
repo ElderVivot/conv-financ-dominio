@@ -1,14 +1,18 @@
+# coding: utf-8
+
 BEGIN { 
 	FS = "";
 	OFS = ";";
 	
 	system("if exist bin\\*.txt del /q bin\\*.txt")
-	system("dir /b temp\\*.csv > bin\\listacsv.txt")
+	system("dir /b temp\\*.txt > bin\\listacsv.txt")
 	system("if exist entrada\\*.ofx dir /b entrada\\*.ofx > bin\\listaofx.txt")
 	system("if exist entrada\\*.ofc dir /b entrada\\*.ofc >> bin\\listaofx.txt")
+	system("if exist temp\\*.csv dir /b temp\\*.csv > bin\\listaplanilhacliente.txt")
 	
 	ArquivosCsv = "bin\\listacsv.txt";
 	ArquivosOfx = "bin\\listaofx.txt";
+	ArquivosPlanilhaCliente = "bin\\listaplanilhacliente.txt";
 	
 	_comp_ini = int(Trim(substr(_comp_ini, 4)) "" substr(_comp_ini, 1, 2))
 	_comp_fim = int(Trim(substr(_comp_fim, 4)) "" substr(_comp_fim, 1, 2))
@@ -180,33 +184,30 @@ BEGIN {
 		}
 	} close("temp\\extrato_cartao.csv")
 	
-	print "Documento;Nome Fornecedor;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\pagtos_agrupados.csv"
-	print "Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\recebtos_agrupados.csv"
-	
-	while ((getline < ArquivosCsv) > 0) {
+	while ((getline < ArquivosPlanilhaCliente) > 0) {
 		
 		filecsv = "temp\\" $0
 		
 		while ((getline < filecsv) > 0) {
 
-			if ( Trim(toupper($1)) == toupper("Codigo/Loja") ){
+			if ( Trim(toupper($1)) == toupper("Conta") ){
 				load_columns();
 				continue;
 			}
 			
-			texto_for = "Nome"
+			texto_for = "Conta"
 			texto_cnpj_for = "---------"
-			texto_nota = "Titulo"
+			texto_nota = "Documento"
 			texto_emissao = "-------"
 			texto_venc = "--------"
-			texto_baixa = "Baixa"
+			texto_baixa = "Data"
 			texto_valor_original = "--------"
-			texto_valor_pago = "Total"
+			texto_valor_pago = "Valor Previsto"
 			texto_valor_recebido = "---------"
 			texto_valor_desc = "---------"
 			texto_valor_juros = "---------"
 			texto_valor_multa = "---------"
-			texto_obs = "--------"
+			texto_obs = "Descricao"
 			texto_categoria = "--------"
 			texto_banco_arquivo = "--------"
 			texto_empresa = "------"
@@ -215,19 +216,19 @@ BEGIN {
 			texto_tipo_rec_ou_pag = "---------"
 			texto_tarifas = "---------"
 						
-			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 2 )
+			pos_for = $IfElse( int(NumColuna(texto_for)) > 0, int(NumColuna(texto_for)), 1 )
 			pos_cnpj_for = $IfElse( int(NumColuna(texto_cnpj_for)) > 0, int(NumColuna(texto_cnpj_for)), 999 )
-			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 999 )
+			pos_nota = $IfElse( int(NumColuna(texto_nota)) > 0, int(NumColuna(texto_nota)), 3 )
 			pos_emissao = $IfElse( int(NumColuna(texto_emissao)) > 0, int(NumColuna(texto_emissao)), 999 )
 			pos_venc = $IfElse( int(NumColuna(texto_venc)) > 0, int(NumColuna(texto_venc)), 999 )
-			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 7 )
+			pos_baixa = $IfElse( int(NumColuna(texto_baixa)) > 0, int(NumColuna(texto_baixa)), 4 )
 			pos_valor_original = $IfElse( int(NumColuna(texto_valor_original)) > 0, int(NumColuna(texto_valor_original)), 999 )
-			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 6 )
+			pos_valor_pago = $IfElse( int(NumColuna(texto_valor_pago)) > 0, int(NumColuna(texto_valor_pago)), 5 )
 			pos_valor_recebido = $IfElse( int(NumColuna(texto_valor_recebido)) > 0, int(NumColuna(texto_valor_recebido)), 999 )
 			pos_valor_desc = $IfElse( int(NumColuna(texto_valor_desc)) > 0, int(NumColuna(texto_valor_desc)), 999 )
 			pos_valor_juros = $IfElse( int(NumColuna(texto_valor_juros)) > 0, int(NumColuna(texto_valor_juros)), 999 )
 			pos_valor_multa = $IfElse( int(NumColuna(texto_valor_multa)) > 0, int(NumColuna(texto_valor_multa)), 999 )
-			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 999 )
+			pos_obs = $IfElse( int(NumColuna(texto_obs)) > 0, int(NumColuna(texto_obs)), 2 )
 			pos_natureza_pagto = $IfElse( int(NumColuna(texto_natureza_pagto)) > 0, int(NumColuna(texto_natureza_pagto)), 999 )
 			pos_banco_arquivo = $IfElse( int(NumColuna(texto_banco_arquivo)) > 0, int(NumColuna(texto_banco_arquivo)), 999)
 			pos_tipo_pagto = $IfElse( int(NumColuna(texto_tipo_pagto)) > 0, int(NumColuna(texto_tipo_pagto)), 999 )
@@ -245,6 +246,9 @@ BEGIN {
 			forn_cli = Trim(pos_for)
 			forn_cli = subsCharEspecial(forn_cli)
 			forn_cli = upperCase(forn_cli)
+			forn_cli = split(forn_cli, forn_cli_v, "-")
+			forn_cli = forn_cli_v[2] " " forn_cli_v[3] " " forn_cli_v[4]
+			forn_cli = Trim(forn_cli)
 			
 			nota_completo = ""
 			nota_completo = Trim(pos_nota)
@@ -562,18 +566,359 @@ BEGIN {
 			# PAGOS
 			if( baixa != "NULO" && valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim && forn_cli != "" ){
 				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
-      				  valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+      				  valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados2.csv"
+
+				NumeroNotaComFornecedor[valor_pago, baixa] = nota
+				NumeroTituloComFornecedor[valor_pago, baixa] = nota_completo_orig
+				OBSComFornecedor[valor_pago, baixa] = obs
 			}
 			
 			# RECEBIMENTOS
 			if( baixa != "NULO" && valor_recebido_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim && forn_cli != "" ){
 				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_recebido, 
-      				  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados.csv"
+      				  "0,00", "0,00", "0,00", nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\recebtos_agrupados2.csv"
 			}
 			
 		}close(filecsv)
 				
+	} close(ArquivosPlanilhaCliente)
+
+	# ----------------------------------------------------------------
+	
+	print "Documento;Nome Fornecedor;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\pagtos_agrupados.csv"
+	print "Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\recebtos_agrupados.csv"
+	
+	# LE PAGTOS DO SISPAG
+	while ((getline < ArquivosCsv) > 0) {
+		nomeArquivo = $0
+		nomeArquivoPDF = substr($0, 1, length($0) - 4) ".pdf"
+		file = "temp\\" nomeArquivo
+
+		conseguiu_processar_arquivo = 0
+
+		numLinha = 1
+		
+		# PRIMEIRO WHILE QUE VAI LER TODOS OS ARQUIVOS E VER QUAL É A ESTRUTURA QUE ELE ESTÁ
+		while ((getline < file) > 0) {
+
+			# zera os campos pra ele não pegar dados errados
+			if(numLinha == 1){
+				forn_cli = ""
+				cnpj_forn_cli = ""
+				vencimento = ""
+				valor_pago = "0,00"
+				valor_pago_int = 0
+				categoria = ""
+				obs = ""
+				nome_favorecido = ""
+			}
+			numLinha++
+
+			split_dois_pontos = split($0, linha_v, ":")
+
+			campo_1 = ""
+			campo_1 = Trim(linha_v[1])
+			campo_1 = subsCharEspecial(campo_1)
+			campo_1 = upperCase(campo_1)
+
+			campo_2 = Trim(linha_v[2])
+
+			if(campo_1 == "NOME"){
+				forn_cli = ""
+				forn_cli = campo_2 "" Trim(linha_v[3]) "" Trim(linha_v[4])
+				forn_cli = Trim(forn_cli)
+			}
+
+			if(campo_1 == "NOME DO FAVORECIDO"){
+				forn_cli = ""
+				forn_cli = campo_2 "" Trim(linha_v[3]) "" Trim(linha_v[4])
+				forn_cli = Trim(forn_cli)
+				nome_favorecido = forn_cli
+			}
+
+			if(index(campo_1, "GUIA DE RECOLHIMENTO") > 0){
+				obs = ""
+				obs = campo_1
+				obs = Trim(obs)
+			}
+
+			if(campo_1 == "INFORMACOES FORNECIDAS PELO PAGADOR"){
+				obs = ""
+				obs = campo_2 "" Trim(linha_v[3]) "" Trim(linha_v[4])
+				obs = Trim(obs)
+			}
+			
+			if(campo_1 == "DATA DE VENCIMENTO"){
+				vencimento = ""
+				vencimento = Trim(campo_2)
+				vencimento = FormatDate(vencimento)
+				vencimento = isDate(vencimento)
+				vencimento = IfElse( vencimento == "NULO", "", vencimento )
+			}
+
+			if(campo_1 == "CNPJ"){
+				cnpj_forn_cli = ""
+				cnpj_forn_cli = soNumeros(campo_2)
+				cnpj_forn_cli = IfElse(cnpj_forn_cli == "", "00000000000000", cnpj_forn_cli)
+			}
+
+			if(campo_1 == "CPF"){
+				cnpj_forn_cli = ""
+				cnpj_forn_cli = soNumeros(campo_2)
+				cnpj_forn_cli = IfElse(cnpj_forn_cli == "", "00000000000000", cnpj_forn_cli)
+			}
+
+			if(campo_1 == "CPF/CNPJ"){
+				cnpj_forn_cli = ""
+				cnpj_forn_cli = soNumeros(campo_2)
+				cnpj_forn_cli = IfElse(cnpj_forn_cli == "", "00000000000000", cnpj_forn_cli)
+			}
+
+			if(campo_1 == "CPF / CNPJ"){
+				cnpj_forn_cli = ""
+				cnpj_forn_cli = soNumeros(campo_2)
+				cnpj_forn_cli = IfElse(cnpj_forn_cli == "", "00000000000000", cnpj_forn_cli)
+			}
+
+			if(campo_1 == "CPF/CNPJ DO PAGADOR"){
+				empresa = ""
+				empresa = Trim(campo_2)
+				empresa = subsCharEspecial(empresa)
+				empresa = upperCase(empresa)
+
+				codi_emp = empresa
+			}
+
+			if(campo_1 == "VALOR"){
+				valor_pago = ""
+				valor_pago = campo_2
+				valor_pago = FormataCampo("double", valor_pago, 12, 2)
+				valor_pago_int = int(soNumeros(valor_pago))
+			}
+
+			if(campo_1 == "VALOR RECOLHIDO"){
+				valor_pago = ""
+				valor_pago = campo_2
+				valor_pago = FormataCampo("double", valor_pago, 12, 2)
+				valor_pago_int = int(soNumeros(valor_pago))
+			}
+
+			if(campo_1 == "VALOR DA TED"){
+				valor_pago = ""
+				valor_pago = campo_2
+				valor_pago = FormataCampo("double", valor_pago, 12, 2)
+				valor_pago_int = int(soNumeros(valor_pago))
+			}
+
+			if(campo_1 == "VALOR DA TRANSFERENCIA (R$)"){
+				valor_pago = ""
+				valor_pago = campo_2
+				valor_pago = FormataCampo("double", valor_pago, 12, 2)
+				valor_pago_int = int(soNumeros(valor_pago))
+			}
+			
+			if(campo_1 == "VALOR PAGO"){
+				valor_pago = ""
+				valor_pago = campo_2
+				valor_pago = FormataCampo("double", valor_pago, 12, 2)
+				valor_pago_int = int(soNumeros(valor_pago))
+			}
+
+			# quando é pagamento de imposto não tem o nome do fornecedor, o dados vem na informação complementar
+			if( obs != "" && vencimento == "" && nome_favorecido == "" ){
+				forn_cli = obs
+			}
+			
+			# valor_original = ""
+			# valor_original = Trim(substr($0,106,11))
+			# valor_original = FormataCampo("double", valor_original, 12, 2)
+			# valor_original_int = int(soNumeros(valor_original))
+			
+			# pago_recebido = ""
+			# pago_recebido = Trim(pos_tipo_rec_ou_pag)
+			# pago_recebido = subsCharEspecial(pago_recebido)
+			# pago_recebido = upperCase(pago_recebido)
+
+			valor_recebido = ""
+			valor_recebido = Trim(pos_valor_recebido)
+			valor_recebido = FormataCampo("double", valor_recebido, 12, 2)
+			valor_recebido_int = int(soNumeros(valor_recebido))
+			
+			if( valor_pago_int > 0 ){
+				operacao_arq = "-"
+				valor_considerar = valor_pago
+			} else {
+				operacao_arq = "+"
+				valor_considerar = valor_recebido_int
+			}
+			
+			valor_juros = ""
+			valor_juros = Trim(substr($0,117,11))
+			valor_juros = FormataCampo("double", valor_juros, 12, 2)
+			
+			valor_desconto = ""
+			valor_desconto = Trim(substr($0,128,11))
+			valor_desconto = FormataCampo("double", valor_desconto, 12, 2)
+			
+			valor_multa = ""
+			valor_multa = Trim(pos_valor_multa)
+			valor_multa = FormataCampo("double", valor_multa, 12, 2)
+			
+			categoria = ""
+			categoria = Trim(pos_categoria)
+			categoria = subsCharEspecial(categoria)
+			categoria = upperCase(categoria)
+			
+			tipo_pagto = ""
+			tipo_pagto = Trim(pos_tipo_pagto)
+			tipo_pagto = subsCharEspecial(tipo_pagto)
+			tipo_pagto = upperCase(tipo_pagto)
+
+			banco_arquivo = "ITAU"
+
+			texto_filtro = "PAGAMENTO EFETUADO EM"
+			if( substr(campo_1, 1, length(texto_filtro)) == texto_filtro ){
+				baixa = ""
+				baixa = Trim(substr($0, length(texto_filtro)+1 ,11))
+				gsub("[.]", "/", baixa)
+				# baixa = FormatDate(baixa)
+				# baixa = isDate(baixa)
+
+				# AS LINHAS ABAIXO SÃO UTILIZADAS PARA IMPRIMIR SOMENTE O QUE FOR DAQUELA COMPETENCIA
+				baixa_temp = ""
+				baixa_temp = baixa
+				baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
+				
+				# PAGOS
+				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
+						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+
+					conseguiu_processar_arquivo = 1
+				}
+			}
+			
+			texto_filtro = "TRANSFERENCIA REALIZADA EM"
+			if( substr(campo_1, 1, length(texto_filtro)) == texto_filtro ){
+				baixa = ""
+				baixa = Trim(substr($0, length(texto_filtro)+1 ,11))
+				gsub("[.]", "/", baixa)
+				# baixa = FormatDate(baixa)
+				# baixa = isDate(baixa)
+
+				# AS LINHAS ABAIXO SÃO UTILIZADAS PARA IMPRIMIR SOMENTE O QUE FOR DAQUELA COMPETENCIA
+				baixa_temp = ""
+				baixa_temp = baixa
+				baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
+				
+				# PAGOS
+				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
+						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+
+					conseguiu_processar_arquivo = 1
+				}
+			}
+
+			texto_filtro = "TRANSFERENCIA EFETUADA EM"
+			if( substr(campo_1, 1, length(texto_filtro)) == texto_filtro ){
+				baixa = ""
+				baixa = Trim(substr($0, length(texto_filtro)+1 ,11))
+				gsub("[.]", "/", baixa)
+				# baixa = FormatDate(baixa)
+				# baixa = isDate(baixa)
+
+				# AS LINHAS ABAIXO SÃO UTILIZADAS PARA IMPRIMIR SOMENTE O QUE FOR DAQUELA COMPETENCIA
+				baixa_temp = ""
+				baixa_temp = baixa
+				baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
+				
+				# PAGOS
+				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
+						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+
+					conseguiu_processar_arquivo = 1
+				}
+			}
+
+			texto_filtro = "PAGAMENTO REALIZADO EM"
+			if( substr(campo_1, 1, length(texto_filtro)) == texto_filtro ){
+				baixa = ""
+				baixa = Trim(substr($0, length(texto_filtro)+1 ,11))
+				gsub("[.]", "/", baixa)
+				# baixa = FormatDate(baixa)
+				# baixa = isDate(baixa)
+
+				# AS LINHAS ABAIXO SÃO UTILIZADAS PARA IMPRIMIR SOMENTE O QUE FOR DAQUELA COMPETENCIA
+				baixa_temp = ""
+				baixa_temp = baixa
+				baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
+				
+				# PAGOS
+				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
+						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+
+					conseguiu_processar_arquivo = 1
+				}
+			}
+
+			texto_filtro = "OPERACAO EFETUADA EM"
+			if( substr(campo_1, 1, length(texto_filtro)) == texto_filtro ){
+				baixa = ""
+				baixa = Trim(substr($0, length(texto_filtro)+1 ,11))
+				gsub("[.]", "/", baixa)
+				# baixa = FormatDate(baixa)
+				# baixa = isDate(baixa)
+
+				# AS LINHAS ABAIXO SÃO UTILIZADAS PARA IMPRIMIR SOMENTE O QUE FOR DAQUELA COMPETENCIA
+				baixa_temp = ""
+				baixa_temp = baixa
+				baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
+				
+				# PAGOS
+				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
+						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+					
+					conseguiu_processar_arquivo = 1
+				}
+			}
+
+			texto_filtro = "TED SOLICITADA EM"
+			if( substr(campo_1, 1, length(texto_filtro)) == texto_filtro ){
+				baixa = ""
+				baixa = Trim(substr($0, length(texto_filtro)+1 ,11))
+				gsub("[.]", "/", baixa)
+				# baixa = FormatDate(baixa)
+				# baixa = isDate(baixa)
+
+				# AS LINHAS ABAIXO SÃO UTILIZADAS PARA IMPRIMIR SOMENTE O QUE FOR DAQUELA COMPETENCIA
+				baixa_temp = ""
+				baixa_temp = baixa
+				baixa_temp = int(substr(baixa_temp, 7) "" substr(baixa_temp, 4, 2))
+				
+				# PAGOS
+				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
+						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
+					
+					conseguiu_processar_arquivo = 1
+				}
+			}
+			
+		} close(file)
+
+		if(conseguiu_processar_arquivo == 0){
+			system("copy temp\\\"" nomeArquivoPDF "\" naoprocessados\\\"" nomeArquivoPDF "\" > nul")
+			print("      - Arquivo \"" nomeArquivoPDF "\" nao foi possivel processar.")
+		}
 	} close(ArquivosCsv)
+	
+	#print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "saida\\movtos_feitos_no_cartao_nao_estao_na_planilha.csv"
+	
+	FS = ";"
 	
 	# VAI VER NO OFX QUAIS DÉBITOS QUE NÃO ESTÃO NA PLANILHA DO CLIENTE, GERALMENTE SÃO CHEQUES COMPENSADOS EM MESES ANTERIORES OU TARIFAS
 	while ( (getline < "temp\\extrato_cartao.csv") > 0 ) {
@@ -593,11 +938,8 @@ BEGIN {
 		historico_2 = $8
 		
 		pagou_no_banco = PagouNoBanco[operacao_3, data_mov_2, valor_transacao_2]
-
-		if( operacao_3 == "Operacao" )
-			print $0 >> "saida\\pagtos_feitos_no_cartao_nao_estao_na_planilha.csv"
 		
-		if( operacao_3 == "-" && pagou_no_banco != 1 && _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
+		if( ( operacao_3 == "-" || operacao_3 == "Operacao") && pagou_no_banco != 1 && _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
 			print $0 >> "saida\\pagtos_feitos_no_cartao_nao_estao_na_planilha.csv"
 		
 	} close("temp\\extrato_cartao.csv")
