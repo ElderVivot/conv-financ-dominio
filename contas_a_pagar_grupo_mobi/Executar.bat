@@ -30,6 +30,7 @@ echo.
 REM --> mesmo arquivo do bin\engine.py, mas este não precisa da instalação do python
 REM bin\dist\engine\engine.exe
 call bin\engine.py
+bin\awk95 -f bin\organizaSaidaPraFacilitarLeitura.awk
 
 echo.
 echo - Processo finalizado. Aperte qualquer tela para sair.

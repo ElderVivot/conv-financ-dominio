@@ -1,4 +1,4 @@
-BEGIN { 
+BEGIN {
 	FS = "";
 	OFS = ";";
 	
@@ -307,7 +307,8 @@ BEGIN {
 					operacao_arq = "-"
 					valor_considerar = 0
 					valor_considerar = valor_total_pago
-				} else {
+				} 
+				if( valor_total_recebido_int > 0 ){
 					operacao_arq = "+"
 					valor_considerar = 0
 					valor_considerar = valor_total_recebido
@@ -408,21 +409,6 @@ BEGIN {
 
 			valor_recebido_int = int(soNumeros(valor_recebido))
 			
-			valor_taxa = ""
-			valor_taxa = Trim(pos_valor_tarifas)
-			valor_taxa = FormataCampo("double", valor_taxa, 12, 2)
-			valor_taxa_int = int(soNumeros(valor_taxa))
-			
-			if( valor_taxa_int > 0 && valor_pago_int == 0 ){
-				valor_pago = valor_taxa
-				valor_pago_int = valor_taxa_int
-			}
-			
-			if( valor_taxa_int > 0 && valor_recebido_int == 0 ){
-				valor_recebido = valor_taxa
-				valor_recebido_int = valor_taxa_int
-			}
-			
 			valor_juros = ""
 			valor_juros = Trim(pos_valor_juros)
 			valor_juros = FormataCampo("double", valor_juros, 12, 2)
@@ -430,16 +416,6 @@ BEGIN {
 			valor_desconto = ""
 			valor_desconto = Trim(pos_valor_desc)
 			valor_desconto = FormataCampo("double", valor_desconto, 12, 2)
-			
-			# if( valor_juros == "0,00" && valor_pago_int > valor_original_int ){
-			# 	valor_juros = valor_pago_int - valor_original_int
-			# 	valor_juros = TransformaPraDecimal(valor_juros)
-			# }
-			
-			# if( valor_desconto == "0,00" && valor_pago_int < valor_original_int ){
-			# 	valor_desconto = valor_original_int - valor_pago_int
-			# 	valor_desconto = TransformaPraDecimal(valor_desconto)
-			# }
 			
 			valor_multa = ""
 			valor_multa = Trim(pos_valor_multa)
@@ -666,7 +642,7 @@ BEGIN {
 						}
 					}
 				}
-				
+
 				# PAGOS --> a última verificação é pras linhas que são saldos, se for saldo na coluna do fornecedor vai vir uma data
 				if( baixa != "NULO" && valor_pago_int > 0 && forn_cli != "" && valor_total_pago_int > 0 && campo_2 == "NULO" && forn_cli_temp == "NULO" ){
 					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 

@@ -143,13 +143,13 @@ _codi_emp = int(input('- Informe o código da empresa Matriz ou Filial na Domín
 #entrada = 'Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\\contas_a_pagar_grupo_positiva\\temp\\pagtos_agrupados.csv'
 #saida = open('Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\\contas_a_pagar_grupo_positiva\\saida\\pagtos_agrupados.csv', 'w')
 entrada = 'temp\\pagtos_agrupados.csv'
-saida = open('saida\\pagtos_agrupados.csv', 'w')
+saida = open('temp\\pagtos_agrupados2.csv', 'w')
 with open(entrada, 'rt') as csvfile:
         csvreader = csv.reader(csvfile, delimiter=';')
         for row in csvreader:
             if str(row[0]) == 'Documento':
-                saida.write('Documento;Nome Fornecedor;CNPJ Fornecedor;Texto Fixo;Vencimento;Banco Planilha;Banco Oco. Extrato;'
-                            'Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;'
+                saida.write('Identificador;Documento;Nome Fornecedor;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;'
+                            'Data Pagto;Data Oco. Extrato;Valor Total Lote;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;'
                             'É uma NF?;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria\n')
             elif str(row[0]) == 'INICIO':
 
@@ -281,7 +281,7 @@ saida.close()
 
 try:
     entrada = 'temp\\recebtos_agrupados.csv'
-    saida = open('saida\\recebtos_agrupados.csv', 'w')
+    saida = open('temp\\recebtos_agrupados2.csv', 'w')
 
     with open(entrada, 'rt') as csvfile:
         csvreader = csv.reader(csvfile, delimiter=';')
@@ -301,7 +301,7 @@ try:
                 if _codi_emp != _codi_emp_arquivo:
                     continue
 
-                result = (f"{row[0]};{row[1]};{row[2]};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
+                result = (f"{row[0]};{row[1]};{row[2]};LANC;{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
                             f";{row[11]};{row[12]};{row[13]};{_codi_emp};{row[15]};{row[16]};{row[17]};{row[18]}\n")
                 saida.write(result)
 
