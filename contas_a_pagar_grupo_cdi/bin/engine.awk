@@ -249,6 +249,9 @@ BEGIN {
 			forn_cli = split(forn_cli, forn_cli_v, "-")
 			forn_cli = forn_cli_v[2] " " forn_cli_v[3] " " forn_cli_v[4]
 			forn_cli = Trim(forn_cli)
+
+			forn_cli_primeiro_nome = split(forn_cli, forn_cli_primeiro_nome_v, " ")
+			forn_cli_primeiro_nome = forn_cli_primeiro_nome_v[1]
 			
 			nota_completo = ""
 			nota_completo = Trim(pos_nota)
@@ -568,9 +571,13 @@ BEGIN {
 				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
       				  valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados2.csv"
 
-				NumeroNotaComFornecedor[valor_pago, baixa] = nota
-				NumeroTituloComFornecedor[valor_pago, baixa] = nota_completo_orig
-				OBSComFornecedor[valor_pago, baixa] = obs
+				NumeroNotaComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] = nota
+				NumeroTituloComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] = nota_completo_orig
+				OBSComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] = obs
+
+				NumeroNotaSemFornecedor[valor_pago, baixa] = nota
+				NumeroTituloSemFornecedor[valor_pago, baixa] = nota_completo_orig
+				OBSSemFornecedor[valor_pago, baixa] = obs
 			}
 			
 			# RECEBIMENTOS
@@ -611,6 +618,7 @@ BEGIN {
 				categoria = ""
 				obs = ""
 				nome_favorecido = ""
+				forn_cli_primeiro_nome = ""
 			}
 			numLinha++
 
@@ -627,6 +635,9 @@ BEGIN {
 				forn_cli = ""
 				forn_cli = campo_2 "" Trim(linha_v[3]) "" Trim(linha_v[4])
 				forn_cli = Trim(forn_cli)
+
+				forn_cli_primeiro_nome = split(forn_cli, forn_cli_primeiro_nome_v, " ")
+				forn_cli_primeiro_nome = forn_cli_primeiro_nome_v[1]
 			}
 
 			if(campo_1 == "NOME DO FAVORECIDO"){
@@ -634,6 +645,9 @@ BEGIN {
 				forn_cli = campo_2 "" Trim(linha_v[3]) "" Trim(linha_v[4])
 				forn_cli = Trim(forn_cli)
 				nome_favorecido = forn_cli
+
+				forn_cli_primeiro_nome = split(forn_cli, forn_cli_primeiro_nome_v, " ")
+				forn_cli_primeiro_nome = forn_cli_primeiro_nome_v[1]
 			}
 
 			if(index(campo_1, "GUIA DE RECOLHIMENTO") > 0){
@@ -775,6 +789,7 @@ BEGIN {
 			tipo_pagto = upperCase(tipo_pagto)
 
 			banco_arquivo = "ITAU"
+			banco = banco_arquivo
 
 			texto_filtro = "PAGAMENTO EFETUADO EM"
 			if( substr(campo_1, 1, length(texto_filtro)) == texto_filtro ){
@@ -791,10 +806,25 @@ BEGIN {
 				
 				# PAGOS
 				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+
+					nota = NumeroNotaSemFornecedor[valor_pago, baixa]
+					if(NumeroNotaComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						nota = NumeroNotaComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
+					nota_completo_orig = NumeroTituloSemFornecedor[valor_pago, baixa]
+					if(NumeroTituloComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						nota_completo_orig = NumeroTituloComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
+					obs = OBSSemFornecedor[valor_pago, baixa]
+					if(OBSComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						obs = OBSComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
 					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
 						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
 
 					conseguiu_processar_arquivo = 1
+
+					JaProcessouPagamento[valor_pago, baixa] = 1
 				}
 			}
 			
@@ -813,10 +843,25 @@ BEGIN {
 				
 				# PAGOS
 				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+
+					nota = NumeroNotaSemFornecedor[valor_pago, baixa]
+					if(NumeroNotaComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						nota = NumeroNotaComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
+					nota_completo_orig = NumeroTituloSemFornecedor[valor_pago, baixa]
+					if(NumeroTituloComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						nota_completo_orig = NumeroTituloComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
+					obs = OBSSemFornecedor[valor_pago, baixa]
+					if(OBSComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						obs = OBSComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
 					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
 						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
 
 					conseguiu_processar_arquivo = 1
+
+					JaProcessouPagamento[valor_pago, baixa] = 1
 				}
 			}
 
@@ -835,10 +880,25 @@ BEGIN {
 				
 				# PAGOS
 				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+
+					nota = NumeroNotaSemFornecedor[valor_pago, baixa]
+					if(NumeroNotaComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						nota = NumeroNotaComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
+					nota_completo_orig = NumeroTituloSemFornecedor[valor_pago, baixa]
+					if(NumeroTituloComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						nota_completo_orig = NumeroTituloComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
+					obs = OBSSemFornecedor[valor_pago, baixa]
+					if(OBSComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						obs = OBSComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
 					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
 						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
 
 					conseguiu_processar_arquivo = 1
+
+					JaProcessouPagamento[valor_pago, baixa] = 1
 				}
 			}
 
@@ -857,10 +917,25 @@ BEGIN {
 				
 				# PAGOS
 				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+
+					nota = NumeroNotaSemFornecedor[valor_pago, baixa]
+					if(NumeroNotaComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						nota = NumeroNotaComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
+					nota_completo_orig = NumeroTituloSemFornecedor[valor_pago, baixa]
+					if(NumeroTituloComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						nota_completo_orig = NumeroTituloComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
+					obs = OBSSemFornecedor[valor_pago, baixa]
+					if(OBSComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						obs = OBSComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
 					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
 						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
 
 					conseguiu_processar_arquivo = 1
+
+					JaProcessouPagamento[valor_pago, baixa] = 1
 				}
 			}
 
@@ -879,10 +954,25 @@ BEGIN {
 				
 				# PAGOS
 				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+
+					nota = NumeroNotaSemFornecedor[valor_pago, baixa]
+					if(NumeroNotaComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						nota = NumeroNotaComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
+					nota_completo_orig = NumeroTituloSemFornecedor[valor_pago, baixa]
+					if(NumeroTituloComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						nota_completo_orig = NumeroTituloComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
+					obs = OBSSemFornecedor[valor_pago, baixa]
+					if(OBSComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						obs = OBSComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
 					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
 						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
 					
 					conseguiu_processar_arquivo = 1
+
+					JaProcessouPagamento[valor_pago, baixa] = 1
 				}
 			}
 
@@ -901,10 +991,25 @@ BEGIN {
 				
 				# PAGOS
 				if( valor_pago_int > 0 && _comp_ini <= baixa_temp && baixa_temp <= _comp_fim ){
+
+					nota = NumeroNotaSemFornecedor[valor_pago, baixa]
+					if(NumeroNotaComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						nota = NumeroNotaComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
+					nota_completo_orig = NumeroTituloSemFornecedor[valor_pago, baixa]
+					if(NumeroTituloComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						nota_completo_orig = NumeroTituloComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
+					obs = OBSSemFornecedor[valor_pago, baixa]
+					if(OBSComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome] != "")
+						obs = OBSComFornecedor[valor_pago, baixa, forn_cli_primeiro_nome]
+
 					print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
 						valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
 					
 					conseguiu_processar_arquivo = 1
+
+					JaProcessouPagamento[valor_pago, baixa] = 1
 				}
 			}
 			
@@ -915,10 +1020,19 @@ BEGIN {
 			print("      - Arquivo \"" nomeArquivoPDF "\" nao foi possivel processar.")
 		}
 	} close(ArquivosCsv)
-	
-	#print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "saida\\movtos_feitos_no_cartao_nao_estao_na_planilha.csv"
-	
-	FS = ";"
+
+	while ( (getline < "temp\\pagtos_agrupados2.csv") > 0 ) {
+		valor_pago2 = ""
+		valor_pago2 = $10
+
+		baixa2 = ""
+		baixa2 = $8
+
+		if( JaProcessouPagamento[valor_pago2, baixa2] == ""){
+			print $0 >> "temp\\pagtos_agrupados.csv"
+		}
+
+	} close("temp\\pagtos_agrupados2.csv")
 	
 	# VAI VER NO OFX QUAIS DÉBITOS QUE NÃO ESTÃO NA PLANILHA DO CLIENTE, GERALMENTE SÃO CHEQUES COMPENSADOS EM MESES ANTERIORES OU TARIFAS
 	while ( (getline < "temp\\extrato_cartao.csv") > 0 ) {
@@ -939,7 +1053,10 @@ BEGIN {
 		
 		pagou_no_banco = PagouNoBanco[operacao_3, data_mov_2, valor_transacao_2]
 		
-		if( ( operacao_3 == "-" || operacao_3 == "Operacao") && pagou_no_banco != 1 && _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
+		if( operacao_3 == "Operacao" )
+			print $0 >> "saida\\pagtos_feitos_no_cartao_nao_estao_na_planilha.csv"
+		
+		if( operacao_3 == "-" && pagou_no_banco != 1 && _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
 			print $0 >> "saida\\pagtos_feitos_no_cartao_nao_estao_na_planilha.csv"
 		
 	} close("temp\\extrato_cartao.csv")

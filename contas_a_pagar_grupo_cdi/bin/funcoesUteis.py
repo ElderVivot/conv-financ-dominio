@@ -3,6 +3,7 @@
 import unicodedata
 import re
 import datetime
+import os
 
 def buscaArquivosEmPasta(caminho, extensao):
     arquivos = os.listdir(caminho)

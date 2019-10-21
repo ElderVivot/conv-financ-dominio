@@ -1,9 +1,8 @@
-# coding: utf-8
-
 #import sqlanydb
 import pyodbc
 import csv
 import datetime
+import funcoesUteis
 
 def cnpj_for(codi_emp, nome_for):
     connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio',PORT='2638')
@@ -51,28 +50,6 @@ def cnpj_for_nota(codi_emp, nume_nota, emissao_nota_ini, emissao_nota_fim):
                        f"   AND ent.nume_ent = {nume_nota}"
                        f"   AND ( ( ent.ddoc_ent BETWEEN DATE('{emissao_nota_ini}') AND DATE('{emissao_nota_fim}') ) "
                        f"        OR ( ent.dent_ent BETWEEN DATE('{emissao_nota_ini}') AND DATE('{emissao_nota_fim}') ) ) ")
-        data = str(cursor.fetchone())
-        if data.count('None') == 0:
-            break
-    cursor.close()
-    connection.close()
-
-    return (data, emp)
-
-def nume_nota_pelo_cnpj_e_valor(codi_emp, cgce_for, valor_pago, data_pagto):
-    #connection = sqlanydb.connect(host="SRVERP", uid='EXTERNO', pwd='dominio', eng='srvcontabil', dbn='Contabil')
-    connection = pyodbc.connect(DSN='Contabil',UID='EXTERNO',PWD='dominio',PORT='2638')
-    cursor = connection.cursor()
-    for emp in codi_emp:
-        cursor.execute(f"SELECT MAX(ent.nume_ent) "
-                       f"  FROM bethadba.efentradas AS ent "
-                       f"       INNER JOIN bethadba.effornece AS forn "
-                       f"            ON    forn.codi_emp = ent.codi_emp "
-                       f"              AND forn.codi_for = ent.codi_for "
-                       f" WHERE ent.codi_emp IN ({emp}) "
-                       f"   AND forn.cgce_for = {cgce_for} "
-                       f"   AND ent.vcon_ent = {valor_pago} "
-                       f"   AND ent.ddoc_ent <= DATE('{data_pagto}') ")
         data = str(cursor.fetchone())
         if data.count('None') == 0:
             break
@@ -188,6 +165,7 @@ with open(entrada, 'rt') as csvfile:
                 _codi_emp_v = sorted(_codi_emp_v)
 
                 _nome_for_ori = str(row[1])
+                _nome_for_ori = funcoesUteis.minimalizeSpaces(_nome_for_ori)
 
                 _nome_for_75porcento = _nome_for_ori[0 : int(len(_nome_for_ori)*0.75)]
 
@@ -215,11 +193,11 @@ with open(entrada, 'rt') as csvfile:
 
                     # se for nome muito curto pra evitar que retorne errado
                     if len(_nome_for_2palavras_a_menos.split()) == 1 and len(_nome_for_2palavras_a_menos) < 7:
-                        _cnpj_for_nome_2palavras_a_menos = ""
+                        _cnpj_for_nome_2palavras_a_menos = "'"
                 else:
                      _nome_for_2palavras_a_menos_vetor = []
                      _nome_for_2palavras_a_menos = ''
-                     _cnpj_for_nome_2palavras_a_menos = ''
+                     _cnpj_for_nome_2palavras_a_menos = "'"
                      _codi_emp_nome_2palavras_a_menos = ''
 
                 try:
@@ -263,7 +241,7 @@ with open(entrada, 'rt') as csvfile:
                     _cnpj_for = _cnpj_for_nota_pelo_nome
                     codi_emp = _codi_emp_nota_pelo_nome
                     nota_existe = 'SIM'
-                elif len(_nome_for_2palavras_a_menos) >= 3 and _cnpj_for_nome_2palavras_a_menos != "'" and _cnpj_for_nome_2palavras_a_menos != "":
+                elif len(_nome_for_2palavras_a_menos) >= 3 and _cnpj_for_nome_2palavras_a_menos != "'":
                     _cnpj_for = _cnpj_for_nome_2palavras_a_menos
                     codi_emp = _codi_emp_nome_2palavras_a_menos
                 else:
@@ -286,28 +264,8 @@ with open(entrada, 'rt') as csvfile:
                     _codi_cta = ""
                 _codi_cta = _codi_cta.replace("'", '')
 
-                _data_pagto = str(row[7])
-                try:
-                    _data_pagto = datetime.datetime.strptime(_data_pagto, "%d/%m/%Y").date()
-                except:
-                    _data_pagto = datetime.datetime.strptime("01/01/1900", "%d/%m/%Y").date()
-
-                valor_pago = str(row[9]).replace(',','.')
-                valor_pago = float(valor_pago)
-
-                cnpj_for_sem_aspas = _cnpj_for.replace("'", '')
-
-                if cnpj_for_sem_aspas == '':
-                    cnpj_for_sem_aspas = '0'
-
-                nume_nota = apenas_valor_campo_dominio(str(nume_nota_pelo_cnpj_e_valor(_codi_emp_v, cnpj_for_sem_aspas, valor_pago, _data_pagto)[0]))
-                nume_nota = nume_nota.replace('Decimal', '').replace("'", '')
-
-                if nume_nota != "":
-                    nota_existe = 'SIM'
-
-                result = (f"{nume_nota};{row[1]};{_cnpj_for};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
-                            f";{row[11]};{row[12]};{nume_nota};{nota_existe};{codi_emp};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
+                result = (f"{row[0]};{_nome_for_ori};{_cnpj_for};{row[3]};{row[4]};{row[5]};{row[6]};{row[7]};{row[8]};{row[9]};{row[10]}"
+                            f";{row[11]};{row[12]};{row[13]};{nota_existe};{codi_emp};{_codi_cta};{row[16]};{row[17]};{row[18]}\n")
                 saida.write(result)
 
 saida.close()

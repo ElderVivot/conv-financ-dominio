@@ -9,16 +9,17 @@ def dividePDFUmaPaginaCada(caminho=f"{caminho_pasta}entrada"):
         for file in files:
             caminho_pdf = os.path.join(root, file)
             name_file = funcoesUteis.trataCampoTexto(str(file[0:len(file)-4]))
-            with open(caminho_pdf, 'rb') as arquivo_pdf:
-                leitor = PyPDF2.PdfFileReader(arquivo_pdf)
-                num_paginas = leitor.getNumPages()
+            if str(file).upper().endswith('.PDF'):
+                with open(caminho_pdf, 'rb') as arquivo_pdf:
+                    leitor = PyPDF2.PdfFileReader(arquivo_pdf)
+                    num_paginas = leitor.getNumPages()
 
-                for num_pagina in range(num_paginas):
-                    escritor = PyPDF2.PdfFileWriter()
-                    pagina_atual = leitor.getPage(num_pagina)
-                    escritor.addPage(pagina_atual)
+                    for num_pagina in range(num_paginas):
+                        escritor = PyPDF2.PdfFileWriter()
+                        pagina_atual = leitor.getPage(num_pagina)
+                        escritor.addPage(pagina_atual)
 
-                    with open(f'{caminho_pasta}temp\\{name_file}-PAGINA {num_pagina+1}.pdf', 'wb') as novo_pdf:
-                        escritor.write(novo_pdf)
+                        with open(f'{caminho_pasta}temp\\{name_file}-PAGINA {num_pagina+1}.pdf', 'wb') as novo_pdf:
+                            escritor.write(novo_pdf)
 
 dividePDFUmaPaginaCada()
