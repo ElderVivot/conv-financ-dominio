@@ -11,7 +11,7 @@ import datetime
 import funcoesUteis
 import platform
 
-caminho_base = "C:\\Programming\\conversores-financeiro-awk\\contas_a_pagar_grupo_mobi\\"
+caminho_base = "" #"C:\\Programming\\conversores-financeiro-awk\\contas_a_pagar_grupo_mobi\\"
 
 def PDFToText(arquivos=funcoesUteis.buscaArquivosEmPasta(caminho=f"{caminho_base}entrada",extensao=(".PDF")), mode = "simple"):
     for arquivo in arquivos:
