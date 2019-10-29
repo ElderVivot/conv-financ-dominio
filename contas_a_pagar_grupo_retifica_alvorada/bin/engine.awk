@@ -13,7 +13,7 @@ BEGIN {
 	_comp_ini = int(Trim(substr(_comp_ini, 4)) "" substr(_comp_ini, 1, 2))
 	_comp_fim = int(Trim(substr(_comp_fim, 4)) "" substr(_comp_fim, 1, 2))
 	
-	print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "temp\\extrato_cartao.csv"
+	# print "Banco;Conta Corrente;Tipo Movimento;Data;Operacao;Valor;Num. Doc.;Historico" >> "temp\\extrato_cartao.csv"
 	
 	# LE O ARQUIVO OFX AFIM DE PODER COMPARAR O QUE FOI PAGO NO CARTAO COM A PLANILHA DE BAIXA DO CLIENTE
 	while ((getline < ArquivosOfx) > 0) {
@@ -70,7 +70,6 @@ BEGIN {
 					data_mov = selecionaTAG( ofx, "<dtposted>", "</dtposted>" )
 					data_mov = substr(data_mov, 1, 8)
 					data_mov = substr(data_mov, 7, 2) "/" substr(data_mov, 5, 2) "/" substr(data_mov, 1, 4)
-					data_mov_int = int(substr(data_mov, 7) "" substr(data_mov, 4, 2))
 				}
 				
 				if( substr(ofx, 1, 8) == "<trnamt>" ){
@@ -95,23 +94,7 @@ BEGIN {
 					historico = upperCase( selecionaTAG( ofx, "<memo>", "</memo>" ) )
 				
 				if( substr(ofx, 1, 10) == "</stmttrn>" ){
-					
-					ExisteMov[operacao, data_mov, valor_transacao] = 1
-					BancoPago[operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
-					DataPagto[operacao, data_mov, valor_transacao] = data_mov
-					
-					ExisteMovBanco[num_banco, operacao, data_mov, valor_transacao] = 1
-					BancoPagoBanco[num_banco, operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
-					DataPagtoBanco[num_banco, operacao, data_mov, valor_transacao] = data_mov
-					
-					# QUANDO É CHEQUE GUARDA A DATA QUE O CHEQUE COMPENSOU, É ELA QUE TEM QUE SER UTILIZADA COMO DATA DA BAIXA
-					if( historico == "CHEQ COMP" || historico == "CHEQUE SAC" ){
-						DataCompensacaoCheque[num_doc] = data_mov
-						BancoPagoCheque[num_doc] = num_banco "-" conta_corrente
-					}
-					
-					if( _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
-						print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
+					print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
 				}
 			
 			}
@@ -138,7 +121,6 @@ BEGIN {
 					data_mov = substr( ofx, 11 , length(ofx) - 10 )
 					data_mov = substr(data_mov, 1, 8)
 					data_mov = substr(data_mov, 7, 2) "/" substr(data_mov, 5, 2) "/" substr(data_mov, 1, 4)
-					data_mov_int = int(substr(data_mov, 7) "" substr(data_mov, 4, 2))
 				}
 				
 				if( substr(ofx, 1, 8) == "<trnamt>" ){
@@ -163,32 +145,49 @@ BEGIN {
 					historico = upperCase( substr( ofx, 7 , length(ofx) - 6 ) )
 				
 				if( substr(ofx, 1, 10) == "</stmttrn>" ){
-					
-					ExisteMov[operacao, data_mov, valor_transacao] = 1
-					BancoPago[operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
-					DataPagto[operacao, data_mov, valor_transacao] = data_mov
-					
-					ExisteMovBanco[num_banco, operacao, data_mov, valor_transacao] = 1
-					BancoPagoBanco[num_banco, operacao, data_mov, valor_transacao] = num_banco "-" conta_corrente
-					DataPagtoBanco[num_banco, operacao, data_mov, valor_transacao] = data_mov
-					
-					# QUANDO É CHEQUE GUARDA A DATA QUE O CHEQUE COMPENSOU, É ELA QUE TEM QUE SER UTILIZADA COMO DATA DA BAIXA
-					if( historico == "CHEQ COMP" || historico == "CHEQUE SAC" ){
-						DataCompensacaoCheque[num_doc] = data_mov
-						BancoPagoCheque[num_doc] = num_banco "-" conta_corrente
-					}
-					
-					if( _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
-						print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
+					print num_banco, conta_corrente, tipo_mov, data_mov, operacao, valor_transacao, num_doc, historico >> "temp\\extrato_cartao.csv"
 				}
 			}
 			
 		} close(fileofx)
 	} close(ArquivosOfx)
 	
+	FS = ";"; 
+	OFS = FS;
+
+	# VAI VER NO OFX QUAIS DÉBITOS QUE NÃO ESTÃO NA PLANILHA DO CLIENTE
+	while ( (getline < "temp\\extrato_cartao.csv") > 0 ) {
+		num_banco_extrato = $1
+		conta_corrente_extrato = $2
+		tipo_mov_extrato = $3
+		data_mov_extrato = $4
+		operacao_extrato = $5
+		valor_transacao_extrato = $6
+		num_doc_extrato = $7
+		historico_extrato = $8
+		historico_complementar_extrato = $9
+
+		ExisteMov[operacao_extrato, data_mov_extrato, valor_transacao_extrato] = 1
+		BancoPago[operacao_extrato, data_mov_extrato, valor_transacao_extrato] = num_banco_extrato "-" conta_corrente_extrato
+		DataPagto[operacao_extrato, data_mov_extrato, valor_transacao_extrato] = data_mov_extrato
+		
+		ExisteMovBanco[num_banco_extrato, operacao_extrato, data_mov_extrato, valor_transacao_extrato] = 1
+		BancoPagoBanco[num_banco_extrato, operacao_extrato, data_mov_extrato, valor_transacao_extrato] = num_banco_extrato "-" conta_corrente_extrato
+		DataPagtoBanco[num_banco_extrato, operacao_extrato, data_mov_extrato, valor_transacao_extrato] = data_mov_extrato
+		
+		# QUANDO É CHEQUE GUARDA A DATA QUE O CHEQUE COMPENSOU, É ELA QUE TEM QUE SER UTILIZADA COMO DATA DA BAIXA
+		if( index(historico_extrato, "CHEQ COMP") > 0 || index(historico_extrato, "CHEQUE SAC") > 0 ){
+			DataCompensacaoCheque[num_doc_extrato] = data_mov_extrato
+			BancoPagoCheque[num_doc_extrato] = num_banco_extrato "-" conta_corrente_extrato
+		}
+	} close("temp\\extrato_cartao.csv")
+	
 	print "Documento;Nome Fornecedor;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\pagtos_agrupados.csv"
 	print "Documento;Nome Cliente;CNPJ Cliente;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\recebtos_agrupados.csv"
 	
+	FS = ""; 
+	OFS = ";"
+
 	while ((getline < ArquivosCsv) > 0) {
 		file = "entrada\\" $0
 		
@@ -543,7 +542,7 @@ BEGIN {
 	
 	FS = ";"
 	
-	# VAI VER NO OFX QUAIS DÉBITOS QUE NÃO ESTÃO NA PLANILHA DO CLIENTE, GERALMENTE SÃO CHEQUES COMPENSADOS EM MESES ANTERIORES OU TARIFAS
+	# VAI VER NO OFX QUAIS DÉBITOS QUE NÃO ESTÃO NA PLANILHA DO CLIENTE
 	while ( (getline < "temp\\extrato_cartao.csv") > 0 ) {
 		num_banco_2 = $1
 		
@@ -551,16 +550,21 @@ BEGIN {
 		conta_corrente_3_int = int( soNumeros(conta_corrente_3) )
 		
 		tipo_mov_2 = $3
+
 		data_mov_2 = $4
+		data_mov_int = int(substr(data_mov_2, 7) "" substr(data_mov_2, 4, 2))
+
 		operacao_3 = $5
 		valor_transacao_2 = $6
 		num_doc_2 = $7
 		historico_2 = $8
 		
 		pagou_no_banco = PagouNoBanco[operacao_3, data_mov_2, valor_transacao_2]
-		
-		if( ( operacao_3 == "-" || operacao_3 == "Operacao") && pagou_no_banco != 1 )
-		#if( pagou_no_banco != 1 )
+
+		if(operacao_3 == "Operacao")
+			print $0 >> "saida\\pagtos_feitos_no_cartao_nao_estao_na_planilha.csv"
+
+		if( operacao_3 == "-" && pagou_no_banco != 1 && _comp_ini <= data_mov_int && data_mov_int <= _comp_fim )
 			print $0 >> "saida\\pagtos_feitos_no_cartao_nao_estao_na_planilha.csv"
 		
 	} close("temp\\extrato_cartao.csv")
