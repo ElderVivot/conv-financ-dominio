@@ -190,11 +190,20 @@ BEGIN {
 		filecsv = "temp\\" $0
 
 		# i = 1
+		linha = 0
 		
 		while ((getline < filecsv) > 0) {
-			i++
+			linha++
 
-			print nome_arquivo " - " i
+			#print nome_arquivo " - " linha " - " $0
+
+			if(toupper($3) == "TITULOS LISTADOS"){
+				continue
+			}
+
+			if(toupper($1) == "CONTA:"){
+				continue
+			}
 
 			if ( Trim(toupper($1)) == toupper("Lanc.") ){
 				load_columns();
@@ -422,7 +431,7 @@ BEGIN {
 				}else if( index(banco_arquivo, "BRASIL") > 0 || index(banco_arquivo, "BB") > 0 ){
 					num_banco_arq = 1
 					banco_arquivo = "BCO BRASIL"
-				}else if( banco_arquivo == "DH" || banco_arquivo == "CX" ){
+				}else if( index(banco_arquivo, "DIN") > 0 || index(banco_arquivo, "TESOUR") > 0 ){
 					num_banco_arq = 0
 					banco_arquivo = "DINHEIRO"
 				}else if( index(banco_arquivo, "TRI BANCO") > 0 ){
