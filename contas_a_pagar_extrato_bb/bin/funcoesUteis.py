@@ -16,7 +16,7 @@ def trocaCaracteresTextoPraLetraX(palavra):
     palavraTratada = u"".join([c for c in nfkd if not unicodedata.combining(c)])
 
     # Usa expressão regular para retornar a palavra apenas com valores corretos
-    return re.sub('[^0-9\\-/]', 'X', palavraTratada)
+    return re.sub('[^0-9.-/:]', 'X', palavraTratada)
 
 # Minimaliza, ou seja, transforma todas as instancias repetidas de espaços em espaços simples.
 #   Exemplo, o texto "  cnpj:      09.582.876/0001-68    Espécie Documento          Aceite" viraria

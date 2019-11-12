@@ -170,11 +170,16 @@ def organizaExtrato(saida="temp\\baixas.csv"):
                             posicao_operacao = posicao_operacao_debito
                 # ------------- FIM POSICAO_OPERACAO
 
-                primeiro_campo_historico = funcoesUteis.trocaCaracteresTextoPraLetraX(row_dividida[posicao_agencia+2])
-                if primeiro_campo_historico.count('X') > 0:
+                # quando o posicao_agencia+2 não conseguir passar quer dizer que não é uma linha válida, pois ela é muito pequena, então ele passa pra próxima através do except
+                try:
+                    primeiro_campo_historico = funcoesUteis.trocaCaracteresTextoPraLetraX(row_dividida[posicao_agencia+2])
+                    if primeiro_campo_historico.count('X') > 0:
+                        posicao_inicio = posicao_agencia+2
+                    else:
+                        posicao_inicio = posicao_agencia+3
+                except Exception:
                     posicao_inicio = posicao_agencia+2
-                else:
-                    posicao_inicio = posicao_agencia+3
+                    next
                 
                 historico = ""
                 for i in range(posicao_inicio,posicao_operacao-2):
