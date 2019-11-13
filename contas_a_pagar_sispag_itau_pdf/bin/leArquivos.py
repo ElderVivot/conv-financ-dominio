@@ -12,6 +12,8 @@ import sys
 import datetime
 import funcoesUteis
 import platform
+import pytesseract as ocr
+from PIL import Image
 
 def buscaArquivosEmPasta(caminho="", extensao=(".XLS", "XLSX")):
     arquivos = os.listdir(caminho)
@@ -53,6 +55,30 @@ def PDFToText(arquivos=buscaArquivosEmPasta(caminho="temp",extensao=(".PDF")), m
 # chama a geração da transformação pra PDF
 PDFToText()
 
+def ImageToText(arquivo):
+    nome_arquivo = os.path.basename(arquivo)
+    saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".tmp"
+    saida = open(saida, "w", encoding='utf-8')
+    phrase = ocr.image_to_string(Image.open(arquivo), lang='por')
+    saida.write(phrase)
+    saida.close()
+
+def PDFImgToText(arquivos=buscaArquivosEmPasta(caminho="temp",extensao=(".PDF")), mode = "simple"):
+    for arquivo in arquivos:
+        nome_arquivo = os.path.basename(arquivo)
+        arquivo_temp = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".tmp"
+        tamanho_arquivo = os.path.getsize(arquivo_temp)
+
+        saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".jpg"
+
+        if(tamanho_arquivo <= 5):
+            comando = f"magick -density 300 \"{arquivo}\" \"{saida}\""
+            os.system(comando)
+
+            ImageToText(saida)
+
+PDFImgToText()
+
 def leTxt(arquivos=buscaArquivosEmPasta(caminho="temp", extensao=(".TMP"))):
     lista_arquivos = {}
     lista_linha = []
@@ -66,7 +92,7 @@ def leTxt(arquivos=buscaArquivosEmPasta(caminho="temp", extensao=(".TMP"))):
         lista_arquivos[arquivo] = lista_linha[:]
         
         # le o arquivo e grava num vetor
-        with open(arquivo, 'rt') as txtfile:
+        with open(arquivo, 'rt', encoding='utf-8') as txtfile:
             for linha in txtfile:
                 linha = funcoesUteis.trataCampoTexto(linha)
                 if linha == "":
