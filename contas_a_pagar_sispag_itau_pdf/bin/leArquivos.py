@@ -34,6 +34,23 @@ def removerAcentosECaracteresEspeciais(palavra):
     # Usa expressão regular para retornar a palavra apenas com valores corretos
     return re.sub('[^a-zA-Z0-9.!+:=)$(/*,\-_ \\\]', '', palavraTratada)
 
+def ImageToText(arquivo):
+    nome_arquivo = os.path.basename(arquivo)
+    saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".tmp"
+    saida = open(saida, "w", encoding='utf-8')
+    phrase = ocr.image_to_string(Image.open(arquivo), lang='por')
+    saida.write(phrase)
+    saida.close()
+
+def PDFImgToText(arquivo):
+    nome_arquivo = os.path.basename(arquivo)
+    saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".jpg"
+
+    comando = f"magick -density 300 \"{arquivo}\" \"{saida}\""
+    os.system(comando)
+
+    ImageToText(saida)
+    
 def PDFToText(arquivos=buscaArquivosEmPasta(caminho="temp",extensao=(".PDF")), mode = "simple"):
     for arquivo in arquivos:
         nome_arquivo = os.path.basename(arquivo)
@@ -49,35 +66,17 @@ def PDFToText(arquivos=buscaArquivosEmPasta(caminho="temp",extensao=(".PDF")), m
             # chama o comando pra transformação do PDF
             comando = f"bin\\{pdftotext} -{mode} \"{arquivo}\" \"{saida}\""
             os.system(comando)
+
+            # analisa se o PDF é uma imagem
+            tamanho_arquivo = os.path.getsize(saida)
+            if(tamanho_arquivo <= 5):
+                PDFImgToText(arquivo)
+
         except Exception as ex:
             print(f"Nao foi possivel transformar o arquivo \"{saida}\". O erro é: {str(ex)}")
 
 # chama a geração da transformação pra PDF
 PDFToText()
-
-def ImageToText(arquivo):
-    nome_arquivo = os.path.basename(arquivo)
-    saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".tmp"
-    saida = open(saida, "w", encoding='utf-8')
-    phrase = ocr.image_to_string(Image.open(arquivo), lang='por')
-    saida.write(phrase)
-    saida.close()
-
-def PDFImgToText(arquivos=buscaArquivosEmPasta(caminho="temp",extensao=(".PDF")), mode = "simple"):
-    for arquivo in arquivos:
-        nome_arquivo = os.path.basename(arquivo)
-        arquivo_temp = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".tmp"
-        tamanho_arquivo = os.path.getsize(arquivo_temp)
-
-        saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".jpg"
-
-        if(tamanho_arquivo <= 5):
-            comando = f"magick -density 300 \"{arquivo}\" \"{saida}\""
-            os.system(comando)
-
-            ImageToText(saida)
-
-PDFImgToText()
 
 def leTxt(arquivos=buscaArquivosEmPasta(caminho="temp", extensao=(".TMP"))):
     lista_arquivos = {}

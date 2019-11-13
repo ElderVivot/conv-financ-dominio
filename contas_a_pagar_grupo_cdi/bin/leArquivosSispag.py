@@ -12,6 +12,10 @@ import sys
 import datetime
 import funcoesUteis
 import platform
+import pytesseract as ocr
+from PIL import Image
+
+caminho_leitura = "" #"Y:\\18 - DEPARTAMENTO DE PROJETOS\\Elder\\Importador\\Conjunto de Dados\\Layouts\\Financeiro\\_ferramentas\\contas_a_pagar_grupo_cdi\\"
 
 def buscaArquivosEmPasta(caminho="", extensao=(".XLS", "XLSX")):
     arquivos = os.listdir(caminho)
@@ -32,10 +36,27 @@ def removerAcentosECaracteresEspeciais(palavra):
     # Usa expressão regular para retornar a palavra apenas com valores corretos
     return re.sub('[^a-zA-Z0-9.!+:=)$(/*,\-_ \\\]', '', palavraTratada)
 
-def PDFToText(arquivos=buscaArquivosEmPasta(caminho="temp",extensao=(".PDF")), mode = "simple"):
+def ImageToText(arquivo):
+    nome_arquivo = os.path.basename(arquivo)
+    saida = f"{caminho_leitura}temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".tmp"
+    saida = open(saida, "w", encoding='utf-8')
+    phrase = ocr.image_to_string(Image.open(arquivo), lang='por')
+    saida.write(phrase)
+    saida.close()
+
+def PDFImgToText(arquivo):
+    nome_arquivo = os.path.basename(arquivo)
+    saida = f"{caminho_leitura}temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".jpg"
+
+    comando = f"magick -density 300 \"{arquivo}\" \"{saida}\""
+    os.system(comando)
+
+    ImageToText(saida)
+    
+def PDFToText(arquivos=buscaArquivosEmPasta(caminho=f"{caminho_leitura}temp",extensao=(".PDF")), mode = "simple"):
     for arquivo in arquivos:
         nome_arquivo = os.path.basename(arquivo)
-        saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".tmp"
+        saida = f"{caminho_leitura}temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".tmp"
         try:
             # verifica se o Windows é 32 ou 64 bits
             architecture = platform.architecture()
@@ -45,28 +66,33 @@ def PDFToText(arquivos=buscaArquivosEmPasta(caminho="temp",extensao=(".PDF")), m
                 pdftotext = "pdftotext64.exe"
             
             # chama o comando pra transformação do PDF
-            comando = f"bin\\{pdftotext} -{mode} \"{arquivo}\" \"{saida}\""
+            comando = f"{caminho_leitura}bin\\{pdftotext} -{mode} \"{arquivo}\" \"{saida}\""
             os.system(comando)
+
+            # analisa se o PDF é uma imagem
+            tamanho_arquivo = os.path.getsize(saida)
+            if(tamanho_arquivo <= 5):
+                PDFImgToText(arquivo)
+
         except Exception as ex:
             print(f"Nao foi possivel transformar o arquivo \"{saida}\". O erro é: {str(ex)}")
 
-# chama a geração da transformação pra PDF
 PDFToText()
 
-def leTxt(arquivos=buscaArquivosEmPasta(caminho="temp", extensao=(".TMP"))):
+def leTxt(arquivos=buscaArquivosEmPasta(caminho=f"{caminho_leitura}temp", extensao=(".TMP"))):
     lista_arquivos = {}
     lista_linha = []
     
     for arquivo in arquivos:
         nome_arquivo = os.path.basename(arquivo)
-        saida = "temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".txt"
+        saida = f"{caminho_leitura}temp\\" + str(nome_arquivo[0:len(nome_arquivo)-4]) + ".txt"
         saida = open(saida, "w", encoding='utf-8')
 
         # pra cada arquivo criar uma posição no dicionário
         lista_arquivos[arquivo] = lista_linha[:]
         
         # le o arquivo e grava num vetor
-        with open(arquivo, 'rt') as txtfile:
+        with open(arquivo, 'rt', encoding='utf-8') as txtfile:
             for linha in txtfile:
                 linha = funcoesUteis.trataCampoTexto(linha)
                 if linha == "":
