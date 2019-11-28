@@ -241,7 +241,7 @@ with open(entrada, 'rt') as csvfile:
                     _cnpj_for = _cnpj_for_nota_pelo_nome
                     codi_emp = _codi_emp_nota_pelo_nome
                     nota_existe = 'SIM'
-                elif len(_nome_for_2palavras_a_menos) >= 3 and _cnpj_for_nome_2palavras_a_menos != "'":
+                elif len(_nome_for_2palavras_a_menos) >= 3 and _cnpj_for_nome_2palavras_a_menos != "'" and _cnpj_for_nome_2palavras_a_menos != "":
                     _cnpj_for = _cnpj_for_nome_2palavras_a_menos
                     codi_emp = _codi_emp_nome_2palavras_a_menos
                 else:

@@ -221,7 +221,7 @@ BEGIN {
 		
 	} close(ArquivosTxt)
 	
-	print "Nota;CNPJ Fornecedor;Data Emissao;Data Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Nome Fornecedor;Num. Titulo;Data Emissao + 1;Data Emissao - 1;Data Emissao + 2;Data Emissao - 2;Obs" >> "temp\\pagtos_agrupados.csv"
+	print "Documento;Nome Fornecedor;CNPJ Fornecedor;Emissao;Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Valor Multa;Numero Titulo;Empresa;Codigo Conta Dominio;OBS;Tipo Pagto;Categoria" >> "temp\\pagtos_agrupados.csv"
 	print "Nota;CNPJ Cliente;Data Emissao;Data Vencimento;Banco Planilha;Banco Oco. Extrato;Data Pagto;Data Oco. Extrato;Valor Pago;Valor Desconto;Valor Juros;Nome Cliente;Num. Titulo;Obs" >> "saida\\recebtos_agrupados.csv"
 		
 	while ((getline < ArquivosCsv) > 0) {
@@ -253,14 +253,51 @@ BEGIN {
 			if( substr( texto_filtro, 1, 8 ) == "FILTROS:" ){
 				for( i = 1; i <= length(texto_filtro); i++ ){
 					if( substr(texto_filtro, i, 5) == "CONTA" ){
-						banco_arq = substr(texto_filtro, i + 5)
-						banco_arq = split(banco_arq, banco_arq_v, "=")
-						banco_arq = banco_arq_v[2]
-						banco_arq = split(banco_arq, banco_arq_v2, "-")
-						banco_arq = banco_arq_v2[2]
-						banco_arq = Trim(banco_arq)
+						banco_arquivo = substr(texto_filtro, i + 5)
+						banco_arquivo = split(banco_arquivo, banco_arquivo_v, "=")
+						banco_arquivo = banco_arquivo_v[2]
+						banco_arquivo = split(banco_arquivo, banco_arquivo_v2, "-")
+						banco_arquivo = banco_arquivo_v2[2]
+						banco_arquivo = Trim(banco_arquivo)
 					}
 				}
+			}
+
+			if( index(banco_arquivo, "SANTANDER") > 0 ){
+				num_banco_arq = 33
+				banco_arquivo = "SANTANDER"
+			}else if( index(banco_arquivo, "ITAU") > 0 ){
+				num_banco_arq = 341
+				banco_arquivo = "ITAU"
+			}else if( index(banco_arquivo, "BRADESCO") > 0 ){
+				num_banco_arq = 237
+				banco_arquivo = "BRADESCO"
+			}else if( index(banco_arquivo, "SICOOB") > 0 ){
+				num_banco_arq = 756
+				banco_arquivo = "SICOOB"
+			}else if( index(banco_arquivo, "SAFRA") > 0 ){
+				num_banco_arq = 422
+				banco_arquivo = "SAFRA"
+			}else if( index(banco_arquivo, "CAIXA") > 0 ){
+				if( index(tipo_pagto, "DIN") > 0 ){
+					num_banco_arq = 999
+					banco_arquivo = "DINHEIRO"
+				} else {
+					num_banco_arq = 104
+					banco_arquivo = "CAIXA"
+				}
+			}else if( index(banco_arquivo, "BRASIL") > 0 || index(banco_arquivo, "BB") > 0 ){
+				num_banco_arq = 1
+				banco_arquivo = "BCO BRASIL"
+			}else if( banco_arquivo == "DH" || banco_arquivo == "CX" ){
+				num_banco_arq = 0
+				banco_arquivo = "DINHEIRO"
+			}else if( index(banco_arquivo, "TRI BANCO") > 0 ){
+				num_banco_arq = 634
+				banco_arquivo = "TRI BANCO"
+			}else{
+				num_banco_arq = 0
+				banco_arquivo = banco_arquivo
 			}
 			
 			forn_cli = ""
@@ -295,17 +332,6 @@ BEGIN {
 			emissao = Trim($pos_emissao)
 			emissao = FormatDate(emissao)
 			emissao = isDate(emissao)
-			
-			emissao_2 = ""
-			emissao_3 = ""
-			emissao_4 = ""
-			emissao_5 = ""
-			if( emissao != "NULO" ){
-				emissao_2 = SomaDias(emissao, 1)
-				emissao_3 = SomaDias(emissao, -1)
-				emissao_4 = SomaDias(emissao, 2)
-				emissao_5 = SomaDias(emissao, -2)
-			}
 			
 			venc = ""
 			venc = Trim($pos_venc)
@@ -345,70 +371,97 @@ BEGIN {
 			obs = upperCase(obs)
 			
 			# CAMPOS QUE NÃO DEVEM RESPEITAR O FORNECEDOR, E SIM O HISTÓRICO
-			for( i = 1; i <= length(obs); i++ ){
-				if( substr(obs, i, 5) == "VIAGE" ){
-					obs = obs " / " forn_cli
-					forn_cli = "VIAGEM"
-					break
-				}
+			if( index(obs, "VIAGE") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "VIAGEM"
 			}
 			
-			for( i = 1; i <= length(obs); i++ ){
-				if( substr(obs, i, 7) == "SALARIO" || substr(obs, i, 4) == "SAL." ){
-					obs = obs " / " forn_cli
-					forn_cli = "SALARIO"
-					break
-				}
+			if( index(obs,  "SALARIO") > 0 || index(obs, "SAL.") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "SALARIO"
 			}
 			
-			for( i = 1; i <= length(obs); i++ ){
-				if( substr(obs, i, 13) == "HONORARIO DIR" ){
-					obs = obs " / " forn_cli
-					forn_cli = "HONORARIO DIRETORIA"
-					break
-				}
+			if( index(obs, "HONORARIO DIR") > 0 ){
+				obs = obs " / " forn_cli
+				forn_cli = "HONORARIO DIRETORIA"
 			}
 			
 			# TEM PAGAMENTOS QUE O CLIENTE LANÇA NA PLANILHA COM DATA ERRADA DA BAIXA, PORTANTO ESTAS LINHAS ABAIXO VAI VERIFICAR ISTO E O LIMITE É 3 DIAS A MAIS OU 3 DIAS A MENOS
 			baixa_extrato = ""
-			baixa_2 = ""
-			baixa_3 = ""
-			baixa_4 = ""
-			baixa_5 = ""
-			baixa_6 = ""
-			baixa_7 = ""
+			baixa_mais1 = ""
+			baixa_mais2 = ""
+			baixa_menos1 = ""
+			baixa_menos2 = ""
+			baixa_mais3 = ""
+			baixa_menos3 = ""
 			banco_extrato = ""
 			if( baixa != "NULO" ){
-				baixa_2 = SomaDias(baixa, 1)
-				baixa_3 = SomaDias(baixa, 2)
-				baixa_4 = SomaDias(baixa, -1)
-				baixa_5 = SomaDias(baixa, -2)
-				baixa_6 = SomaDias(baixa, 3)
-				baixa_7 = SomaDias(baixa, -3)
+				baixa_mais1 = SomaDias(baixa, 1)
+				baixa_mais2 = SomaDias(baixa, 2)
+				baixa_menos1 = SomaDias(baixa, -1)
+				baixa_menos2 = SomaDias(baixa, -2)
+				baixa_mais3 = SomaDias(baixa, 3)
+				baixa_menos3 = SomaDias(baixa, -3)
 				
-				if( DataPagto[operacao_arq, baixa_2, valor_considerar] != "" ){
-					baixa_extrato = DataPagto[operacao_arq, baixa_2, valor_considerar]
-					banco_extrato = BancoPago[operacao_arq, baixa_2, valor_considerar]
+				# COMEÇA PELOS MAIORES DIAS E VAI PRO MENOR, POIS SE SOBRESCREVER, SOBRESCRE COM DADOS MAIS RECENTES
+				# - 3 DIAS
+				if( DataPagto[operacao_arq, baixa_menos3, valor_considerar] != "" ){
+					baixa_extrato = DataPagto[operacao_arq, baixa_menos3, valor_considerar]
+					banco_extrato = BancoPago[operacao_arq, baixa_menos3, valor_considerar]
+				}
+				if( DataPagtoBanco[num_banco_arq, operacao_arq, baixa_menos3, valor_considerar] != "" ){
+					baixa_extrato = DataPagtoBanco[num_banco_arq, operacao_arq, baixa_menos3, valor_considerar]
+					banco_extrato = BancoPagoBanco[num_banco_arq, operacao_arq, baixa_menos3, valor_considerar]
+				}
+				
+				# + 3 DIAS
+				if( DataPagto[operacao_arq, baixa_mais3, valor_considerar] != "" ){
+					baixa_extrato = DataPagto[operacao_arq, baixa_mais3, valor_considerar]
+					banco_extrato = BancoPago[operacao_arq, baixa_mais3, valor_considerar]
+				}
+				if( DataPagtoBanco[num_banco_arq, operacao_arq, baixa_mais3, valor_considerar] != "" ){
+					baixa_extrato = DataPagtoBanco[num_banco_arq, operacao_arq, baixa_mais3, valor_considerar]
+					banco_extrato = BancoPagoBanco[num_banco_arq, operacao_arq, baixa_mais3, valor_considerar]
+				}
+				
+				# - 2 DIAS
+				if( DataPagto[operacao_arq, baixa_menos2, valor_considerar] != "" ){
+					baixa_extrato = DataPagto[operacao_arq, baixa_menos2, valor_considerar]
+					banco_extrato = BancoPago[operacao_arq, baixa_menos2, valor_considerar]
+				}
+				if( DataPagtoBanco[num_banco_arq, operacao_arq, baixa_menos2, valor_considerar] != "" ){
+					baixa_extrato = DataPagtoBanco[num_banco_arq, operacao_arq, baixa_menos2, valor_considerar]
+					banco_extrato = BancoPagoBanco[num_banco_arq, operacao_arq, baixa_menos2, valor_considerar]
+				}
+				
+				# + 2 DIAS
+				if( DataPagto[operacao_arq, baixa_mais2, valor_considerar] != "" ){
+					baixa_extrato = DataPagto[operacao_arq, baixa_mais2, valor_considerar]
+					banco_extrato = BancoPago[operacao_arq, baixa_mais2, valor_considerar]
 				} 
-				if( DataPagto[operacao_arq, baixa_3, valor_considerar] != "" ){
-					baixa_extrato = DataPagto[operacao_arq, baixa_3, valor_considerar]
-					banco_extrato = BancoPago[operacao_arq, baixa_3, valor_considerar]
-				} 
-				if( DataPagto[operacao_arq, baixa_4, valor_considerar] != "" ){
-					baixa_extrato = DataPagto[operacao_arq, baixa_4, valor_considerar]
-					banco_extrato = BancoPago[operacao_arq, baixa_4, valor_considerar]
+				if( DataPagtoBanco[num_banco_arq, operacao_arq, baixa_mais2, valor_considerar] != "" ){
+					baixa_extrato = DataPagtoBanco[num_banco_arq, operacao_arq, baixa_mais2, valor_considerar]
+					banco_extrato = BancoPagoBanco[num_banco_arq, operacao_arq, baixa_mais2, valor_considerar]
 				}
-				if( DataPagto[operacao_arq, baixa_5, valor_considerar] != "" ){
-					baixa_extrato = DataPagto[operacao_arq, baixa_5, valor_considerar]
-					banco_extrato = BancoPago[operacao_arq, baixa_5, valor_considerar]
+				
+				# + 1 DIA --> ESTE O MAIS VEM PRIMEIRO POIS É MAIS FÁCIL O CARA COLOCAR QUE PAGOU NO DIA POSTERIOR QUANDO NA VERDADE FOI NO DIA ANTERIOR
+				if( DataPagto[operacao_arq, baixa_mais1, valor_considerar] != "" ){
+					baixa_extrato = DataPagto[operacao_arq, baixa_mais1, valor_considerar]
+					banco_extrato = BancoPago[operacao_arq, baixa_mais1, valor_considerar]
 				}
-				if( DataPagto[operacao_arq, baixa_6, valor_considerar] != "" ){
-					baixa_extrato = DataPagto[operacao_arq, baixa_6, valor_considerar]
-					banco_extrato = BancoPago[operacao_arq, baixa_6, valor_considerar]
+				if( DataPagtoBanco[num_banco_arq, operacao_arq, baixa_mais1, valor_considerar] != "" ){
+					baixa_extrato = DataPagtoBanco[num_banco_arq, operacao_arq, baixa_mais1, valor_considerar]
+					banco_extrato = BancoPagoBanco[num_banco_arq, operacao_arq, baixa_mais1, valor_considerar]
 				}
-				if( DataPagto[operacao_arq, baixa_7, valor_considerar] != "" ){
-					baixa_extrato = DataPagto[operacao_arq, baixa_7, valor_considerar]
-					banco_extrato = BancoPago[operacao_arq, baixa_7, valor_considerar]
+				
+				# - 1 DIA
+				if( DataPagto[operacao_arq, baixa_menos1, valor_considerar] != "" ){
+					baixa_extrato = DataPagto[operacao_arq, baixa_menos1, valor_considerar]
+					banco_extrato = BancoPago[operacao_arq, baixa_menos1, valor_considerar]
+				}
+				if( DataPagtoBanco[num_banco_arq, operacao_arq, baixa_menos1, valor_considerar] != "" ){
+					baixa_extrato = DataPagtoBanco[num_banco_arq, operacao_arq, baixa_menos1, valor_considerar]
+					banco_extrato = BancoPagoBanco[num_banco_arq, operacao_arq, baixa_menos1, valor_considerar]
 				}
 			}
 			
@@ -419,6 +472,9 @@ BEGIN {
 			banco_extrato_2 = banco_extrato_v[2]
 			
 			banco = BancoPago[operacao_arq, baixa, valor_considerar]
+			if( BancoPagoBanco[num_banco_arq, operacao_arq, baixa, valor_considerar] != "")
+				banco = BancoPagoBanco[num_banco_arq, operacao_arq, baixa, valor_considerar]
+			
 			banco = split(banco, banco_v, "-")
 			banco = banco_v[1]
 			
@@ -427,6 +483,8 @@ BEGIN {
 			banco_2 = IfElse(banco_2 == "", banco_extrato_2, banco_2)
 			
 			existe_mov_dia = DataPagto[operacao_arq, baixa, valor_considerar]
+			if( DataPagtoBanco[num_banco_arq, operacao_arq, baixa, valor_considerar] != "")
+				existe_mov_dia = DataPagtoBanco[num_banco_arq, operacao_arq, baixa, valor_considerar]
 			
 			if( existe_mov_dia != "" ){
 				banco_extrato = banco
@@ -434,19 +492,28 @@ BEGIN {
 			}
 			
 			if( int(banco) == 1 || int(banco_extrato) == 1 )
-				banco = "BB" #"-" banco_2
+				banco = "BB" "-" banco_2
 			else if( int(banco) == 341 || int(banco_extrato) == 341 )
-				banco = "ITAU" #"-" banco_2
+				banco = "ITAU" "-" banco_2
 			else if( int(banco) == 237 || int(banco_extrato) == 237 )
-				banco = "BRADESCO" #"-" banco_2
+				banco = "BRADESCO" "-" banco_2
 			else if( int(banco) == 756 || int(banco_extrato) == 756 )
-				banco = "SICOOB" #"-" banco_2
+				banco = "SICOOB" "-" banco_2
+			else if( int(banco) == 422 || int(banco_extrato) == 422 )
+				banco = "SAFRA" "-" banco_2
 			else if( int(banco) == 104 || int(banco_extrato) == 104 )
-				banco = "CAIXA" #"-" banco_2
+				banco = "CAIXA" "-" banco_2
+			else if( int(banco) == 33 || int(banco_extrato) == 33 )
+				banco = "SANTANDER" "-" banco_2
+			else if( int(banco) == 634 || int(banco_extrato) == 634 )
+				banco = "TRI BANCO" "-" banco_2
 			else if( banco == "" )
 				banco = "NAO ENCONTROU NO OFX"
 			else
 				banco = "AVALIAR NAO FOI ENCONTRADO" "-" banco_2
+			
+			if( banco_arquivo == "DINHEIRO" && banco == "NAO ENCONTROU NO OFX" )
+				banco = "DINHEIRO"
 			
 			# CASO A DATA DO PAGTO ESTEJA CORRETA COM O EXTRATO ENTÃO COLOCA A DATA OCORRÊNCIA SENDO A PRÓPRIA DATA DA BAIXA
 			if( baixa_extrato == "" && banco != "NAO ENCONTROU NO OFX" )
@@ -455,18 +522,15 @@ BEGIN {
 			# ESTAS LINHA SERVE PRA DEIXAR REGISTRADO O QUE TEM NA PLANILHA DO CLIENTE E FOI PAGO. SERÁ UTILIZADO PARA COMPARAÇÃO COM O OFX AFIM DE AVALIAR O QUE ESTÁ NO OFX DE PAGTO E NÃO ESTÁ NESTA PLANILHA
 			PagouNoBanco[operacao_arq, baixa_extrato, valor_considerar] = 1
 			
-			if( baixa_extrato == "" )
-				baixa_extrato = baixa_4
-			
 			# PAGOS
-			if( baixa != "NULO" && int(valor_pago) > 0 ){
-				print nota, "'" cnpj_forn_cli, emissao, venc, banco_arq, banco, baixa, baixa_extrato, valor_pago, valor_desconto, valor_juros, forn_cli, num_titulo,
- 				      emissao_2, emissao_3, emissao_4, emissao_5, obs >> "temp\\pagtos_agrupados.csv"
+			if( baixa != "NULO" && valor_pago_int > 0 ){
+				print nota, forn_cli, "'" cnpj_forn_cli, emissao, vencimento, banco_arquivo, banco, baixa, baixa_extrato, valor_pago, 
+      				  valor_desconto, valor_juros, valor_multa, nota_completo_orig, codi_emp, "", obs, tipo_pagto, categoria >> "temp\\pagtos_agrupados.csv"
 			}
 			
 			# RECEBIMENTOS
 			if( baixa != "NULO" && int(valor_rec) > 0 ){
-				print nota, "'" cnpj_forn_cli, emissao, venc, banco_arq, banco, baixa, baixa_extrato, valor_rec, valor_desconto, valor_juros, forn_cli, num_titulo, obs >> "saida\\recebtos_agrupados.csv"
+				print nota, "'" cnpj_forn_cli, emissao, venc, banco_arquivo, banco, baixa, baixa_extrato, valor_rec, valor_desconto, valor_juros, forn_cli, num_titulo, obs >> "saida\\recebtos_agrupados.csv"
 			}
 				
 		#} close(file)
